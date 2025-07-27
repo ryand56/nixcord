@@ -2094,6 +2094,41 @@ in
     dmSectioncollapsed = mkEnableOption ''
       Collapse DM sections
     '';
+
+    # Declarative pins!
+    userBasedCategoryList = mkOption {
+      description = "Assigns categories to a user ID, this can support multiple user accounts.";
+      type = types.attrsOf (
+        types.listOf (types.submodule {
+          options = {
+            id = mkOption {
+              type = types.str;
+            };
+            name = mkOption {
+              type = types.str;
+              description = "The name of the category.";
+              example = "Category";
+            };
+            color = mkOption {
+              type = types.int;
+              description = "The color of the category. This can be calculated by parsing a hex color in base 16.";
+              example = 10070709;
+            };
+            collapsed = mkOption {
+              type = types.bool;
+              description = "Whether the category should be collapsed by default.";
+              default = false;
+            };
+            channels = mkOption {
+              type = types.listOf types.str;
+              description = "List of channel IDs that will be assigned this category.";
+              default = [ ];
+            };
+          };
+        })
+      );
+      default = [ ];
+    };
   };
   plainFolderIcon = {
     enable = mkEnableOption ''
