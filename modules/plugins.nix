@@ -2114,7 +2114,7 @@ in
           };
         };
       }));
-      default = [ ];
+      default = { };
     };
   };
   plainFolderIcon = {
