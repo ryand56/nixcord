@@ -53,7 +53,7 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@v21
         with:
           extra-conf: |
-            extra-nix-path = nixpkgs=flake:github:NixOS/nixpkgs/nixos-unstable
+            extra-nix-path = nixpkgs=flake:github:NixOS/nixpkgs/nixos-25.11
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get old version
@@ -191,7 +191,7 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@v21
         with:
           extra-conf: |
-            extra-nix-path = nixpkgs=flake:github:NixOS/nixpkgs/nixos-unstable
+            extra-nix-path = nixpkgs=flake:github:NixOS/nixpkgs/nixos-25.11
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate plugin options
