@@ -4,7 +4,7 @@
   lib,
   nodejs,
   pnpm_10,
-  fetchPnpmDeps, 
+  fetchPnpmDeps,
   pnpmConfigHook,
   stdenv,
   buildWebExtension ? false,
@@ -120,10 +120,9 @@ stdenv.mkDerivation (finalAttrs: {
         update_inplace "s|hash = \"sha256-[^\"]*\";|hash = \"$new_hash\";|"
 
         echo "Updating pnpm dependencies hash..."
-        old_pnpm_hash=$(
-          grep -o 'pnpmDeps = "sha256-[^"]*";' "$NIX_FILE" |
-            sed 's/.*"sha256-\([^"]*\)".*/\1/'
-        )
+
+        # Temporarily remove the pnpmDeps hash to get the correct one
+        perl -i -pe 's/hash = pnpmDeps;/# hash = pnpmDeps;/' "$NIX_FILE"
 
         build_output=$(
           nix-build -E "with import <nixpkgs> {}; (callPackage ./pkgs/equicord.nix {}).pnpmDeps" \
@@ -135,18 +134,17 @@ stdenv.mkDerivation (finalAttrs: {
             grep -oE "got:\s+sha256-[A-Za-z0-9+/=]+" |
             sed 's/got:\s*//' |
             tr -d '[:space:]' |
-            head -1 ||
-          echo "$build_output" |
-            grep -oE "sha256-[A-Za-z0-9+/=]+" |
-            tail -1 |
-            tr -d '[:space:]'
+            head -1
         )
 
-        if [[ -n "$new_pnpm_hash" && "$new_pnpm_hash" != "sha256-$old_pnpm_hash" ]]; then
+        perl -i -pe 's/# hash = pnpmDeps;/hash = pnpmDeps;/' "$NIX_FILE"
+
+        if [[ -n "$new_pnpm_hash" ]]; then
           update_inplace "s|pnpmDeps = \"sha256-[^\"]*\";|pnpmDeps = \"$new_pnpm_hash\";|"
           echo "Updated pnpmDeps hash to $new_pnpm_hash"
         else
           echo "pnpmDeps hash is already correct or could not be determined"
+          exit 1
         fi
         echo "Update complete"
       '';
