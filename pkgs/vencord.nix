@@ -7,7 +7,7 @@
   buildWebExtension ? false,
   unstable ? false,
   pnpm_10,
-  fetchPnpmDeps, 
+  fetchPnpmDeps,
   pnpmConfigHook,
   writeShellApplication,
   cacert,
@@ -150,13 +150,17 @@ stdenv.mkDerivation (finalAttrs: {
           update_value_perl "''${prefix}PnpmDeps" ""
           if build_output=$(nix-build -E "with import <nixpkgs> {}; (callPackage ./pkgs/vencord.nix { unstable = $UPDATE_BOOL; }).pnpmDeps" --no-link --pure 2>&1); then
             update_value_perl "''${prefix}PnpmDeps" "sha256-$old_hash"
+            echo "pnpmDeps hash is already correct or could not be determined"
           else
             if new_pnpm_hash=$(echo "$build_output" | grep -oE "got:\s+sha256-[A-Za-z0-9+/=]+" | sed 's/got:\s*//' | head -1); then
               update_value_perl "''${prefix}PnpmDeps" "$new_pnpm_hash"
+              echo "Updated pnpmDeps hash to $new_pnpm_hash"
             elif new_pnpm_hash=$(echo "$build_output" | grep -oE "sha256-[A-Za-z0-9+/=]+" | tail -1); then
               update_value_perl "''${prefix}PnpmDeps" "$new_pnpm_hash"
+              echo "Updated pnpmDeps hash to $new_pnpm_hash"
             else
               update_value_perl "''${prefix}PnpmDeps" "sha256-$old_hash"
+              echo "pnpmDeps hash is already correct or could not be determined"
             fi
           fi
         fi
@@ -170,6 +174,7 @@ stdenv.mkDerivation (finalAttrs: {
       }
 
       if [ "$UPDATE_BOOL" = "true" ]; then
+        echo "Fetching latest Vencord tag..."
         base_version=$(get_latest_stable_tag | sed 's/^v//')
         revision=$(curl -s "https://api.github.com/repos/Vendicated/Vencord/commits/main" | jq -r '.sha')
         commit_date=$(curl -s "https://api.github.com/repos/Vendicated/Vencord/commits/$revision" | jq -r '.commit.committer.date' | cut -d'T' -f1)
@@ -181,8 +186,10 @@ stdenv.mkDerivation (finalAttrs: {
         revision="$new_tag"
       fi
 
+      echo "Updating to version: $version"
       update_value_perl "''${UPDATE_TYPE}Version" "$version"
       update_source_hash "$revision" "$UPDATE_TYPE"
+      echo "Updating pnpm dependencies hash..."
       update_pnpm_deps_hash "$UPDATE_TYPE"
       echo "Update complete"
     '';
