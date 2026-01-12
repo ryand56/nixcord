@@ -19,7 +19,7 @@
 }:
 
 let
-  version = "2026-01-11";
+  version = "2026-01-12";
   hash = "sha256-DXHKjswNVzpqemQLTQZBXH8Nw0240FGe5XyBxI+3dq4=";
   pnpmDeps = "sha256-iBCA4G1E1Yw/d94pQzcbBGJYeIIgZI+Gw87/x4ogoyg=";
 in
