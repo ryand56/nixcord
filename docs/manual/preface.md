@@ -10,6 +10,6 @@ Found a bug? Check the [issue tracker](https://github.com/FlameFlag/nixcord/issu
 
 If it's new, open a ticket with your config, system info, and logs. The more details you give us, the faster we can fix it
 
-## Contributing
+## Contributing {#contributing}
 
 PRs are always welcome, whether it's for the code or just fixing a typo in the docs
