@@ -14,9 +14,7 @@ let
   inherit (pkgs.callPackage ../lib/shared.nix { inherit lib; })
     mergeAttrsList
     applyPostPatch
-    mkIsQuickCssUsed
     mkPluginKit
-    mkCopyCommands
     ;
 
   dop = with types; coercedTo package (a: a.outPath) pathInStore;
@@ -42,8 +40,6 @@ in
         mkVencordCfg
         mkFinalPackages
         ;
-
-      isQuickCssUsed = mkIsQuickCssUsed { inherit cfg; };
 
       pluginKit = mkPluginKit { inherit cfg; };
 
@@ -174,70 +170,9 @@ in
           ;
         wrapScript = script: ''
           ${script}
-          ${lib.concatMapStringsSep "\n"
-            (dir: ''
-              if [ -d "${dir}" ]; then
-                chown -R ${lib.escapeShellArg cfg.user}:${lib.escapeShellArg null} "${dir}" 2>/dev/null || true
-              fi
-            '')
-            [
-              "${homeDir}/Library/Application Support/Vencord"
-              "${homeDir}/Library/Application Support/discord"
-              "${homeDir}/Library/Application Support/discordptb"
-              "${homeDir}/Library/Application Support/discordcanary"
-              "${homeDir}/Library/Application Support/discorddevelopment"
-              "${homeDir}/Library/Application Support/vesktop"
-              "${homeDir}/Library/Application Support/equibop"
-              "${homeDir}/.config/dorion"
-            ]
-          }
         '';
       };
 
-      writeFilesScript =
-        let
-          install = lib.getExe' pkgs.coreutils "install";
-          idBin = lib.getExe' pkgs.coreutils "id";
-
-          fileCommands = mkCopyCommands {
-            inherit
-              lib
-              cfg
-              quickCssFile
-              vencordSettingsFile
-              equicordSettingsFile
-              discordSettingsFile
-              vesktopSettingsFile
-              vesktopClientSettingsFile
-              vesktopStateFile
-              vesktopThemes
-              equibopSettingsFile
-              equibopClientSettingsFile
-              equibopStateFile
-              dorionConfigFile
-              isQuickCssUsed
-              ;
-          };
-        in
-        ''
-          set -euo pipefail
-
-          target_user=${lib.escapeShellArg cfg.user}
-          target_group_default=${lib.escapeShellArg null}
-          target_group="$target_group_default"
-          if [ -z "$target_group" ]; then
-            target_group="$(${idBin} -gn "$target_user")"
-          fi
-
-          copy_file() {
-            local src="$1"
-            local dest="$2"
-            local mode="$3"
-            ${install} -D -m "$mode" -o "$target_user" -g "$target_group" "$src" "$dest"
-          }
-
-          ${fileCommands}
-        '';
     in
     mkMerge ([
       {
@@ -290,17 +225,135 @@ in
           (mkIf (cfg.dorion.enable && cfg.dorion.installPackage) [ cfg.finalPackage.dorion ])
         ];
       }
-      (mkIf cfg.discord.enable {
-        system.activationScripts.nixcord-disableDiscordUpdates.text =
-          activationScripts.disableDiscordUpdates;
-        system.activationScripts.nixcord-fixDiscordModules.text = activationScripts.fixDiscordModules;
+      (mkIf cfg.enable {
+        system.activationScripts.applications.text = lib.mkAfter (
+          let
+            install = lib.getExe' pkgs.coreutils "install";
+            mkDir = dir: "${install} -d -o ${lib.escapeShellArg cfg.user} -g staff ${lib.escapeShellArg dir}";
+            mkCopy = src: dest: "copy_file ${src} ${lib.escapeShellArg dest} 0644";
+            useQuickCss =
+              clientCfg: cfg.quickCss != "" && (cfg.config.useQuickCss || clientCfg.useQuickCss or false);
+          in
+          ''
+            ${mkDir cfg.configDir}
+            ${lib.optionalString cfg.discord.enable (mkDir cfg.discord.configDir)}
+            ${lib.optionalString cfg.vesktop.enable (mkDir cfg.vesktop.configDir)}
+            ${lib.optionalString cfg.equibop.enable (mkDir cfg.equibop.configDir)}
+            ${lib.optionalString cfg.dorion.enable (mkDir cfg.dorion.configDir)}
+
+            copy_file() {
+              sudo --user=${lib.escapeShellArg cfg.user} -- ${install} -D -m "$3" "$1" "$2"
+            }
+
+            ${lib.optionalString cfg.discord.enable ''
+              # Disable Discord updates
+              config_dir="${cfg.discord.configDir}"
+              if [ -f "$config_dir/settings.json" ]; then
+                ${lib.getExe' pkgs.jq "jq"} '. + {"SKIP_HOST_UPDATE": true}' "$config_dir/settings.json" > "$config_dir/settings.json.tmp" && mv "$config_dir/settings.json.tmp" "$config_dir/settings.json"
+              else
+                echo '{"SKIP_HOST_UPDATE": true}' > "$config_dir/settings.json"
+              fi
+
+              config_base="/Users/${cfg.user}/Library/Application Support"
+
+              get_discord_versions() {
+                local branch_dir="$1"
+                find "$branch_dir" -maxdepth 1 -type d -name '[0-9]*.[0-9]*.[0-9]*' | sed "s|^$branch_dir/||" | sort -V
+              }
+
+              modules_need_copy() {
+                local modules_dir="$1"
+                if [ ! -d "$modules_dir" ]; then
+                  return 0
+                fi
+                local item_count
+                item_count=$(find "$modules_dir" -mindepth 1 -maxdepth 1 ! -name 'pending' | wc -l)
+                [ "$item_count" -eq 0 ]
+              }
+
+              for branch in discord discord-ptb discord-canary discord-development; do
+                branch_dir="$config_base/$branch"
+
+                [ ! -d "$branch_dir" ] && continue
+
+                # Get sorted list of version directories
+                versions=$(get_discord_versions "$branch_dir")
+                version_count=$(echo "$versions" | wc -l)
+
+                if [ "$version_count" -ge 2 ]; then
+                  prev_version=$(echo "$versions" | sed -n '$((version_count-1))p')
+                  curr_version=$(echo "$versions" | tail -n 1)
+
+                  prev_modules="$branch_dir/$prev_version/modules"
+                  curr_modules="$branch_dir/$curr_version/modules"
+
+                  if modules_need_copy "$curr_modules" && [ -d "$prev_modules" ]; then
+                    echo "Copying Discord modules for $branch from $prev_version to $curr_version"
+                    rm -rf "$curr_modules"
+                    cp -a "$prev_modules" "$curr_modules"
+                  fi
+                fi
+              done
+
+              ${lib.optionalString cfg.discord.vencord.enable (
+                mkCopy vencordSettingsFile "${cfg.configDir}/settings/settings.json"
+              )}
+              ${lib.optionalString cfg.discord.equicord.enable (
+                mkCopy equicordSettingsFile "${cfg.configDir}/settings/settings.json"
+              )}
+              ${lib.optionalString (cfg.discord.settings != { }) (
+                mkCopy discordSettingsFile "${cfg.discord.configDir}/settings.json"
+              )}
+              ${lib.optionalString (useQuickCss cfg.vencordConfig || useQuickCss cfg.equicordConfig) (
+                mkCopy quickCssFile "${cfg.configDir}/settings/quickCss.css"
+              )}
+            ''}
+
+            # Vesktop files
+            ${lib.optionalString cfg.vesktop.enable ''
+              ${mkCopy vesktopSettingsFile "${cfg.vesktop.configDir}/settings/settings.json"}
+              ${mkCopy vesktopClientSettingsFile "${cfg.vesktop.configDir}/settings.json"}
+              ${lib.optionalString (cfg.vesktop.settings != { }) (
+                mkCopy vesktopClientSettingsFile "${cfg.vesktop.configDir}/settings.json"
+              )}
+              ${lib.optionalString (cfg.vesktop.state != { }) (
+                mkCopy vesktopStateFile "${cfg.vesktop.configDir}/state.json"
+              )}
+              ${lib.optionalString (useQuickCss cfg.vesktopConfig) (
+                mkCopy quickCssFile "${cfg.vesktop.configDir}/settings/quickCss.css"
+              )}
+              ${lib.concatStringsSep "\n" (
+                lib.mapAttrsToList (
+                  name: path: mkCopy path "${cfg.vesktop.configDir}/themes/${name}.css"
+                ) vesktopThemes
+              )}
+            ''}
+
+            # Equibop files
+            ${lib.optionalString cfg.equibop.enable ''
+              ${mkCopy equibopSettingsFile "${cfg.equibop.configDir}/settings/settings.json"}
+              ${mkCopy equibopClientSettingsFile "${cfg.equibop.configDir}/settings.json"}
+              ${lib.optionalString (cfg.equibop.settings != { }) (
+                mkCopy equibopClientSettingsFile "${cfg.equibop.configDir}/settings.json"
+              )}
+              ${lib.optionalString (cfg.equibop.state != { }) (
+                mkCopy equibopStateFile "${cfg.equibop.configDir}/state.json"
+              )}
+              ${lib.optionalString (useQuickCss cfg.equibopConfig) (
+                mkCopy quickCssFile "${cfg.equibop.configDir}/settings/quickCss.css"
+              )}
+            ''}
+
+            # Dorion files
+            ${lib.optionalString cfg.dorion.enable (
+              mkCopy dorionConfigFile "${cfg.dorion.configDir}/config.json"
+            )}
+          ''
+        );
       })
       (mkIf cfg.dorion.enable {
         system.activationScripts.nixcord-setupDorionVencordSettings.text =
           activationScripts.setupDorionVencordSettings;
-      })
-      (mkIf (cfg.discord.enable || cfg.vesktop.enable || cfg.equibop.enable || cfg.dorion.enable) {
-        system.activationScripts.nixcord-writeFiles.text = writeFilesScript;
       })
       {
         warnings = import ../../warnings.nix {

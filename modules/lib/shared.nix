@@ -35,14 +35,14 @@ let
       migratePluginNames =
         configAttrs:
         let
-          plugins = configAttrs.plugins;
+          plugins = configAttrs.plugins or { };
           basePlugins = builtins.removeAttrs plugins (builtins.attrNames pluginNameMigrations);
           migratedPlugins = lib.foldl' (
             acc: oldName:
             if builtins.hasAttr oldName plugins then
               let
                 newName = pluginNameMigrations.${oldName};
-                mergedValue = lib.recursiveUpdate (basePlugins.${newName}) plugins.${oldName};
+                mergedValue = lib.recursiveUpdate (basePlugins.${newName} or { }) plugins.${oldName};
               in
               acc // { ${newName} = mergedValue; }
             else
@@ -57,7 +57,7 @@ let
       collectDeprecatedPlugins =
         configAttrs:
         let
-          plugins = configAttrs.plugins;
+          plugins = configAttrs.plugins or { };
         in
         lib.filter (oldName: builtins.hasAttr oldName plugins && isPluginEnabled plugins.${oldName}) (
           builtins.attrNames pluginNameMigrations
@@ -66,7 +66,7 @@ let
       collectEnabledEquicordOnlyPlugins =
         configAttrs:
         let
-          plugins = configAttrs.plugins;
+          plugins = configAttrs.plugins or { };
           sharedNames = builtins.attrNames sharedPlugins;
           vencordNames = builtins.attrNames vencordOnlyPlugins;
           equicordNames = builtins.attrNames equicordOnlyPlugins;
@@ -83,7 +83,7 @@ let
       collectEnabledVencordOnlyPlugins =
         configAttrs:
         let
-          plugins = configAttrs.plugins;
+          plugins = configAttrs.plugins or { };
           sharedNames = builtins.attrNames sharedPlugins;
           vencordNames = builtins.attrNames vencordOnlyPlugins;
           allowedVencordOnly = lib.filter (name: !(builtins.elem name sharedNames)) vencordNames;
@@ -112,7 +112,7 @@ let
                 [ ]
             );
 
-          plugins = configAttrs.plugins;
+          plugins = configAttrs.plugins or { };
           filteredPlugins = lib.filterAttrs (name: value: builtins.elem name allowedPluginNames) plugins;
         in
         configAttrs // { plugins = filteredPlugins; };
@@ -169,7 +169,7 @@ let
       isQuickCssUsed,
     }:
     let
-      mkCopy = src: dest: ''copy_file ${src} ${lib.escapeShellArg dest} 0644'';
+      mkCopy = src: dest: "copy_file ${src} ${lib.escapeShellArg dest} 0644";
 
       quickCssEnabled = cfg.quickCss != "";
       quickCssOnDiscord =
