@@ -16,7 +16,7 @@ stdenvNoCC.mkDerivation {
     pname = "generate-plugin-options";
     version = "1.0.0";
     src = lib.cleanSource ../scripts/generate-plugin-options;
-    npmDepsHash = "sha256-wUSk0wTdNOG+QqfAJxe0DjuYemyoT/ZxcdkzagtsIIU=";
+    npmDepsHash = "sha256-ySHi1pmZYoACgCV0ZVo/CfkTjacGH1ebCpnhPsnjpFU=";
     dontNpmBuild = true;
     installPhase = ''
       mkdir -p "$out"
