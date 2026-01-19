@@ -73,6 +73,7 @@
                   nix build .#generatePluginOptions --out-link ./result
                   mkdir -p ./modules/plugins
                   cp -R ./result/plugins/. ./modules/plugins/
+                  cp ./result/deprecated.nix ./modules/plugins/ 2>/dev/null || true
                   chmod -R u+w ./modules/plugins
                   nixfmt ./modules/plugins/*.nix
                 '';

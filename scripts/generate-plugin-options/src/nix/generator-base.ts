@@ -252,8 +252,7 @@ export class NixGenerator {
       for (let i = 0; i < sanitized.length - 1; i++) {
         const char = sanitized.charAt(i);
         const nextChar = sanitized.charAt(i + 1);
-        if (char >= 'A' && char <= 'Z' &&
-            nextChar >= 'A' && nextChar <= 'Z') {
+        if (char >= 'A' && char <= 'Z' && nextChar >= 'A' && nextChar <= 'Z') {
           return true;
         }
       }

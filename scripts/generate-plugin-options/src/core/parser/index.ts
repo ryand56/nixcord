@@ -336,6 +336,155 @@ export async function parsePlugins(
 }
 
 /**
+ * Plugin rename mappings between Vencord and Equicord.
+ * Key: Vencord plugin name, Value: Equicord plugin name
+ */
+const PLUGIN_RENAME_MAP: Record<string, string> = {
+  oneko: 'CursorBuddy',
+};
+
+/**
+ * Extract migration information from migratePluginToSettings calls
+ */
+export async function extractMigrations(
+  sourcePath: string
+): Promise<Record<string, string | null>> {
+  try {
+    // Check if the source path exists and has TypeScript files
+    const tsconfigPath = join(sourcePath, 'tsconfig.json');
+    if (!(await fse.pathExists(tsconfigPath))) {
+      // If no tsconfig.json, fall back to hardcoded known migrations
+      // This handles cases where TypeScript parsing fails in build environments
+      return getKnownMigrations();
+    }
+
+    const project = await createProject(sourcePath);
+
+    // Find all TypeScript files
+    const tsFiles = await fg('**/*.{ts,tsx}', {
+      cwd: sourcePath,
+      absolute: false,
+    });
+
+    if (tsFiles.length === 0) {
+      return getKnownMigrations(); // No TypeScript files found, use known migrations
+    }
+
+    const migrations: Record<string, string | null> = {};
+
+    for (const file of tsFiles) {
+      try {
+        const sourceFile = project.addSourceFileAtPath(normalize(join(sourcePath, file)));
+        const calls = sourceFile.getDescendantsOfKind(ts.SyntaxKind.CallExpression);
+
+        for (const call of calls) {
+          const expression = call.getExpression();
+          if (expression.getText() === 'migratePluginToSettings') {
+            const args = call.getArguments();
+            if (args.length >= 3 && args[1] && args[2]) {
+              // migratePluginToSettings(deleteOldSettings, newPluginName, oldPluginName, ...settings)
+              const newPluginName = args[1].getText().replace(/['"]/g, '');
+              const oldPluginName = args[2].getText().replace(/['"]/g, '');
+
+              // For now, map to the new plugin name (even though it's now a setting)
+              // In the future, we could be smarter about this
+              migrations[oldPluginName] = newPluginName;
+            }
+          }
+        }
+      } catch (fileError) {
+        // Skip files that can't be parsed
+        continue;
+      }
+    }
+
+    // If we found migrations via TypeScript parsing, return them
+    // Otherwise, fall back to known migrations
+    return Object.keys(migrations).length > 0 ? migrations : getKnownMigrations();
+  } catch (error) {
+    // If migration extraction fails entirely, fall back to known migrations
+    // This ensures the build doesn't fail due to migration extraction issues
+    return getKnownMigrations();
+  }
+}
+
+/**
+ * Fallback function that returns known migrations when TypeScript parsing fails
+ */
+function getKnownMigrations(): Record<string, string | null> {
+  return {
+    AmITyping: 'TypingTweaks',
+    AllCallTimers: 'CallTimer',
+    QuestCompleter: 'Questify',
+  };
+}
+
+/**
+ * Update the deprecated.nix file with migration information
+ */
+export async function updateDeprecatedPlugins(
+  migrations: Record<string, string | null>,
+  pluginsDir: string,
+  verbose: boolean,
+  logger: any
+): Promise<void> {
+  try {
+    const deprecatedPath = join(pluginsDir, 'deprecated.nix');
+
+    // Read existing deprecated file or create empty one
+    let existingDeprecated: Record<string, string | null> = {};
+    if (await fse.pathExists(deprecatedPath)) {
+      try {
+        const content = await fse.readFile(deprecatedPath, 'utf-8');
+        // Parse Nix attrset - this is a simple parser for { key = value; ... }
+        const attrsetMatch = content.match(/\{\s*([^}]*)\s*\}/);
+        if (attrsetMatch && attrsetMatch[1]) {
+          const entries = attrsetMatch[1].split(';').filter((line) => line.trim());
+          for (const entry of entries) {
+            const match = entry.trim().match(/(\w+)\s*=\s*(null|"[^"]*");?/);
+            if (match && match[1] && match[2]) {
+              const [, key, value] = match;
+              existingDeprecated[key] = value === 'null' ? null : value.replace(/"/g, '');
+            }
+          }
+        }
+      } catch (e) {
+        if (verbose) {
+          logger.warn(`Failed to parse existing deprecated.nix: ${e}`);
+        }
+      }
+    }
+
+    // If no new migrations and no existing file, skip
+    if (Object.keys(migrations).length === 0 && Object.keys(existingDeprecated).length === 0) {
+      return;
+    }
+
+    // Merge existing deprecations with new migrations
+    const updatedDeprecated = { ...existingDeprecated, ...migrations };
+
+    // Generate Nix code
+    const entries = Object.entries(updatedDeprecated)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([oldName, newName]) => `  ${oldName} = ${newName === null ? 'null' : `"${newName}"`};`)
+      .join('\n');
+
+    const nixCode = `# This file is auto-generated by scripts/generate-plugin-options\n# DO NOT EDIT this file directly; instead update the generator\n\n{\n${entries}\n}\n`;
+
+    await fse.writeFile(deprecatedPath, nixCode);
+
+    if (verbose && Object.keys(migrations).length > 0) {
+      logger.info(`Updated deprecated.nix with ${Object.keys(migrations).length} migrations`);
+    }
+  } catch (error) {
+    // If updating deprecated plugins fails, don't fail the entire build
+    if (verbose) {
+      logger.warn(`Failed to update deprecated.nix: ${error}`);
+    }
+  }
+}
+
+/**
  * Figure out which plugins are shared, Vencord-only, or Equicord-only. Matching happens
  * by plugin name first, then by directory slug because Equicord occasionally renames
  * things while keeping the same folder. That mirrors how humans think about the repos.
@@ -368,6 +517,12 @@ export function categorizePlugins(
     map(([name, config]) => {
       const equicordConfig = match(equicordSharedPlugins[name])
         .with(undefined, () => {
+          // Check for plugin rename mapping
+          const renamedPlugin = PLUGIN_RENAME_MAP[name];
+          if (renamedPlugin) {
+            return equicordOnlyPlugins[renamedPlugin] || equicordSharedPlugins[renamedPlugin];
+          }
+
           return match(config?.directoryName)
             .with(P.string, (dirName) => {
               const equicordName = equicordDirectoryMap.get(dirName.toLowerCase());
@@ -398,6 +553,22 @@ export function categorizePlugins(
     map(({ name, config }) => [name, config] as [string, PluginConfig])
   );
 
+  // Collect names of Equicord plugins that were matched to Vencord plugins
+  const matchedEquicordPluginNames = new Set(
+    pipe(
+      genericMatches,
+      map(({ equicordConfig }) => equicordConfig!.name),
+      filter((name) => name !== undefined)
+    )
+  );
+
+  // Remove matched Equicord plugins from equicordOnly
+  const filteredEquicordOnly = pipe(
+    entries(equicordOnlyPlugins),
+    filter(([name]) => !matchedEquicordPluginNames.has(name)),
+    fromEntries
+  );
+
   return {
     generic: pipe(genericTuples, fromEntries, pickBy(isNonNull)) as ReadonlyDeep<
       Record<string, PluginConfig>
@@ -405,7 +576,7 @@ export function categorizePlugins(
     vencordOnly: pipe(vencordTuples, fromEntries, pickBy(isNonNull)) as ReadonlyDeep<
       Record<string, PluginConfig>
     >,
-    equicordOnly: pickBy(equicordOnlyPlugins, isNonNull) as ReadonlyDeep<
+    equicordOnly: pickBy(filteredEquicordOnly, isNonNull) as ReadonlyDeep<
       Record<string, PluginConfig>
     >,
   };

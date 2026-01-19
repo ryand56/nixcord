@@ -6,9 +6,6 @@ let
   inherit (lib) types mkEnableOption mkOption;
 in
 {
-  AmITyping = {
-    enable = mkEnableOption ''Shows you if other people can see you typing. (Equicord-only)'';
-  };
   FullVCPFP = {
     enable = mkEnableOption ''Makes avatars take up the entire vc tile (Equicord-only)'';
   };
@@ -205,7 +202,12 @@ in
     };
   };
   SaveFavoriteGIFs = {
-    enable = mkEnableOption ''Save favorite GIF urls to a file (Equicord-only)'';
+    enable = mkEnableOption ''Export favorited GIF urls (Equicord-only)'';
+    showToolboxButton = mkOption {
+      default = true;
+      description = ''Show 'Save Favorite GIFs' button in Equicord Toolbox (Requires Reload) (restart required)'';
+      type = types.bool;
+    };
   };
   TiktokTTS = {
     enable = mkEnableOption ''Reads out chat messages with the good ol' Tiktok TTS voice :sob: (Equicord-only)'';
@@ -301,42 +303,6 @@ in
       type = types.bool;
     };
   };
-  allCallTimers = {
-    enable = mkEnableOption ''Add call timer to all users in a server voice channel. (Equicord-only)'';
-    format = mkOption {
-      default = "stopwatch";
-      description = ''Compact or human readable format:'';
-      type = types.enum [
-        "stopwatch"
-        "human"
-      ];
-    };
-    showRoleColor = mkOption {
-      default = true;
-      description = ''Show the user's role color (if this plugin in enabled)'';
-      type = types.bool;
-    };
-    showSeconds = mkOption {
-      default = true;
-      description = ''Show seconds in the timer'';
-      type = types.bool;
-    };
-    showWithoutHover = mkOption {
-      default = true;
-      description = ''Always show the timer without needing to hover (restart required)'';
-      type = types.bool;
-    };
-    trackSelf = mkOption {
-      default = true;
-      description = ''Also track yourself'';
-      type = types.bool;
-    };
-    watchLargeGuilds = mkOption {
-      default = false;
-      description = ''Track users in large guilds. This may cause lag if you're in a lot of large guilds with active voice users. Tested with up to 2000 active voice users with no issues. (restart required)'';
-      type = types.bool;
-    };
-  };
   altKrispSwitch = {
     enable = mkEnableOption ''Makes the Noise Suppression Popout switch between None and Krisp instead of Krisp and Standard (Equicord-only)'';
   };
@@ -344,7 +310,7 @@ in
     enable = mkEnableOption ''Always expands profile popouts to the full modal (Equicord-only)'';
   };
   anammox = {
-    enable = mkEnableOption ''A microbial process that plays an important part in the nitrogen cycle (Equicord-only)'';
+    enable = mkEnableOption ''Hides various features related to nitro and the store (Equicord-only)'';
     billing = mkOption {
       default = true;
       description = ''Remove billing settings (restart required)'';
@@ -363,6 +329,11 @@ in
     gift = mkOption {
       default = true;
       description = ''Remove gift button (restart required)'';
+      type = types.bool;
+    };
+    quests = mkOption {
+      default = false;
+      description = ''Remove quests above DMs list (restart required)'';
       type = types.bool;
     };
     serverBoost = mkOption {
@@ -840,6 +811,9 @@ in
   discordDevBanner = {
     enable = mkEnableOption ''Enables the Discord developer banner, in which displays the build-ID (Equicord-only)'';
   };
+  dragFavoriteEmotes = {
+    enable = mkEnableOption ''Adds the ability to change the order of your favourite emotes (Equicord-only)'';
+  };
   elementHighlighter = {
     enable = mkEnableOption ''Highlight and inspect elements easily. (Equicord-only)'';
     keybind = mkOption {
@@ -890,14 +864,24 @@ in
   };
   equicordHelper = {
     enable = mkEnableOption ''Used to provide support, fix discord caused crashes, and other misc features. (Equicord-only)'';
-    disableDMContextMenu = mkOption {
+    forceRoleIcon = mkOption {
       default = false;
-      description = ''Disables the DM list context menu in favor of the x button (restart required)'';
+      description = ''Forces role icons to display next to messages in compact mode (restart required)'';
+      type = types.bool;
+    };
+    noDefaultHangStatus = mkOption {
+      default = false;
+      description = ''Disable the default hang status when joining voice channels (restart required)'';
       type = types.bool;
     };
     noMirroredCamera = mkOption {
       default = false;
       description = ''Prevents the camera from being mirrored on your screen (restart required)'';
+      type = types.bool;
+    };
+    refreshSlashCommands = mkOption {
+      default = false;
+      description = ''Refreshes Slash Commands to show newly added commands without restarting your client.'';
       type = types.bool;
     };
     removeActivitySection = mkOption {
@@ -1193,14 +1177,19 @@ in
       description = ''Show Nekocord Badges'';
       type = types.bool;
     };
+    showPaicord = mkOption {
+      default = true;
+      description = ''Show Paicord Badges'';
+      type = types.bool;
+    };
     showPrefix = mkOption {
       default = true;
       description = ''Shows the Mod as Prefix'';
       type = types.bool;
     };
-    showRa1ncord = mkOption {
+    showRaincord = mkOption {
       default = true;
-      description = ''Show Ra1ncord Badges'';
+      description = ''Show Raincord Badges'';
       type = types.bool;
     };
     showReviewDB = mkOption {
@@ -1492,7 +1481,7 @@ in
     };
   };
   jumpTo = {
-    enable = mkEnableOption ''Adds context menu options to jump to the start or bottom of a channel/DM (Equicord-only)'';
+    enable = mkEnableOption ''Adds context menu options to jump to the start or bottom of a channel/DM. (Equicord-only)'';
   };
   jumpscare = {
     enable = mkEnableOption ''Adds a configurable chance of jumpscaring you whenever you open a channel. Inspired by Geometry Dash Mega Hack (Equicord-only)'';
@@ -1563,20 +1552,19 @@ in
     enable = mkEnableOption ''A plugin to jump to last active message from yourself or another user in a channel/server. (Equicord-only)'';
   };
   limitMiddleClickPaste = {
-    enable = mkEnableOption ''For middle-click autoscroll users, prevents middle-click from making unwanted pastes. (Equicord-only)'';
-    limitTo = mkOption {
-      default = "active";
-      description = ''Allow middle click pastes:'';
+    enable = mkEnableOption ''Prevent middle click pasting either always or just when a text area is not focused. (Equicord-only)'';
+    scope = mkOption {
+      default = "always";
+      description = ''Situations in which to prevent middle click from pasting.'';
       type = types.enum [
-        "active"
-        "direct"
-        "never"
+        "always"
+        "focus"
       ];
     };
-    reenableDelay = mkOption {
-      default = 500.0;
-      description = ''Milliseconds until re-enabling global paste events after middle click.'';
-      type = types.float;
+    threshold = mkOption {
+      default = 100;
+      description = ''Milliseconds until pasting is enabled again after a middle click.'';
+      type = types.int;
     };
   };
   mediaPlaybackSpeed = {
@@ -1686,6 +1674,9 @@ in
       description = ''The language messages should be translated to (restart required)'';
       type = types.str;
     };
+  };
+  micLoopbackTester = {
+    enable = mkEnableOption ''Adds mic loopback test icon to the user panel (Equicord-only)'';
   };
   moreCommands = {
     enable = mkEnableOption ''Adds various fun and useful commands (Equicord-only)'';
@@ -1903,17 +1894,6 @@ in
       description = ''Quick disable. Turns off message modifying without requiring a client reload.'';
       type = types.bool;
     };
-  };
-  questCompleter = {
-    enable = mkEnableOption ''Adds a button to the header bar to complete quests without having the game installed. (Equicord-only)'';
-    disableNotifications = mkOption {
-      default = false;
-      description = ''Disable notifications when no quests are available or when a quest is completed - still shows no quests notif'';
-      type = types.bool;
-    };
-  };
-  questFocused = {
-    enable = mkEnableOption ''Prevent the quests player from pausing and possibly skip it all together. (Equicord-only)'';
   };
   questify = {
     enable = mkEnableOption ''Enhance your Quest experience with a suite of features, or disable them entirely if they're not your thing. (Equicord-only)'';
@@ -2242,7 +2222,7 @@ in
       type = types.float;
     };
     imageLink = mkOption {
-      default = "https://images.equicord.org/api/files/raw/0199e730-70d5-7000-a44f-d1acb42064cc";
+      default = "https://cdn.nest.rip/uploads/ecf0ef5b-55d1-4da7-9e5c-e469569a9731.png";
       description = ''URL for the image (button and modal)'';
       type = types.str;
     };
@@ -2811,74 +2791,6 @@ in
       default = [ ];
       description = ''URL patterns to highlight using glob patterns.'';
       type = types.listOf types.str;
-    };
-  };
-  vcNarratorCustom = {
-    enable = mkEnableOption ''Announces when users join, leave, or move voice channels via narrator. TikTok TTS version; speechSynthesis is pretty boring. Ported from https://github.com/Loukious/Vencord (Equicord-only)'';
-    customVoice = mkOption {
-      default = "en_us_001";
-      description = ''Custom voice id, currently just tiktok'';
-      type = types.str;
-    };
-    deafenMessage = mkOption {
-      default = "{{DISPLAY_NAME}} deafened";
-      description = ''Deafen Message (only self for now)'';
-      type = types.str;
-    };
-    ignoreSelf = mkOption {
-      default = false;
-      description = ''Ignore yourself for all events.'';
-      type = types.bool;
-    };
-    joinMessage = mkOption {
-      default = "{{DISPLAY_NAME}} joined";
-      description = ''Join Message'';
-      type = types.str;
-    };
-    latinOnly = mkOption {
-      default = false;
-      description = ''Strip non latin characters from names before saying them'';
-      type = types.bool;
-    };
-    leaveMessage = mkOption {
-      default = "{{DISPLAY_NAME}} left";
-      description = ''Leave Message'';
-      type = types.str;
-    };
-    moveMessage = mkOption {
-      default = "{{DISPLAY_NAME}} moved to {{CHANNEL}}";
-      description = ''Move Message'';
-      type = types.str;
-    };
-    muteMessage = mkOption {
-      default = "{{DISPLAY_NAME}} muted";
-      description = ''Mute Message (only self for now)'';
-      type = types.str;
-    };
-    rate = mkOption {
-      default = 1.0;
-      description = ''Narrator Speed'';
-      type = types.float;
-    };
-    sayOwnName = mkOption {
-      default = false;
-      description = ''Say own name'';
-      type = types.bool;
-    };
-    undeafenMessage = mkOption {
-      default = "{{DISPLAY_NAME}} undeafened";
-      description = ''Undeafen Message (only self for now)'';
-      type = types.str;
-    };
-    unmuteMessage = mkOption {
-      default = "{{DISPLAY_NAME}} unmuted";
-      description = ''Unmute Message (only self for now)'';
-      type = types.str;
-    };
-    volume = mkOption {
-      default = 1.0;
-      description = ''Narrator Volume'';
-      type = types.float;
     };
   };
   viewRawVariant = {

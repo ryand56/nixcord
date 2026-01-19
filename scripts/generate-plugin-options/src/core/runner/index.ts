@@ -9,7 +9,12 @@ import { oraPromise } from 'ora';
 import type { Simplify } from 'type-fest';
 
 import { CLI_CONFIG } from '../../shared/config.js';
-import { parsePlugins, categorizePlugins } from '../parser/index.js';
+import {
+  parsePlugins,
+  categorizePlugins,
+  extractMigrations,
+  updateDeprecatedPlugins,
+} from '../parser/index.js';
 import type { ParsePluginsOptions } from '../parser/index.js';
 import { generateNixModule } from '../../nix/generator.js';
 import { generateParseRulesModule } from '../../nix/parse-rules.js';
@@ -253,6 +258,20 @@ export const runGeneratePluginOptions = async (
       equicordOnly,
       outputPath,
     });
+
+    // Extract migrations and update deprecated.nix
+    if (resolvedEquicordPath) {
+      try {
+        const migrations = await extractMigrations(resolvedEquicordPath);
+        const pluginsDir = getPluginsDir(outputPath);
+        await updateDeprecatedPlugins(migrations, pluginsDir, verbose, logger);
+      } catch (error) {
+        // Migration extraction is best-effort; don't fail the build if it fails
+        if (verbose) {
+          logger.warn(`Failed to extract migrations: ${error}`);
+        }
+      }
+    }
 
     return Result.ok(summary);
   } catch (error) {
