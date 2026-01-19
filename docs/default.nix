@@ -70,20 +70,27 @@ let
 
   transformOptions =
     opt:
-    opt
-    // {
-      declarations = (
-        map (
-          decl:
-          if (lib.hasPrefix nixcordPath (toString decl)) then
-            (githubDeclaration "FlameFlag" "nixcord" "main" (
-              lib.removePrefix "/" (lib.removePrefix nixcordPath (toString decl))
-            ))
-          else
-            decl
-        ) opt.declarations
-      );
-    };
+    let
+      isNixcordOption =
+        lib.take 2 opt.loc == [
+          "programs"
+          "nixcord"
+        ];
+      declarations =
+        if isNixcordOption && (opt.declarations == [ ]) then
+          [ (githubDeclaration "FlameFlag" "nixcord" "main" "modules/options.nix") ]
+        else
+          map (
+            decl:
+            if (lib.hasPrefix nixcordPath (toString decl)) then
+              (githubDeclaration "FlameFlag" "nixcord" "main" (
+                lib.removePrefix "/" (lib.removePrefix nixcordPath (toString decl))
+              ))
+            else
+              decl
+          ) opt.declarations;
+    in
+    opt // { inherit declarations; };
 
   buildOptionsDocs = (
     { modules, ... }:
