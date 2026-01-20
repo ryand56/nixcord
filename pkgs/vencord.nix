@@ -7,8 +7,6 @@
   buildWebExtension ? false,
   unstable ? false,
   pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   writeShellApplication,
   cacert,
   coreutils,
@@ -47,23 +45,22 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '"@types/react": "18.3.1"' '"@types/react": "19.0.12"'
   '';
 
-  pnpmDeps = fetchPnpmDeps {
+  pnpmDeps = pnpm_10.fetchDeps {
     inherit (finalAttrs)
       pname
       src
       patches
       postPatch
       ;
-    pnpm = pnpm_10;
-    fetcherVersion = 2;
     hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
+    fetcherVersion = 2;
   };
 
   nativeBuildInputs = [
     gitMinimal
     nodejs_22
     pnpm_10
-    pnpmConfigHook
+    pnpm_10.configHook
   ];
 
   env = {
