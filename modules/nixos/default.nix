@@ -163,7 +163,6 @@ in
           lib
           pkgs
           cfg
-          config
           mkVencordCfg
           ;
         wrapScript = script: ''

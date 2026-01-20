@@ -24,6 +24,7 @@ let
         };
       };
       config = {
+        home.username = lib.mkDefault "testuser";
         home.homeDirectory = lib.mkDefault "/home/testuser";
         xdg.configHome = lib.mkDefault "/home/testuser/.config";
       };

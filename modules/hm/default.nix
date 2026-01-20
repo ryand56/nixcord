@@ -50,12 +50,11 @@ in
         mkFullConfig
         ;
 
-      activationScripts = import ./lib/activation.nix {
+      activationScripts = import ../lib/activation.nix {
         inherit
           lib
           pkgs
           cfg
-          config
           mkVencordCfg
           ;
         wrapScript = script: lib.hm.dag.entryAfter [ "writeBoundary" ] script;
@@ -84,6 +83,7 @@ in
     mkMerge ([
       {
         programs.nixcord = {
+          user = lib.mkDefault config.home.username;
           discord.configDir = lib.mkDefault (
             let
               basePath =

@@ -2,20 +2,18 @@
   lib,
   pkgs,
   cfg,
-  config,
   mkVencordCfg,
   wrapScript,
 }:
 let
-  userName = cfg.user;
-  userHome = if pkgs.stdenvNoCC.isDarwin then "/Users/${userName}" else "/home/${userName}";
+  userHome = if pkgs.stdenvNoCC.isDarwin then "/Users/${cfg.user}" else "/home/${cfg.user}";
   xdgHome = "${userHome}/.config";
 in
 {
   disableDiscordUpdates = wrapScript ''
     set -euo pipefail
-    ${lib.getExe' pkgs.coreutils "install"} -d -o ${lib.escapeShellArg userName} -g staff "${cfg.discord.configDir}"
-    ${lib.getExe' pkgs.coreutils "install"} -d -o ${lib.escapeShellArg userName} -g staff "${cfg.configDir}"
+    ${lib.getExe' pkgs.coreutils "install"} -d -o ${lib.escapeShellArg cfg.user} -g staff "${cfg.discord.configDir}"
+    ${lib.getExe' pkgs.coreutils "install"} -d -o ${lib.escapeShellArg cfg.user} -g staff "${cfg.configDir}"
     config_dir="${cfg.discord.configDir}"
     if [ -f "$config_dir/settings.json" ]; then
       jq '. + {"SKIP_HOST_UPDATE": true}' "$config_dir/settings.json" > "$config_dir/settings.json.tmp" && mv "$config_dir/settings.json.tmp" "$config_dir/settings.json"
