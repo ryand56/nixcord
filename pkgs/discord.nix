@@ -91,13 +91,13 @@ let
     linux = {
       stable = "0.0.121";
       ptb = "0.0.173";
-      canary = "0.0.852";
+      canary = "0.0.854";
       development = "0.0.94";
     };
     darwin = {
       stable = "0.0.373";
       ptb = "0.0.205";
-      canary = "0.0.956";
+      canary = "0.0.958";
       development = "0.0.107";
     };
   };
@@ -114,7 +114,7 @@ let
       };
       canary = fetchurl {
         url = "https://canary.dl2.discordapp.net/apps/linux/${versions.linux.canary}/discord-canary-${versions.linux.canary}.tar.gz";
-        hash = "sha256-jomLXlIr+ajJspmh/seNb48alPSuCw8ybYkfc0uAziE=";
+        hash = "sha256-HtcgQS8P5R57qV3pKYyVLcT9FCOtZ6UbFBQWFkvU8B0=";
       };
       development = fetchurl {
         url = "https://development.dl2.discordapp.net/apps/linux/${versions.linux.development}/discord-development-${versions.linux.development}.tar.gz";
@@ -132,7 +132,7 @@ let
       };
       canary = fetchurl {
         url = "https://canary.dl2.discordapp.net/apps/osx/${versions.darwin.canary}/DiscordCanary.dmg";
-        hash = "sha256-ZzqakVB2Rkcq5zME2WnSCw1CLzpD3VDM/pu4nQ7rRNs=";
+        hash = "sha256-q/PAGdlOTdkQudiH/NFXSgwhz2XBL9ZwrhJXiY9Iibc=";
       };
       development = fetchurl {
         url = "https://development.dl2.discordapp.net/apps/osx/${versions.darwin.development}/DiscordDevelopment.dmg";
