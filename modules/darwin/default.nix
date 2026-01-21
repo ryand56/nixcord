@@ -280,7 +280,7 @@ in
                 version_count=$(echo "$versions" | wc -l)
 
                 if [ "$version_count" -ge 2 ]; then
-                  prev_version=$(echo "$versions" | sed -n '$((version_count-1))p')
+                  prev_version=$(echo "$versions" | sed -n "$((version_count-1))p")
                   curr_version=$(echo "$versions" | tail -n 1)
 
                   prev_modules="$branch_dir/$prev_version/modules"
