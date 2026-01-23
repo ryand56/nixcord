@@ -192,7 +192,7 @@ let
         ++ lib.optionals cfg.discord.equicord.enable [
           (mkCopy equicordSettingsFile "${cfg.configDir}/settings/settings.json")
         ]
-        ++ lib.optionals (cfg.discord.settings) [
+        ++ lib.optionals (cfg.discord.settings != { }) [
           (mkCopy discordSettingsFile "${cfg.discord.configDir}/settings.json")
         ];
 
