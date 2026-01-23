@@ -13,6 +13,16 @@ in
     description = "Target username";
   };
 
+  homeDirectory = mkOption {
+    type = types.path;
+    description = "Home directory for the target user";
+  };
+
+  xdgConfigHome = mkOption {
+    type = types.path;
+    description = "XDG config home directory";
+  };
+
   enable = mkEnableOption "Enables Discord with Vencord";
   discord = {
     enable = mkOption {
