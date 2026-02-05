@@ -22,6 +22,8 @@ let
 
 in
 {
+  imports = [ ../plugins/migrations.nix ];
+
   options.programs.nixcord = import ../options.nix {
     inherit
       lib
@@ -48,6 +50,9 @@ in
       inherit (pluginKit)
         pluginNameMigrations
         collectDeprecatedPlugins
+        collectEnabledEquicordOnlyPlugins
+        collectEnabledVencordOnlyPlugins
+        filterPluginsFor
         mkFullConfig
         ;
 
@@ -63,17 +68,17 @@ in
         clientConfig = cfg.equicordConfig;
       };
 
-      vesktopFullConfig = mergeAttrsList [
+      vesktopFullConfig = filterPluginsFor "vencord" (mergeAttrsList [
         cfg.config
         cfg.extraConfig
         cfg.vesktopConfig
-      ];
+      ]);
 
-      equibopFullConfig = mergeAttrsList [
+      equibopFullConfig = filterPluginsFor "equicord" (mergeAttrsList [
         cfg.config
         cfg.extraConfig
         cfg.equibopConfig
-      ];
+      ]);
 
       quickCssFile = pkgs.writeText "nixcord-quickcss.css" cfg.quickCss;
 
@@ -362,12 +367,35 @@ in
           deprecatedPlugins = collectDeprecatedPlugins cfg.config;
         };
 
-        assertions = [
-          {
-            assertion = !(cfg.discord.vencord.enable && cfg.discord.equicord.enable);
-            message = "programs.nixcord.discord.vencord.enable and programs.nixcord.discord.equicord.enable cannot both be enabled at the same time. They are mutually exclusive.";
-          }
-        ];
+        assertions =
+          let
+            allPlugins = { plugins =
+              (cfg.config.plugins or {})
+              // (cfg.extraConfig.plugins or {})
+              // (cfg.vencordConfig.plugins or {})
+              // (cfg.equicordConfig.plugins or {})
+              // (cfg.vesktopConfig.plugins or {})
+              // (cfg.equibopConfig.plugins or {});
+            };
+            wrongEquicordPlugins = collectEnabledEquicordOnlyPlugins allPlugins;
+            wrongVencordPlugins = collectEnabledVencordOnlyPlugins allPlugins;
+            hasVencordClient = cfg.discord.vencord.enable || cfg.vesktop.enable;
+            hasEquicordClient = cfg.discord.equicord.enable || cfg.equibop.enable;
+          in
+          [
+            {
+              assertion = !(cfg.discord.vencord.enable && cfg.discord.equicord.enable);
+              message = "programs.nixcord.discord.vencord.enable and programs.nixcord.discord.equicord.enable cannot both be enabled at the same time. They are mutually exclusive.";
+            }
+            {
+              assertion = !(hasVencordClient && !hasEquicordClient) || wrongEquicordPlugins == [];
+              message = "The following Equicord-only plugins are enabled but only Vencord-based clients are active: ${lib.concatStringsSep ", " wrongEquicordPlugins}. These plugins are not available in Vencord.";
+            }
+            {
+              assertion = !(hasEquicordClient && !hasVencordClient) || wrongVencordPlugins == [];
+              message = "The following Vencord-only plugins are enabled but only Equicord-based clients are active: ${lib.concatStringsSep ", " wrongVencordPlugins}. These plugins are not available in Equicord.";
+            }
+          ];
       }
     ])
   );

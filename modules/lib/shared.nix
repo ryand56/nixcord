@@ -30,27 +30,8 @@ let
       sharedPlugins = import ../plugins/shared.nix { inherit lib; };
       vencordOnlyPlugins = import ../plugins/vencord.nix { inherit lib; };
       equicordOnlyPlugins = import ../plugins/equicord.nix { inherit lib; };
-      pluginNameMigrations = import ../plugins/deprecated.nix;
-
-      migratePluginNames =
-        configAttrs:
-        let
-          plugins = configAttrs.plugins or { };
-          basePlugins = builtins.removeAttrs plugins (builtins.attrNames pluginNameMigrations);
-          migratedPlugins = lib.foldl' (
-            acc: oldName:
-            if builtins.hasAttr oldName plugins then
-              let
-                newName = pluginNameMigrations.${oldName};
-                mergedValue = lib.recursiveUpdate (basePlugins.${newName} or { }) plugins.${oldName};
-              in
-              acc // { ${newName} = mergedValue; }
-            else
-              acc
-          ) { } (builtins.attrNames pluginNameMigrations);
-          cleanedPlugins = basePlugins // migratedPlugins;
-        in
-        configAttrs // { plugins = cleanedPlugins; };
+      deprecated = import ../plugins/deprecated.nix;
+      pluginNameMigrations = lib.mapAttrs (_: v: v.to) (deprecated.renames or { });
 
       isPluginEnabled = pluginConfig: pluginConfig.enable or false;
 
@@ -86,7 +67,10 @@ let
           plugins = configAttrs.plugins or { };
           sharedNames = builtins.attrNames sharedPlugins;
           vencordNames = builtins.attrNames vencordOnlyPlugins;
-          allowedVencordOnly = lib.filter (name: !(builtins.elem name sharedNames)) vencordNames;
+          equicordNames = builtins.attrNames equicordOnlyPlugins;
+          allowedVencordOnly = lib.filter (
+            name: !(builtins.elem name sharedNames) && !(builtins.elem name equicordNames)
+          ) vencordNames;
         in
         builtins.attrNames (
           lib.filterAttrs (
@@ -94,28 +78,26 @@ let
           ) plugins
         );
 
+      filterPluginsFor =
+        client: configAttrs:
+        let
+          allowedNames =
+            builtins.attrNames sharedPlugins
+            ++ (if client == "vencord" then builtins.attrNames vencordOnlyPlugins
+                else if client == "equicord" then builtins.attrNames equicordOnlyPlugins
+                else []);
+          mask = lib.genAttrs allowedNames (_: null);
+          plugins = configAttrs.plugins or { };
+        in
+        configAttrs // { plugins = builtins.intersectAttrs mask plugins; };
+
       filterPluginsForClient =
         configAttrs:
-        let
-          sharedPluginNames = builtins.attrNames sharedPlugins;
-          vencordOnlyPluginNames = builtins.attrNames vencordOnlyPlugins;
-          equicordOnlyPluginNames = builtins.attrNames equicordOnlyPlugins;
-
-          allowedPluginNames =
-            sharedPluginNames
-            ++ (
-              if cfg.discord.vencord.enable then
-                vencordOnlyPluginNames
-              else if cfg.discord.equicord.enable then
-                equicordOnlyPluginNames
-              else
-                [ ]
-            );
-
-          plugins = configAttrs.plugins or { };
-          filteredPlugins = lib.filterAttrs (name: value: builtins.elem name allowedPluginNames) plugins;
-        in
-        configAttrs // { plugins = filteredPlugins; };
+        filterPluginsFor
+          (if cfg.discord.vencord.enable then "vencord"
+           else if cfg.discord.equicord.enable then "equicord"
+           else "none")
+          configAttrs;
 
       mkFullConfig =
         {
@@ -124,15 +106,12 @@ let
           clientConfig ? { },
         }:
         let
-          migratedBaseConfig = migratePluginNames baseConfig;
-          migratedExtraConfig = migratePluginNames extraConfig;
-          migratedClientConfig = migratePluginNames clientConfig;
-          filteredBaseConfig = filterPluginsForClient migratedBaseConfig;
+          filteredBaseConfig = filterPluginsForClient baseConfig;
         in
         mergeAttrsList [
           filteredBaseConfig
-          migratedExtraConfig
-          migratedClientConfig
+          extraConfig
+          clientConfig
         ];
     in
     {
@@ -141,10 +120,10 @@ let
         vencordOnlyPlugins
         equicordOnlyPlugins
         pluginNameMigrations
-        migratePluginNames
         collectDeprecatedPlugins
         collectEnabledEquicordOnlyPlugins
         collectEnabledVencordOnlyPlugins
+        filterPluginsFor
         filterPluginsForClient
         mkFullConfig
         ;
