@@ -14,13 +14,13 @@
   nix-prefetch-github,
 }:
 let
-  stableVersion = "1.14.2";
-  stableHash = "sha256-1459x8G0++jH6NO5n4B5LVjDFjAFkLKFAQygVdqgOAk=";
+  stableVersion = "1.14.3";
+  stableHash = "sha256-Dqw2VPL1E4tu4m/oe2FVdWr9O1cqdsuMsoFFcosldCc=";
   stablePnpmDeps = "sha256-K9rjPsODn56kM2k5KZHxY99n8fKvWbRbxuxFpYVXYks=";
 
-  unstableVersion = "1.14.2-unstable-2026-02-20";
-  unstableRev = "dc25c8f0461972918b2d73a0d93a3d4b6772b99a";
-  unstableHash = "sha256-9nD8NrhW3RqMdm+8dYpn5ak6Mii3/l+rtNE1T7bOLjI=";
+  unstableVersion = "1.14.3-unstable-2026-02-26";
+  unstableRev = "12da7a08fbbfe118ffdb293488745cc991c1c8a6";
+  unstableHash = "sha256-Dqw2VPL1E4tu4m/oe2FVdWr9O1cqdsuMsoFFcosldCc=";
   unstablePnpmDeps = "sha256-K9rjPsODn56kM2k5KZHxY99n8fKvWbRbxuxFpYVXYks=";
 
   version = if unstable then unstableVersion else stableVersion;
@@ -97,9 +97,16 @@ in
       }
 
       build_and_extract_hash() {
-        local build_output
-        if build_output=$(nix-build -E "with import <nixpkgs> {}; (callPackage $NIX_FILE { unstable = $UPDATE_BOOL; }).pnpmDeps" --no-link --pure 2>&1); then
-          return 0
+        local build_output nixpkgs_path
+        nixpkgs_path=$(nix eval --impure --raw --expr "(builtins.getFlake (toString ./.)).inputs.nixpkgs.outPath" 2>/dev/null) || nixpkgs_path=""
+        if [[ -n "$nixpkgs_path" ]]; then
+          if build_output=$(nix-build -I "nixpkgs=$nixpkgs_path" -E "with import <nixpkgs> {}; (callPackage $NIX_FILE { unstable = $UPDATE_BOOL; }).pnpmDeps" --no-link 2>&1); then
+            return 0
+          fi
+        else
+          if build_output=$(nix-build -E "with import <nixpkgs> {}; (callPackage $NIX_FILE { unstable = $UPDATE_BOOL; }).pnpmDeps" --no-link --pure 2>&1); then
+            return 0
+          fi
         fi
         echo "$build_output" | grep -oE "got:\s+sha256-[A-Za-z0-9+/=]+" | perl -pe 's/got:\s*//' | head -1
       }

@@ -13,9 +13,9 @@
   perl,
 }:
 let
-  version = "v1.14.2.1";
-  hash = "sha256-H1EHxz8xTCRhMFk7ep8Q+SR3O/H3wrRDYQULN5wwBis=";
-  pnpmDepsHash = "sha256-UWsJmC0JCjGZTA9I4KjX94gE+jBPcbHbCXiy8Bs9Gcw=";
+  version = "v1.14.3.1";
+  hash = "sha256-JGzzT0HXkopUVocgtz3cSQBD69W+PPFZqWrfJth12uo=";
+  pnpmDepsHash = "sha256-jxJhDhfXWtQND4luaGmmIIIfnqFkXw2T3zdOSKcna68=";
   src = fetchFromGitHub {
     inherit (equicord.src) owner repo;
     tag = version;
@@ -90,8 +90,13 @@ let
 
       build_and_extract_hash() {
         set_pnpm_deps_hash ""
-        local build_output
-        build_output=$(nix-build -E "with import <nixpkgs> {}; (callPackage $NIX_FILE {}).pnpmDeps" --no-link --pure 2>&1)
+        local build_output nixpkgs_path
+        nixpkgs_path=$(nix eval --impure --raw --expr "(builtins.getFlake (toString ./.)).inputs.nixpkgs.outPath" 2>/dev/null) || nixpkgs_path=""
+        if [[ -n "$nixpkgs_path" ]]; then
+          build_output=$(nix-build -I "nixpkgs=$nixpkgs_path" -E "with import <nixpkgs> {}; (callPackage $NIX_FILE {}).pnpmDeps" --no-link 2>&1)
+        else
+          build_output=$(nix-build -E "with import <nixpkgs> {}; (callPackage $NIX_FILE {}).pnpmDeps" --no-link --pure 2>&1)
+        fi
         echo "$build_output" | grep -oE "got:\s+sha256-[A-Za-z0-9+/=]+" | perl -pe 's/got:\s*//' | tr -d '[:space:]' | head -1
       }
 

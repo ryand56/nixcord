@@ -144,16 +144,36 @@ let
         nix hash convert --to sri --hash-algo sha256 "$raw_hash"
       }
 
+      get_nixpkgs_path() {
+        nix eval --impure --raw --expr "(builtins.getFlake (toString ./.)).inputs.nixpkgs.outPath" 2>/dev/null || echo ""
+      }
+
       get_current_version() {
         local branch="$1"
         local platform="$2"
-        nix eval --json --impure --expr "let pkgs = import <nixpkgs> {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.versions.$platform.$branch" | jq -r .
+        local nixpkgs_path
+        nixpkgs_path=$(get_nixpkgs_path)
+        local nix_expr
+        if [[ -n "$nixpkgs_path" ]]; then
+          nix_expr="let pkgs = import $nixpkgs_path {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.versions.$platform.$branch"
+        else
+          nix_expr="let pkgs = import <nixpkgs> {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.versions.$platform.$branch"
+        fi
+        nix eval --json --impure --expr "$nix_expr" | jq -r .
       }
 
       get_current_hash() {
         local branch="$1"
         local platform="$2"
-        nix eval --json --impure --expr "let pkgs = import <nixpkgs> {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.hashes.x86_64-$platform.$branch" | jq -r .
+        local nixpkgs_path
+        nixpkgs_path=$(get_nixpkgs_path)
+        local nix_expr
+        if [[ -n "$nixpkgs_path" ]]; then
+          nix_expr="let pkgs = import $nixpkgs_path {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.hashes.x86_64-$platform.$branch"
+        else
+          nix_expr="let pkgs = import <nixpkgs> {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.hashes.x86_64-$platform.$branch"
+        fi
+        nix eval --json --impure --expr "$nix_expr" | jq -r .
       }
 
       update_discord_version() {
