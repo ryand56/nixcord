@@ -2,6 +2,7 @@
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs-nixcord.url = "github:NixOS/nixpkgs/nixos-25.11";
     flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
   };
 
@@ -18,7 +19,7 @@
       perSystem =
         { system, inputs', ... }:
         let
-          pkgs = import inputs.nixpkgs {
+          pkgs = import inputs.nixpkgs-nixcord {
             inherit system;
             config.allowUnfree = true;
           };
