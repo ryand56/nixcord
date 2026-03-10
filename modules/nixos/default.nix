@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  nixcordPkgs ? {},
   ...
 }:
 let
@@ -29,6 +30,7 @@ in
       pkgs
       dop
       applyPostPatch
+      nixcordPkgs
       ;
   };
 

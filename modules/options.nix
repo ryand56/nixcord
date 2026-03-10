@@ -3,6 +3,7 @@
   pkgs,
   dop,
   applyPostPatch ? null,
+  nixcordPkgs ? {},
 }:
 let
   inherit (lib) mkEnableOption mkOption types;
@@ -71,7 +72,7 @@ in
       };
       package = mkOption {
         type = types.package;
-        default = pkgs.callPackage ../pkgs/vencord.nix { unstable = false; };
+        default = nixcordPkgs.vencord or (pkgs.callPackage ../pkgs/vencord.nix { unstable = false; });
         defaultText = lib.literalExpression "pkgs.callPackage ../pkgs/vencord.nix { unstable = false; }";
         description = ''
           The Vencord package to use
@@ -91,7 +92,7 @@ in
       };
       package = mkOption {
         type = types.package;
-        default = pkgs.callPackage ../pkgs/equicord.nix { };
+        default = nixcordPkgs.equicord or (pkgs.callPackage ../pkgs/equicord.nix { });
         description = ''
           The Equicord package to use
         '';

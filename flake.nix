@@ -81,14 +81,29 @@
         };
 
       flake = {
-        darwinModules.default = import ./modules/darwin;
-        darwinModules.nixcord = inputs.self.darwinModules.default;
-
-        homeModules.default = import ./modules/hm;
+        homeModules.default =
+          { pkgs, ... }:
+          {
+            imports = [ ./modules/hm ];
+            _module.args.nixcordPkgs = inputs.self.packages.${pkgs.stdenv.hostPlatform.system};
+          };
         homeModules.nixcord = inputs.self.homeModules.default;
 
-        nixosModules.default = import ./modules/nixos;
+        nixosModules.default =
+          { pkgs, ... }:
+          {
+            imports = [ ./modules/nixos ];
+            _module.args.nixcordPkgs = inputs.self.packages.${pkgs.stdenv.hostPlatform.system};
+          };
         nixosModules.nixcord = inputs.self.nixosModules.default;
+
+        darwinModules.default =
+          { pkgs, ... }:
+          {
+            imports = [ ./modules/darwin ];
+            _module.args.nixcordPkgs = inputs.self.packages.${pkgs.stdenv.hostPlatform.system};
+          };
+        darwinModules.nixcord = inputs.self.darwinModules.default;
       };
     };
 }
