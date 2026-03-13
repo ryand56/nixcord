@@ -6,9 +6,6 @@ let
   inherit (lib) types mkEnableOption mkOption;
 in
 {
-  AmITyping = {
-    enable = mkEnableOption "Shows you if other people can see you typing. (Equicord-only)";
-  };
   AutoDNDWhilePlaying = {
     enable = mkEnableOption "Automatically updates your online status (online, idle, dnd) when launching games (Equicord-only)";
     excludeInvisible = mkOption {
@@ -42,90 +39,14 @@ in
   };
   FullVCPFP = {
     enable = mkEnableOption "Makes avatars take up the entire vc tile (Equicord-only)";
-  };
-  GensokyoRadioRPC = {
-    enable = mkEnableOption "Discord rich presence for Gensokyo Radio! (Equicord-only)";
-    refreshInterval = mkOption {
-      default = 15.0;
-      description = "The interval between activity refreshes (seconds) (restart required)";
-      type = types.float;
+    useServerProfileAvatars = mkOption {
+      default = false;
+      description = "Use server profile avatars in guild voice channels when available.";
+      type = types.bool;
     };
   };
   IRememberYou = {
     enable = mkEnableOption "Locally saves everyone you've been communicating with (including servers), in case of lose (Equicord-only)";
-  };
-  ListenBrainzRPC = {
-    enable = mkEnableOption "Little plugin for ListenBrainz rich presence (Equicord-only)";
-    hideWithActivity = mkOption {
-      default = false;
-      description = "hide ListenBrainz presence if you have any other presence";
-      type = types.bool;
-    };
-    hideWithSpotify = mkOption {
-      default = true;
-      description = "hide ListenBrainz presence if Spotify is running";
-      type = types.bool;
-    };
-    mbContact = mkOption {
-      default = null;
-      description = "ListenBrainz contact";
-      type = types.nullOr types.str;
-    };
-    missingArt = mkOption {
-      default = "listenbrainzLogo";
-      description = "When album or album art is missing";
-      type = types.enum [
-        "listenbrainzLogo"
-        "placeholder"
-      ];
-    };
-    nameFormat = mkOption {
-      default = "status-name";
-      description = "Show name of song and artist in status name";
-      type = types.enum [
-        "status-name"
-        "artist-first"
-        "song-first"
-        "artist"
-        "song"
-        "album"
-      ];
-    };
-    shareSong = mkOption {
-      default = true;
-      description = "show link to song on ListenBrainz (may only be visible to other users)";
-      type = types.bool;
-    };
-    shareUsername = mkOption {
-      default = false;
-      description = "show link to ListenBrainz profile (may only be visible to other users)";
-      type = types.bool;
-    };
-    statusName = mkOption {
-      default = "some music";
-      description = "custom status text";
-      type = types.str;
-    };
-    useListeningStatus = mkOption {
-      default = true;
-      description = ''show "Listening to" status instead of "Playing"'';
-      type = types.bool;
-    };
-    useLogo = mkOption {
-      default = true;
-      description = "Show ListenBrainz logo on album art";
-      type = types.bool;
-    };
-    useTimeBar = mkOption {
-      default = true;
-      description = "use track duration to display a time bar (must be using Listening status)";
-      type = types.bool;
-    };
-    username = mkOption {
-      default = null;
-      description = "ListenBrainz username";
-      type = types.nullOr types.str;
-    };
   };
   LoginWithQR = {
     enable = mkEnableOption "Allows you to login to another device by scanning a login QR code, just like on mobile! (Equicord-only)";
@@ -134,7 +55,7 @@ in
     enable = mkEnableOption "Disables Discord's RPC server. (Equicord-only)";
   };
   OnePingPerDM = {
-    enable = mkEnableOption "If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping. Read the messages to reset the limit (Equicord-only)";
+    enable = mkEnableOption "If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping. (Equicord-only)";
     allowEveryone = mkOption {
       default = false;
       description = "Receive audio pings for @everyone and @here in group DMs";
@@ -277,16 +198,75 @@ in
     };
   };
   SaveFavoriteGIFs = {
-    enable = mkEnableOption "Save favorite GIF urls to a file (Equicord-only)";
+    enable = mkEnableOption "Export favorited GIF urls (Equicord-only)";
+    showToolboxButton = mkOption {
+      default = true;
+      description = "Show 'Save Favorite GIFs' button in Equicord Toolbox (Requires Reload) (restart required)";
+      type = types.bool;
+    };
   };
   TiktokTTS = {
-    enable = mkEnableOption "Reads out chat messages with the good ol' Tiktok TTS voice :sob: (Equicord-only)";
+    enable = mkEnableOption "Adds a context menu option to read out chat messages with the good ol' Tiktok TTS voice :sob: (Equicord-only)";
+    volume = mkOption {
+      default = 50.0;
+      description = "Playback volume";
+      type = types.float;
+    };
   };
-  TosuRPC = {
-    enable = mkEnableOption "osu! RPC with data from tosu (Equicord-only)";
+  TriviaAI = {
+    enable = mkEnableOption "A plugin that helps you answer trivia questions using AI. (Equicord-only)";
+    apiKey = mkOption {
+      default = "";
+      description = "API Key.";
+      example = "Enter API Key here for your AI endpoint.";
+      type = types.str;
+    };
+    autoRespond = mkOption {
+      default = false;
+      description = "Automatically respond to messages on receiving a response.";
+      type = types.bool;
+    };
+    endpoint = mkOption {
+      default = "https://openrouter.ai/api/v1/chat/completions";
+      description = "OpenAI Compatible AI Endpoint.";
+      example = "Enter your OpenAI compatible AI endpoint here.";
+      type = types.str;
+    };
+    maxTokens = mkOption {
+      default = 500;
+      description = "Maximum number of tokens in the response.";
+      type = types.int;
+    };
+    model = mkOption {
+      default = "google/gemini-3-flash-preview";
+      description = "AI Model to use.";
+      example = "e.g. google/gemini-3-flash-preview, inception/mercury, openai/gpt-5.2-chat, etc.";
+      type = types.str;
+    };
+    supportImages = mkOption {
+      default = true;
+      description = "Pass images to the AI for context (if any). This is not supported by all models.";
+      type = types.bool;
+    };
+    systemPrompt = mkOption {
+      default = "You are a helpful assistant who answers questions for the user in a concise and short way while using the least amount of words and punctuation.";
+      description = "System Prompt for the AI.";
+      example = "Enter system prompt.";
+      type = types.str;
+    };
   };
   UserPFP = {
     enable = mkEnableOption "Allows you to use an animated avatar without Nitro (Equicord-only)";
+    databaseSource = mkOption {
+      default = "https://userpfp.github.io/UserPFP/source/data.json";
+      description = "URL to load database from";
+      type = types.str;
+    };
+    overrideServerAvatars = mkOption {
+      default = true;
+      description = "Override server avatars with custom avatars or the default user avatar if no custom avatar is set.";
+      type = types.bool;
+    };
     preferNitro = mkOption {
       default = true;
       description = "Which avatar to use if both default animated (Nitro) pfp and UserPFP avatars are present";
@@ -351,45 +331,6 @@ in
       type = types.bool;
     };
   };
-  VCSupport = {
-    enable = mkEnableOption "Wumpus Dance + Support Warnings (Equicord-only)";
-  };
-  allCallTimers = {
-    enable = mkEnableOption "Add call timer to all users in a server voice channel. (Equicord-only)";
-    format = mkOption {
-      default = "stopwatch";
-      description = "Compact or human readable format:";
-      type = types.enum [
-        "stopwatch"
-        "human"
-      ];
-    };
-    showRoleColor = mkOption {
-      default = true;
-      description = "Show the user's role color (if this plugin in enabled)";
-      type = types.bool;
-    };
-    showSeconds = mkOption {
-      default = true;
-      description = "Show seconds in the timer";
-      type = types.bool;
-    };
-    showWithoutHover = mkOption {
-      default = true;
-      description = "Always show the timer without needing to hover (restart required)";
-      type = types.bool;
-    };
-    trackSelf = mkOption {
-      default = true;
-      description = "Also track yourself";
-      type = types.bool;
-    };
-    watchLargeGuilds = mkOption {
-      default = false;
-      description = "Track users in large guilds. This may cause lag if you're in a lot of large guilds with active voice users. Tested with up to 2000 active voice users with no issues. (restart required)";
-      type = types.bool;
-    };
-  };
   altKrispSwitch = {
     enable = mkEnableOption "Makes the Noise Suppression Popout switch between None and Krisp instead of Krisp and Standard (Equicord-only)";
   };
@@ -424,34 +365,6 @@ in
     noDeleteSafety = mkOption {
       default = true;
       description = "Removes the enter server name requirement when deleting a server (restart required)";
-      type = types.bool;
-    };
-  };
-  anammox = {
-    enable = mkEnableOption "A microbial process that plays an important part in the nitrogen cycle (Equicord-only)";
-    billing = mkOption {
-      default = true;
-      description = "Remove billing settings (restart required)";
-      type = types.bool;
-    };
-    dms = mkOption {
-      default = true;
-      description = "Remove shops above DMs list (restart required)";
-      type = types.bool;
-    };
-    emojiList = mkOption {
-      default = true;
-      description = "Remove unavailable categories from the emoji picker (restart required)";
-      type = types.bool;
-    };
-    gift = mkOption {
-      default = true;
-      description = "Remove gift button (restart required)";
-      type = types.bool;
-    };
-    serverBoost = mkOption {
-      default = true;
-      description = "Remove server boost info above channel list (restart required)";
       type = types.bool;
     };
   };
@@ -528,39 +441,8 @@ in
       type = types.bool;
     };
   };
-  arRPCBun = {
-    enable = mkEnableOption "arRPCBun integration (Equicord-only)";
-    oldVerNotice = mkOption {
-      default = false;
-      description = "old version notice for why arrpc bun doesnt work";
-      type = types.bool;
-    };
-    oneTimeNotice = mkOption {
-      default = false;
-      description = "One time notice for showing arrpc disabled";
-      type = types.bool;
-    };
-  };
   atSomeone = {
     enable = mkEnableOption "Mention someone randomly (Equicord-only)";
-  };
-  audioBookShelfRichPresence = {
-    enable = mkEnableOption "Rich presence for AudioBookShelf media server (Equicord-only)";
-    password = mkOption {
-      default = null;
-      description = "AudioBookShelf password";
-      type = types.nullOr types.str;
-    };
-    serverUrl = mkOption {
-      default = null;
-      description = "AudioBookShelf server URL (e.g., https://abs.example.com)";
-      type = types.nullOr types.str;
-    };
-    username = mkOption {
-      default = null;
-      description = "AudioBookShelf username";
-      type = types.nullOr types.str;
-    };
   };
   autoZipper = {
     enable = mkEnableOption "Automatically zips specified file types and folders before uploading to Discord (Equicord-only)";
@@ -687,7 +569,7 @@ in
     enable = mkEnableOption "Enhances the command system with miscellaneous improvements. (Equicord-only)";
     allowNewlinesInCommands = mkOption {
       default = true;
-      description = "Allow newlines in command inputs (Shift + Enter)";
+      description = "Allow newlines in command inputs (CTRL + Shift + Enter)";
       type = types.bool;
     };
     autoFillArguments = mkOption {
@@ -751,39 +633,19 @@ in
       type = types.bool;
     };
   };
+  betterGifPicker = {
+    enable = mkEnableOption "Makes the gif picker open the favourite category by default (Equicord-only)";
+    keepOpen = mkOption {
+      default = false;
+      description = "Keeps the gif picker open after selecting a gif";
+      type = types.bool;
+    };
+  };
   betterInvites = {
-    enable = mkEnableOption "See invites expiration date, view inviter profile and preview discoverable servers before joining by clicking their name (Equicord-only)";
+    enable = mkEnableOption "See invites expiration date, view inviter profile and preview servers before joining by clicking the name (Equicord-only)";
   };
   betterPlusReacts = {
     enable = mkEnableOption "The amount of plus before :emoji: is the message to add it to (Equicord-only)";
-  };
-  betterQuickReact = {
-    enable = mkEnableOption "Improves the quick react buttons in the message context menu. (Equicord-only)";
-    columns = mkOption {
-      default = 4.0;
-      description = "Columns of quick reactions to display";
-      type = types.float;
-    };
-    compactMode = mkOption {
-      default = false;
-      description = "Scales the buttons to 75% of their original scale, whilst increasing the inner emoji to 125% scale. Emojis will be 93.75% of the original size. Recommended to have a minimum of 5 columns";
-      type = types.bool;
-    };
-    frequentEmojis = mkOption {
-      default = true;
-      description = "Use frequently used emojis instead of favourite emojis (restart required)";
-      type = types.bool;
-    };
-    rows = mkOption {
-      default = 2.0;
-      description = "Rows of quick reactions to display";
-      type = types.float;
-    };
-    scroll = mkOption {
-      default = true;
-      description = "Enable scrolling the list of emojis";
-      type = types.bool;
-    };
   };
   blockKeywords = {
     enable = mkEnableOption "Blocks messages containing specific user-defined keywords, as if the user sending them was blocked. (Equicord-only)";
@@ -838,6 +700,11 @@ in
       description = "Whether the notification sound should be played";
       type = types.bool;
     };
+    respectSilentPings = mkOption {
+      default = true;
+      description = "Respect silent pings (@silent / suppress notifications)";
+      type = types.bool;
+    };
     statusToUse = mkOption {
       default = "dnd";
       description = "Status to use for whitelist";
@@ -853,6 +720,47 @@ in
       description = "Users to let bypass (notified for all messages sent in DMs)";
       example = "Separate with commas";
       type = types.str;
+    };
+  };
+  callTimer = {
+    enable = mkEnableOption "Add call timers for all users in voice channels and in the connection status. (Equicord-only)";
+    allCallTimers = mkOption {
+      default = false;
+      description = "Add call timer to all users in a server voice channel (restart required)";
+      type = types.bool;
+    };
+    format = mkOption {
+      default = "stopwatch";
+      description = "Compact or human readable format:";
+      type = types.enum [
+        "stopwatch"
+        "human"
+      ];
+    };
+    showRoleColor = mkOption {
+      default = false;
+      description = "Show the user's role color (if this plugin in enabled)";
+      type = types.bool;
+    };
+    showSeconds = mkOption {
+      default = false;
+      description = "Show seconds in the timer";
+      type = types.bool;
+    };
+    showWithoutHover = mkOption {
+      default = false;
+      description = "Always show the timer without needing to hover (restart required)";
+      type = types.bool;
+    };
+    trackSelf = mkOption {
+      default = false;
+      description = "Also track yourself";
+      type = types.bool;
+    };
+    watchLargeGuilds = mkOption {
+      default = false;
+      description = "Track users in large guilds. This may cause lag if you're in a lot of large guilds with active voice users. Tested with up to 2000 active voice users with no issues. (restart required)";
+      type = types.bool;
     };
   };
   channelBadges = {
@@ -1102,8 +1010,11 @@ in
   cleanChannelName = {
     enable = mkEnableOption "remove all emoji and decor shit from channel names (Equicord-only)";
   };
-  cleanUserArea = {
-    enable = mkEnableOption "Removes the nameplate styling from the user area. (Equicord-only)";
+  cleanerChannelGroups = {
+    enable = mkEnableOption "Hides all channels in collapsed categories, even if they have unread messages. (Equicord-only)";
+  };
+  clickableRoles = {
+    enable = mkEnableOption "Click on roles in user profiles and the member list to see which members have them. (Equicord-only)";
   };
   clientSideBlock = {
     enable = mkEnableOption "Allows you to locally hide almost all content from any user (Equicord-only)";
@@ -1140,6 +1051,11 @@ in
       description = "Should role headers be hidden if all of their members are blocked (restart required)";
       type = types.bool;
     };
+    hideVc = mkOption {
+      default = false;
+      description = "Hide voice channels containing blocked users. (restart required)";
+      type = types.bool;
+    };
     usersToBlock = mkOption {
       default = "";
       description = "User IDs seperated by a comma and a space (restart required)";
@@ -1147,7 +1063,27 @@ in
     };
   };
   clipsEnhancements = {
-    enable = mkEnableOption "Add more Clip FPS and duration options, plus RPC tagging! (Equicord-only)";
+    enable = mkEnableOption "Add more Clip FPS and duration options, custom clip length, RPC tagging and more (Equicord-only)";
+    enableAdvancedSignals = mkOption {
+      default = true;
+      description = "Enable advanced clip signals (auto-clip triggers) (restart required)";
+      type = types.bool;
+    };
+    enableScreenshotKeybind = mkOption {
+      default = true;
+      description = "Enable the screenshot keybind feature (restart required)";
+      type = types.bool;
+    };
+    enableVoiceOnlyClips = mkOption {
+      default = true;
+      description = "Enable voice-only clips (audio without video) (restart required)";
+      type = types.bool;
+    };
+    ignorePlatformRestriction = mkOption {
+      default = true;
+      description = "Allow Platform Restricted Clipping (may cause save errors) (restart required)";
+      type = types.bool;
+    };
     richPresenceTagging = mkOption {
       default = "whenMatched";
       description = "When should clips be tagged with the current Rich Presence?";
@@ -1183,6 +1119,9 @@ in
         "polished"
       ];
     };
+  };
+  components = {
+    enable = mkEnableOption "Adds a new tab to settings to browse Discord components. (Equicord-only)";
   };
   contentWarning = {
     enable = mkEnableOption "Allows you to specify certain trigger words that will be blurred by default. Hovering/Clicking on the blurred content will reveal it. (Equicord-only)";
@@ -1228,6 +1167,69 @@ in
       type = types.bool;
     };
   };
+  declutter = {
+    enable = mkEnableOption "Cleans up Discord by removing non-essential UI elements like profile effects, shop tabs, boosts, and more. (Equicord-only)";
+    alwaysShowUsername = mkOption {
+      default = true;
+      description = "Always show username instead of status. (restart required)";
+      type = types.bool;
+    };
+    removeAudioMenus = mkOption {
+      default = true;
+      description = "Remove menus next to mute and deafen buttons. (restart required)";
+      type = types.bool;
+    };
+    removeBillingSettings = mkOption {
+      default = true;
+      description = "Remove billing settings. (restart required)";
+      type = types.bool;
+    };
+    removeButtonTooltips = mkOption {
+      default = false;
+      description = "Remove button tooltips. (restart required)";
+      type = types.bool;
+    };
+    removeClanTag = mkOption {
+      default = true;
+      description = "Remove clan tags. (restart required)";
+      type = types.bool;
+    };
+    removeGiftButton = mkOption {
+      default = true;
+      description = "Remove gift button. (restart required)";
+      type = types.bool;
+    };
+    removeNameplate = mkOption {
+      default = true;
+      description = "Remove nameplates. (restart required)";
+      type = types.bool;
+    };
+    removeProfileEffect = mkOption {
+      default = true;
+      description = "Remove profile animation effects on open. (restart required)";
+      type = types.bool;
+    };
+    removeQuestsAboveDM = mkOption {
+      default = false;
+      description = "Remove quests above DMs list. (restart required)";
+      type = types.bool;
+    };
+    removeServerBoostInfo = mkOption {
+      default = true;
+      description = "Remove server boost info above channel list. (restart required)";
+      type = types.bool;
+    };
+    removeShopAboveDM = mkOption {
+      default = false;
+      description = "Remove shops above DMs list. (restart required)";
+      type = types.bool;
+    };
+    removeUnavailableEmojiPicker = mkOption {
+      default = true;
+      description = "Remove unavailable categories from the emoji picker. (restart required)";
+      type = types.bool;
+    };
+  };
   decodeBase64 = {
     enable = mkEnableOption "Decode base64 content of any message and copy the decoded content. (Equicord-only)";
     clickMethod = mkOption {
@@ -1263,34 +1265,178 @@ in
   discordDevBanner = {
     enable = mkEnableOption "Enables the Discord developer banner, in which displays the build-ID (Equicord-only)";
   };
-  dontFilterMe = {
-    enable = mkEnableOption "Warns you if your message contains a term in the automod preset list (Equicord-only)";
+  dragFavoriteEmotes = {
+    enable = mkEnableOption "Adds the ability to change the order of your favourite emotes (Equicord-only)";
+  };
+  dragify = {
+    enable = mkEnableOption "Drop users, channels, or servers into chat to insert mentions or invites. (Equicord-only)";
+    allowChatBodyDrop = mkOption {
+      default = false;
+      description = "Allow dropping into the main chat body to insert text. (restart required)";
+      type = types.bool;
+    };
+    channelOutput = mkOption {
+      default = "mention";
+      description = "Channel drop output.";
+      type = types.enum [
+        "mention"
+        "link"
+      ];
+    };
+    inviteExpireAfter = mkOption {
+      default = 0;
+      description = ''
+        Invite expiration.
+
+        Values: 1800 = 30 minutes, 3600 = 1 hour, 21600 = 6 hours, 43200 = 12 hours, 86400 = 1 day, 604800 = 7 days, 0 = Never'';
+      type = types.enum [
+        1800
+        3600
+        21600
+        43200
+        86400
+        604800
+        0
+      ];
+    };
+    inviteMaxUses = mkOption {
+      default = 0;
+      description = ''
+        Invite max uses.
+
+        Values: 0 = No limit, 1 = 1 use, 5 = 5 uses, 10 = 10 uses, 25 = 25 uses, 50 = 50 uses, 100 = 100 uses'';
+      type = types.enum [
+        0
+        1
+        5
+        10
+        25
+        50
+        100
+      ];
+    };
+    inviteTemporaryMembership = mkOption {
+      default = false;
+      description = "Grant temporary membership.";
+      type = types.bool;
+    };
+    reuseExistingInvites = mkOption {
+      default = false;
+      description = "Reuse existing invite instead of creating a new one.";
+      type = types.bool;
+    };
+    userOutput = mkOption {
+      default = "mention";
+      description = "User drop output.";
+      type = types.enum [
+        "mention"
+        "id"
+      ];
+    };
+  };
+  elementHighlighter = {
+    enable = mkEnableOption "Highlight and inspect elements easily. (Equicord-only)";
+    keybind = mkOption {
+      default = [ ];
+      description = "Toggle Highlighter";
+      type = types.listOf types.str;
+    };
+    showBorderRadius = mkOption {
+      default = false;
+      description = "Display the element's border-radius values";
+      type = types.bool;
+    };
+    showClasses = mkOption {
+      default = false;
+      description = "Display the element's CSS class names in the tooltip";
+      type = types.bool;
+    };
+    showDisplay = mkOption {
+      default = false;
+      description = "Display the element's display type along with flex or grid properties";
+      type = types.bool;
+    };
+    showFont = mkOption {
+      default = false;
+      description = "Display the computed font family and font size";
+      type = types.bool;
+    };
+    showId = mkOption {
+      default = false;
+      description = "Display the element's ID attribute in the tooltip";
+      type = types.bool;
+    };
+    showMargin = mkOption {
+      default = false;
+      description = "Display the element's margin values";
+      type = types.bool;
+    };
+    showPadding = mkOption {
+      default = false;
+      description = "Display the element's padding values";
+      type = types.bool;
+    };
+    showPosition = mkOption {
+      default = false;
+      description = "Display the element's CSS position type and z-index";
+      type = types.bool;
+    };
   };
   equicordHelper = {
     enable = mkEnableOption "Used to provide support, fix discord caused crashes, and other misc features. (Equicord-only)";
-    disableCreateDMButton = mkOption {
+    accountStandingButton = mkOption {
       default = false;
-      description = "Disables the create dm button (restart required)";
+      description = "Show an account standing button in the header bar (restart required)";
       type = types.bool;
     };
-    disableDMContextMenu = mkOption {
+    forceRoleIcon = mkOption {
       default = false;
-      description = "Disables the DM list context menu in favor of the x button (restart required)";
+      description = "Forces role icons to display next to messages in compact mode (restart required)";
+      type = types.bool;
+    };
+    noBulletPoints = mkOption {
+      default = false;
+      description = "Stops you from typing markdown bullet points (stinky) (restart required)";
       type = types.bool;
     };
     noMirroredCamera = mkOption {
       default = false;
-      description = "Prevents the camera from being mirrored on your screen";
+      description = "Prevents the camera from being mirrored on your screen (restart required)";
+      type = types.bool;
+    };
+    noModalAnimation = mkOption {
+      default = false;
+      description = "Remove the 300ms long animation when opening or closing modals (restart required)";
+      type = types.bool;
+    };
+    refreshSlashCommands = mkOption {
+      default = false;
+      description = "Refreshes Slash Commands to show newly added commands without restarting your client.";
       type = types.bool;
     };
     removeActivitySection = mkOption {
       default = false;
-      description = "Removes the activity section above member list";
+      description = "Removes the activity section above member list (restart required)";
+      type = types.bool;
+    };
+    restoreFileDownloadButton = mkOption {
+      default = false;
+      description = "Adds back the Download button at the top right corner of files (restart required)";
+      type = types.bool;
+    };
+    showYourOwnActivityButtons = mkOption {
+      default = false;
+      description = "Discord hides your own activity buttons for some reason (restart required)";
       type = types.bool;
     };
   };
   equicordToolbox = {
     enable = mkEnableOption "Adds a button next to the inbox button in the channel header that houses Equicord quick actions (Equicord-only)";
+    showPluginMenu = mkOption {
+      default = true;
+      description = "Show the plugins menu in the toolbox";
+      type = types.bool;
+    };
   };
   equissant = {
     enable = mkEnableOption "Crossant every specified amount of clicks :trolley: (Equicord-only)";
@@ -1298,6 +1444,17 @@ in
       default = 10;
       description = "amount of clicks to trigger crossant";
       type = types.int;
+    };
+  };
+  exitSounds = {
+    enable = mkEnableOption "Play soundboard sounds when you disconnect from voice. (Equicord-only)";
+  };
+  experiments = {
+    enable = mkEnableOption "Enable Access to Experiments & other dev-only features in Discord! (Equicord-only)";
+    toolbarDevMenu = mkOption {
+      default = false;
+      description = "Change the Help (?) toolbar button (top right in chat) to Discord's developer menu (restart required)";
+      type = types.bool;
     };
   };
   exportMessages = {
@@ -1334,6 +1491,133 @@ in
       default = true;
       description = "Require shift to be held.";
       type = types.bool;
+    };
+  };
+  favoriteEmojiFirst = {
+    enable = mkEnableOption "Puts your favorite emoji first in the emoji autocomplete and also has emoji alias. (Equicord-only)";
+  };
+  favouriteAnything = {
+    enable = mkEnableOption "Favourite any image, video, or file attachment (Equicord-only)";
+  };
+  fileUpload = {
+    enable = mkEnableOption "Upload images and videos to file hosting services like Zipline and Nest (Equicord-only)";
+    apngToGif = mkOption {
+      default = false;
+      description = "Convert APNG uploads to GIF";
+      type = types.bool;
+    };
+    autoCopy = mkOption {
+      default = true;
+      description = "Auto copy upload URL";
+      type = types.bool;
+    };
+    catboxUserhash = mkOption {
+      default = "";
+      description = "Catbox userhash for account binding";
+      type = types.str;
+    };
+    ezHostKey = mkOption {
+      default = "";
+      description = "E-Z Host API key";
+      type = types.str;
+    };
+    folderId = mkOption {
+      default = "";
+      description = "Optional Zipline folder ID";
+      type = types.str;
+    };
+    litterboxExpiry = mkOption {
+      default = "24h";
+      description = "Litterbox retention window";
+      type = types.enum [
+        "1h"
+        "12h"
+        "24h"
+        "72h"
+      ];
+    };
+    nestToken = mkOption {
+      default = "";
+      description = "Nest API token";
+      type = types.str;
+    };
+    s3AccessKeyId = mkOption {
+      default = "";
+      description = "S3 access key ID";
+      type = types.str;
+    };
+    s3Bucket = mkOption {
+      default = "";
+      description = "S3 bucket name";
+      type = types.str;
+    };
+    s3Endpoint = mkOption {
+      default = "";
+      description = "S3-compatible endpoint URL";
+      type = types.str;
+    };
+    s3ForcePathStyle = mkOption {
+      default = true;
+      description = "Use path-style S3 URLs";
+      type = types.bool;
+    };
+    s3Prefix = mkOption {
+      default = "";
+      description = "Optional S3 object key prefix";
+      type = types.str;
+    };
+    s3PublicUrl = mkOption {
+      default = "";
+      description = "Optional public base URL";
+      type = types.str;
+    };
+    s3Region = mkOption {
+      default = "auto";
+      description = "S3 region (use auto for R2)";
+      type = types.str;
+    };
+    s3SecretAccessKey = mkOption {
+      default = "";
+      description = "S3 secret access key";
+      type = types.str;
+    };
+    s3SessionToken = mkOption {
+      default = "";
+      description = "Optional S3 session token";
+      type = types.str;
+    };
+    serviceType = mkOption {
+      default = "zipline";
+      description = "Selected uploader service";
+      type = types.enum [
+        "zipline"
+        "ezhost"
+        "nest"
+        "s3"
+        "catbox"
+        "litterbox"
+        "sharex"
+      ];
+    };
+    serviceUrl = mkOption {
+      default = "";
+      description = "Zipline service URL";
+      type = types.str;
+    };
+    sharexConfig = mkOption {
+      default = "";
+      description = "ShareX custom uploader JSON";
+      type = types.str;
+    };
+    stripQueryParams = mkOption {
+      default = false;
+      description = "Strip query params from uploaded URLs";
+      type = types.bool;
+    };
+    ziplineToken = mkOption {
+      default = "";
+      description = "Zipline auth token";
+      type = types.str;
     };
   };
   findReply = {
@@ -1397,9 +1681,6 @@ in
   frequentQuickSwitcher = {
     enable = mkEnableOption "Rewrites and filters the quick switcher results to be your most frequent channels (Equicord-only)";
   };
-  friendCloud = {
-    enable = mkEnableOption "Adds a /friendcloud command to visualize the users you most interact with (Equicord-only)";
-  };
   friendCodes = {
     enable = mkEnableOption "Generate FriendCodes to easily add friends (Equicord-only)";
   };
@@ -1416,10 +1697,29 @@ in
       description = "Comma-separated list of channel IDs to exempt from ghosting (right-click a DM channel to copy its ID)";
       type = types.str;
     };
-    scary = mkOption {
-      default = false;
-      description = "Something might happen if you ignore someone for too long...";
+    ignoreBots = mkOption {
+      default = true;
+      description = "Ignore DMs from bots";
       type = types.bool;
+    };
+    ignoreGroupDms = mkOption {
+      default = false;
+      description = "Exclude all group dms from ghosting";
+      type = types.bool;
+    };
+    maxInactiveTimeMs = mkOption {
+      default = 0;
+      description = ''
+        Only ghost DMs active within this timeframe
+
+        Values: 0 = No limit, 3600000 = 1 hour, 86400000 = 1 day, 604800000 = 1 week, 2592000000 = 1 month'';
+      type = types.enum [
+        0
+        3600000
+        86400000
+        604800000
+        2592000000
+      ];
     };
     showDmIcons = mkOption {
       default = true;
@@ -1480,14 +1780,6 @@ in
       type = types.bool;
     };
   };
-  gifRoulette = {
-    enable = mkEnableOption "Adds a command to send a random gif from your favourites, and a one in ten chance to ping the owner of the server (Equicord-only)";
-    pingOwnerChance = mkOption {
-      default = true;
-      description = "If there should be a 1 in 10 change to ping the owner of the guild (oh no)";
-      type = types.bool;
-    };
-  };
   gitHubRepos = {
     enable = mkEnableOption "Displays a user's public GitHub repositories in their profile (Equicord-only)";
     showInMiniProfile = mkOption {
@@ -1500,6 +1792,11 @@ in
       description = "Show repository language";
       type = types.bool;
     };
+    showRepositoryTab = mkOption {
+      default = true;
+      description = "Show repositories tab in profile modal (hides button in connections when enabled)";
+      type = types.bool;
+    };
     showStars = mkOption {
       default = true;
       description = "Show repository stars";
@@ -1508,6 +1805,11 @@ in
   };
   globalBadges = {
     enable = mkEnableOption "Adds global badges from other client mods (Equicord-only)";
+    apiUrl = mkOption {
+      default = "https://badges.equicord.org/";
+      description = "API to use";
+      type = types.str;
+    };
     showAero = mkOption {
       default = true;
       description = "Show Aero Badges";
@@ -1533,19 +1835,19 @@ in
       description = "Show Nekocord Badges";
       type = types.bool;
     };
+    showPaicord = mkOption {
+      default = true;
+      description = "Show Paicord Badges";
+      type = types.bool;
+    };
     showPrefix = mkOption {
       default = true;
       description = "Shows the Mod as Prefix";
       type = types.bool;
     };
-    showRa1ncord = mkOption {
+    showRaincord = mkOption {
       default = true;
-      description = "Show Ra1ncord Badges";
-      type = types.bool;
-    };
-    showReplugged = mkOption {
-      default = true;
-      description = "Show Replugged Badges";
+      description = "Show Raincord Badges";
       type = types.bool;
     };
     showReviewDB = mkOption {
@@ -1587,6 +1889,11 @@ in
         "LetMeGoogleThatForYou"
       ];
     };
+    embed = mkOption {
+      default = true;
+      description = "If the sent link should render an embed";
+      type = types.bool;
+    };
     hyperlink = mkOption {
       default = false;
       description = "If the sent link should hyperlink with the query as the label";
@@ -1597,7 +1904,7 @@ in
     enable = mkEnableOption "Context menu to dump and download a server's emojis and stickers. (Equicord-only)";
   };
   guildTagSettings = {
-    enable = mkEnableOption "Settings for Guild Tags (Equicord-only)";
+    enable = mkEnableOption "Adds some settings for guild tags, such as hiding them or disabling the prompt to adopt them. (Equicord-only)";
     disableAdoptTagPrompt = mkOption {
       default = true;
       description = "Disable the prompt to adopt tags (restart required)";
@@ -1622,6 +1929,14 @@ in
       type = types.bool;
     };
   };
+  hideMessages = {
+    enable = mkEnableOption "A plugin to temporarily hide messages until you restart. (Equicord-only)";
+    hidePopoverButton = mkOption {
+      default = false;
+      description = "Hide the hide button in the message popover.";
+      type = types.bool;
+    };
+  };
   hideServers = {
     enable = mkEnableOption "Allows you to hide servers from the guild list and quick switcher by right clicking them (Equicord-only)";
     showIndicator = mkOption {
@@ -1631,13 +1946,13 @@ in
     };
   };
   holyNotes = {
-    enable = mkEnableOption "Holy Notes allows you to save messages (Equicord-only)";
+    enable = mkEnableOption "Save messages as notes to revisit later (Equicord-only)";
   };
   homeTyping = {
     enable = mkEnableOption "Changes the home button to a typing indicator if someone in your dms is typing (Equicord-only)";
   };
   hopOn = {
-    enable = mkEnableOption "Hop on Fortnite or Hop on bloons :3 (Equicord-only)";
+    enable = mkEnableOption "Hop on! Opens a configurable URL when a message matches a custom regex in the current channel. (Equicord-only)";
     regex = mkOption {
       default = "hop on (?:fortnite|fn)";
       description = "Regex to trigger on";
@@ -1668,7 +1983,20 @@ in
     };
   };
   iconViewer = {
-    enable = mkEnableOption "Adds a new tab to settings, to preview all icons (Equicord-only)";
+    enable = mkEnableOption "Adds a new tab to settings to preview all icons. (Equicord-only)";
+  };
+  idleAutoRestart = {
+    enable = mkEnableOption "Automatically restarts the client after being idle for a configurable amount of time, but avoids restarting while you are in VC. (Equicord-only)";
+    idleMinutes = mkOption {
+      default = 30.0;
+      description = "Minutes of inactivity before restarting (when not in VC)";
+      type = types.float;
+    };
+    isEnabled = mkOption {
+      default = true;
+      description = "Enable automatic restart after idle";
+      type = types.bool;
+    };
   };
   ignoreCalls = {
     enable = mkEnableOption "Allows you to ignore calls from specific users or dm groups. (Equicord-only)";
@@ -1677,12 +2005,6 @@ in
       description = "User IDs (comma + space) who should be permanetly ignored (restart required)";
       type = types.str;
     };
-  };
-  ignoreTerms = {
-    enable = mkEnableOption "Ignore Discord's new terms of service (Equicord-only)";
-  };
-  imgToGif = {
-    enable = mkEnableOption "Adds a /imgtogif slash command to create a gif from any image (Equicord-only)";
   };
   inRole = {
     enable = mkEnableOption "Know who is in a role with the role context menu or /inrole command (read plugin info!) (Equicord-only)";
@@ -1702,6 +2024,14 @@ in
   };
   instantScreenshare = {
     enable = mkEnableOption "Instantly screenshare when joining a voice channel with support for desktop sources, windows, and video input devices (cameras, capture cards) (Equicord-only)";
+  };
+  invisibleChat = {
+    enable = mkEnableOption "Encrypt your Messages in a non-suspicious way! (Equicord-only)";
+    savedPasswords = mkOption {
+      default = "password, Password";
+      description = "Saved Passwords (Seperated with a , )";
+      type = types.str;
+    };
   };
   inviteDefaults = {
     enable = mkEnableOption "Allows you to edit the default values when creating server invites. (Equicord-only)";
@@ -1743,90 +2073,8 @@ in
       type = types.bool;
     };
   };
-  jellyfinRichPresence = {
-    enable = mkEnableOption "Rich presence for Jellyfin media server (Equicord-only)";
-    apiKey = mkOption {
-      default = null;
-      description = "Jellyfin API key obtained from your Jellyfin administration dashboard";
-      type = types.nullOr types.str;
-    };
-    coverType = mkOption {
-      default = "series";
-      description = "Choose which cover to display when watching a TV show";
-      type = types.enum [
-        "series"
-        "episode"
-      ];
-    };
-    customName = mkOption {
-      default = null;
-      description = ''
-        Custom Rich Presence name (only used if 'Custom' is selected).
-        Options: {name}, {series}, {season}, {episode}, {artist}, {album}, {year}'';
-      type = types.nullOr types.str;
-    };
-    episodeFormat = mkOption {
-      default = "long";
-      description = "Episode number format";
-      type = types.enum [
-        "long"
-        "short"
-        "fulltext"
-      ];
-    };
-    nameDisplay = mkOption {
-      default = "default";
-      description = "Choose how the application name should appear in Rich Presence";
-      type = types.enum [
-        "default"
-        "full"
-        "custom"
-      ];
-    };
-    overrideRichPresenceType = mkOption {
-      default = false;
-      description = "Override the rich presence type";
-      type = types.enum [
-        false
-        2
-        0
-        1
-        3
-      ];
-    };
-    privacyMode = mkOption {
-      default = false;
-      description = "Privacy Mode (Hide media details like Episode/Song Name)";
-      type = types.bool;
-    };
-    serverUrl = mkOption {
-      default = null;
-      description = "Jellyfin server URL (e.g., https://jellyfin.example.com)";
-      type = types.nullOr types.str;
-    };
-    showEpisodeName = mkOption {
-      default = false;
-      description = "Show episode name after season/episode info";
-      type = types.bool;
-    };
-    showPausedState = mkOption {
-      default = true;
-      description = "Show Rich Presence when media is paused";
-      type = types.bool;
-    };
-    showTMDBButton = mkOption {
-      default = true;
-      description = "Show TheMovieDB button in Rich Presence";
-      type = types.bool;
-    };
-    userId = mkOption {
-      default = null;
-      description = "Jellyfin user ID obtained from your user profile URL";
-      type = types.nullOr types.str;
-    };
-  };
   jumpTo = {
-    enable = mkEnableOption "Adds context menu options to jump to the start or bottom of a channel/DM (Equicord-only)";
+    enable = mkEnableOption "Adds context menu options to jump to the start or bottom of a channel/DM. (Equicord-only)";
   };
   jumpscare = {
     enable = mkEnableOption "Adds a configurable chance of jumpscaring you whenever you open a channel. Inspired by Geometry Dash Mega Hack (Equicord-only)";
@@ -1895,23 +2143,6 @@ in
   lastActive = {
     enable = mkEnableOption "A plugin to jump to last active message from yourself or another user in a channel/server. (Equicord-only)";
   };
-  limitMiddleClickPaste = {
-    enable = mkEnableOption "For middle-click autoscroll users, prevents middle-click from making unwanted pastes. (Equicord-only)";
-    limitTo = mkOption {
-      default = "active";
-      description = "Allow middle click pastes:";
-      type = types.enum [
-        "active"
-        "direct"
-        "never"
-      ];
-    };
-    reenableDelay = mkOption {
-      default = 500.0;
-      description = "Milliseconds until re-enabling global paste events after middle click.";
-      type = types.float;
-    };
-  };
   mediaPlaybackSpeed = {
     enable = mkEnableOption "Allows changing the (default) playback speed of media embeds (Equicord-only)";
     defaultAudioSpeed = mkOption {
@@ -1948,6 +2179,191 @@ in
       type = types.bool;
     };
   };
+  messageClickActions = {
+    enable = mkEnableOption "Customize click actions on messages. (Equicord-only)";
+    addAdditionalReacts = mkOption {
+      default = false;
+      description = "Also add additional configured reaction emojis";
+      type = types.bool;
+    };
+    additionalReactEmojis = mkOption {
+      default = "";
+      type = types.str;
+    };
+    clickTimeout = mkOption {
+      default = 300;
+      description = "Timeout to distinguish double/triple clicks (ms)";
+      type = types.int;
+    };
+    deferDoubleClickForTriple = mkOption {
+      default = false;
+      description = "Delay double-click to allow triple-click actions (disables triple-click when off)";
+      type = types.bool;
+    };
+    disableInDms = mkOption {
+      default = false;
+      description = "Disable all click actions in direct messages";
+      type = types.bool;
+    };
+    disableInSystemDms = mkOption {
+      default = true;
+      description = "Disable all click actions in system DMs";
+      type = types.bool;
+    };
+    doubleClickAction = mkOption {
+      default = "EDIT";
+      description = "Action on double-click (your messages)";
+      type = types.enum [
+        "NONE"
+        "DELETE"
+        "REPLY"
+        "EDIT"
+        "QUOTE"
+        "COPY_CONTENT"
+        "COPY_LINK"
+        "COPY_ID"
+        "COPY_USER_ID"
+        "REACT"
+        "PIN"
+      ];
+    };
+    doubleClickHoldThreshold = mkOption {
+      default = 150;
+      description = "Max hold time for double-click actions (ms). Holding longer allows text selection";
+      type = types.int;
+    };
+    doubleClickModifier = mkOption {
+      default = "NONE";
+      description = "Modifier required for double-click action";
+      type = types.enum [
+        "NONE"
+        "SHIFT"
+        "CTRL"
+        "ALT"
+      ];
+    };
+    doubleClickOthersAction = mkOption {
+      default = "REPLY";
+      description = "Action on double-click (others' messages)";
+      type = types.enum [
+        "NONE"
+        "DELETE"
+        "REPLY"
+        "QUOTE"
+        "COPY_CONTENT"
+        "COPY_LINK"
+        "COPY_ID"
+        "COPY_USER_ID"
+        "REACT"
+        "PIN"
+      ];
+    };
+    quoteWithReply = mkOption {
+      default = true;
+      description = "When quoting, also reply to the message";
+      type = types.bool;
+    };
+    reactEmoji = mkOption {
+      default = "💀";
+      description = "Emoji to use for react actions.";
+      type = types.str;
+    };
+    selectionHoldTimeout = mkOption {
+      default = 300;
+      description = "Timeout to allow text selection (ms)";
+      type = types.int;
+    };
+    singleClickAction = mkOption {
+      default = "DELETE";
+      description = "Action on single click (your messages)";
+      type = types.enum [
+        "NONE"
+        "DELETE"
+        "COPY_LINK"
+        "COPY_ID"
+        "COPY_CONTENT"
+        "COPY_USER_ID"
+        "EDIT"
+        "REPLY"
+        "REACT"
+        "OPEN_THREAD"
+        "OPEN_TAB"
+      ];
+    };
+    singleClickModifier = mkOption {
+      default = "BACKSPACE";
+      description = "Modifier required for single click action (your messages)";
+      type = types.enum [
+        "BACKSPACE"
+        "DELETE"
+        "NONE"
+        "SHIFT"
+        "CTRL"
+        "ALT"
+      ];
+    };
+    singleClickOthersAction = mkOption {
+      default = "DELETE";
+      description = "Action on single click (others' messages)";
+      type = types.enum [
+        "NONE"
+        "DELETE"
+        "COPY_LINK"
+        "COPY_ID"
+        "COPY_CONTENT"
+        "COPY_USER_ID"
+        "EDIT"
+        "REPLY"
+        "REACT"
+        "OPEN_THREAD"
+        "OPEN_TAB"
+      ];
+    };
+    singleClickOthersModifier = mkOption {
+      default = "BACKSPACE";
+      description = "Modifier required for single click action (others' messages)";
+      type = types.enum [
+        "BACKSPACE"
+        "DELETE"
+        "NONE"
+        "SHIFT"
+        "CTRL"
+        "ALT"
+      ];
+    };
+    tripleClickAction = mkOption {
+      default = "REACT";
+      description = "Action on triple-click";
+      type = types.enum [
+        "NONE"
+        "DELETE"
+        "COPY_LINK"
+        "COPY_ID"
+        "COPY_CONTENT"
+        "COPY_USER_ID"
+        "EDIT"
+        "REPLY"
+        "REACT"
+        "OPEN_THREAD"
+        "OPEN_TAB"
+      ];
+    };
+    tripleClickModifier = mkOption {
+      default = "NONE";
+      description = "Modifier required for triple-click action";
+      type = types.enum [
+        "NONE"
+        "SHIFT"
+        "CTRL"
+        "ALT"
+      ];
+    };
+    useSelectionForQuote = mkOption {
+      default = false;
+      description = "When quoting, use selected text if available";
+      type = types.bool;
+    };
+  };
   messageColors = {
     enable = mkEnableOption "Displays color codes like #FF0042 inside of messages (Equicord-only)";
   };
@@ -1970,7 +2386,7 @@ in
     };
   };
   messageLinkTooltip = {
-    enable = mkEnableOption "Like MessageLinkEmbed but without taking space (Equicord-only)";
+    enable = mkEnableOption "Adds a tooltip with a message preview when hovering over message links, replies, and forwarded messages. (Equicord-only)";
     display = mkOption {
       default = "auto";
       description = "Display style";
@@ -2063,7 +2479,7 @@ in
     };
   };
   messageLoggerEnhanced = {
-    enable = mkEnableOption "G'day (Equicord-only)";
+    enable = mkEnableOption "Improves MessageLogger with edited message history, ghost ping detection and more (Equicord-only)";
     alwaysLogCurrentChannel = mkOption {
       default = true;
       description = "Always log current selected channel. Blacklisted channels/users will still be ignored.";
@@ -2149,6 +2565,16 @@ in
       description = "Number of messages to display at once in logs & number of messages to load when loading more messages in logs.";
       type = types.int;
     };
+    permanentlyRemoveLogByDefault = mkOption {
+      default = false;
+      description = "Vencord's base MessageLogger remove log button wiil delete logs permanently";
+      type = types.bool;
+    };
+    preserveCurrentChannel = mkOption {
+      default = true;
+      description = "When enabled, messages in your currently selected channel are not affected by time-based cleanup.";
+      type = types.bool;
+    };
     saveImages = mkOption {
       default = false;
       description = "Save deleted attachments.";
@@ -2174,10 +2600,31 @@ in
       description = "Sort logs by newest.";
       type = types.bool;
     };
+    timeBasedCleanupMinutes = mkOption {
+      default = 0;
+      description = "Automatically remove messages from servers that are older than this many minutes. Set to 0 to disable time-based cleanup.";
+      type = types.int;
+    };
     whitelistedIds = mkOption {
       default = "";
       description = "Whitelisted server, channel, or user IDs.";
       type = types.str;
+    };
+  };
+  messageNotifier = {
+    enable = mkEnableOption "Get toasts for when chosen users send a message (Equicord-only)";
+    users = mkOption {
+      default = "";
+      description = "Comma separated list of user ids to get message toasts for";
+      type = types.str;
+    };
+  };
+  messagePeek = {
+    enable = mkEnableOption "Shows the last message preview and timestamp in the Direct Messages list. (Equicord-only)";
+    hideMuted = mkOption {
+      default = false;
+      description = "Hide message previews and timestamps for muted DMs and group chats.";
+      type = types.bool;
     };
   };
   messageTranslate = {
@@ -2193,14 +2640,78 @@ in
       type = types.str;
     };
   };
+  micLoopbackTester = {
+    enable = mkEnableOption "Adds mic loopback test icon to the user panel (Equicord-only)";
+  };
+  middleClickTweaks = {
+    enable = mkEnableOption "Various middle click tweaks, such as with pasting and link opening. (Equicord-only)";
+    openScope = mkOption {
+      default = "none";
+      description = "Prevent middle clicking on these content types from opening them.";
+      type = types.enum [
+        "links"
+        "media"
+        "both"
+        "none"
+      ];
+    };
+    pasteScope = mkOption {
+      default = "always";
+      description = "Prevent middle click from pasting during these situations.";
+      type = types.enum [
+        "always"
+        "focus"
+      ];
+    };
+    pasteThreshold = mkOption {
+      default = 100;
+      description = "Milliseconds until pasting is enabled again after a middle click.";
+      type = types.int;
+    };
+  };
   moreCommands = {
     enable = mkEnableOption "Adds various fun and useful commands (Equicord-only)";
   };
-  moreKaomoji = {
-    enable = mkEnableOption "Adds more Kaomoji to discord. ヽ(´▽`)/ (Equicord-only)";
+  moreQuickReactions = {
+    enable = mkEnableOption "Improves the quick react buttons in the message context menu. (Equicord-only)";
+    columns = mkOption {
+      default = 4.0;
+      description = "Columns of quick reactions to display";
+      type = types.float;
+    };
+    compactMode = mkOption {
+      default = false;
+      description = "Scales the buttons to 75% of their original scale, whilst increasing the inner emoji to 125% scale. Emojis will be 93.75% of the original size. Recommended to have a minimum of 5 columns";
+      type = types.bool;
+    };
+    frequentEmojis = mkOption {
+      default = true;
+      description = "Use frequently used emojis instead of favourite emojis (restart required)";
+      type = types.bool;
+    };
+    reactionCount = mkOption {
+      default = 5;
+      description = "Number of reactions (0-42)";
+      type = types.int;
+    };
+    rows = mkOption {
+      default = 2.0;
+      description = "Rows of quick reactions to display";
+      type = types.float;
+    };
+    scroll = mkOption {
+      default = true;
+      description = "Enable scrolling the list of emojis";
+      type = types.bool;
+    };
   };
   moreStickers = {
     enable = mkEnableOption "Adds sticker packs from other social media platforms. (e.g. LINE) (Equicord-only)";
+    promptToUpload = mkOption {
+      default = false;
+      description = "Inserts the sticker into your chatbar instead of sending immediately";
+      type = types.bool;
+    };
   };
   moreUserTags = {
     enable = mkEnableOption "Adds tags for webhooks and moderative roles (owner, admin, etc.) (Equicord-only)";
@@ -2214,6 +2725,11 @@ in
       description = "Don't show extra tags for bots (excluding webhooks)";
       type = types.bool;
     };
+    noAppsAllowed = mkOption {
+      default = false;
+      description = "Replaces app for bot (restart required)";
+      type = types.bool;
+    };
     showWebhookTagFully = mkOption {
       default = false;
       description = "Show Webhook tag in followed channels like announcements";
@@ -2221,7 +2737,7 @@ in
     };
   };
   moyai = {
-    enable = mkEnableOption "🗿🗿🗿🗿🗿🗿🗿🗿 (Equicord-only)";
+    enable = mkEnableOption "Plays a 🗿 sound effect whenever a moyai emoji is sent, reacted, or used as a voice effect in your current channel. (Equicord-only)";
     ignoreBlocked = mkOption {
       default = true;
       description = "Ignore blocked users";
@@ -2444,26 +2960,28 @@ in
       type = types.str;
     };
   };
-  noBulletPoints = {
-    enable = mkEnableOption "Stops you from typing markdown bullet points (stinky) (Equicord-only)";
-  };
-  noModalAnimation = {
-    enable = mkEnableOption "Remove the 300ms long animation when opening or closing modals (Equicord-only)";
-  };
   noNitroUpsell = {
     enable = mkEnableOption "Removes ALL of Discord's nitro upsells by tricking the client into thinking you have nitro. (Equicord-only)";
   };
-  noOnboarding = {
-    enable = mkEnableOption "Bypasses Discord's onboarding process for quicker server entry. (Equicord-only)";
+  noPushToTalk = {
+    enable = mkEnableOption "Bypasses the push-to-talk requirement for voice activity in channels that enforce it. (Equicord-only)";
   };
   noRoleHeaders = {
-    enable = mkEnableOption "We are all equal!! (Equicord-only)";
+    enable = mkEnableOption "We are all equal!! Removes the role headers in the member list. (Equicord-only)";
+  };
+  normalizeMessageLinks = {
+    enable = mkEnableOption "Strip canary/ptb from message links (Equicord-only)";
   };
   notificationTitle = {
     enable = mkEnableOption "Makes desktop notifications more informative (Equicord-only)";
   };
   orbolayBridge = {
     enable = mkEnableOption "Bridge plugin to connect Orbolay to Discord (Equicord-only)";
+    isKeybindEnabled = mkOption {
+      default = true;
+      description = "Enable/disable the global keybind (Ctrl + `) (restart required)";
+      type = types.bool;
+    };
     messageAlignment = mkOption {
       default = "topright";
       description = "Alignment of messages in the overlay (restart required)";
@@ -2546,6 +3064,43 @@ in
       type = types.bool;
     };
   };
+  platformIndicators = {
+    enable = mkEnableOption "Adds platform indicators (Desktop, Mobile, Web...) to users (Equicord-only)";
+    colorMobileIndicator = mkOption {
+      default = true;
+      description = "Whether to make the mobile indicator match the color of the user status. (restart required)";
+      type = types.bool;
+    };
+    consoleIcon = mkOption {
+      default = "equicord";
+      description = "What console icon to use (restart required)";
+      type = types.enum [
+        "equicord"
+        "suncord"
+        "vencord"
+      ];
+    };
+    list = mkOption {
+      default = true;
+      description = "Show indicators in the member list";
+      type = types.bool;
+    };
+    messages = mkOption {
+      default = true;
+      description = "Show indicators inside messages";
+      type = types.bool;
+    };
+    profiles = mkOption {
+      default = true;
+      description = "Show indicators in user profiles";
+      type = types.bool;
+    };
+    showBots = mkOption {
+      default = false;
+      description = "Whether to show platform indicators on bots";
+      type = types.bool;
+    };
+  };
   platformSpoofer = {
     enable = mkEnableOption "Spoof what platform or device you're on (Equicord-only)";
     platform = mkOption {
@@ -2558,6 +3113,7 @@ in
         "ios"
         "xbox"
         "playstation"
+        "vr"
       ];
     };
   };
@@ -2599,21 +3155,13 @@ in
       type = types.bool;
     };
   };
-  questCompleter = {
-    enable = mkEnableOption "A plugin to complete quests without having the game installed. (Equicord-only)";
-    disableNotifications = mkOption {
-      default = false;
-      description = "Disable notifications when no quests are available or when a quest is completed";
-      type = types.bool;
+  profileSets = {
+    enable = mkEnableOption "Allows you to save and load different profile presets, via the Profile Section in Settings. (Equicord-only)";
+    avatarSize = mkOption {
+      default = 56.0;
+      description = "Avatar size in preset list.";
+      type = types.float;
     };
-    useNavBar = mkOption {
-      default = false;
-      description = "Move quest button down to the server nav bar";
-      type = types.bool;
-    };
-  };
-  questFocused = {
-    enable = mkEnableOption "Prevent the quests player from pausing and possibly skip it all together. (Equicord-only)";
   };
   questify = {
     enable = mkEnableOption "Enhance your Quest experience with a suite of features, or disable them entirely if they're not your thing. (Equicord-only)";
@@ -2621,6 +3169,11 @@ in
       default = "Claimed DESC";
       description = "Subsort method for claimed Quests.";
       type = types.str;
+    };
+    completeAchievementQuestsInBackground = mkOption {
+      default = false;
+      description = "Complete Achievement in Activity Quests in the background.";
+      type = types.bool;
     };
     completeGameQuestsInBackground = mkOption {
       default = false;
@@ -2670,6 +3223,11 @@ in
     disableQuestsGiftInventoryRelocationNotice = mkOption {
       default = true;
       description = "Disable the gift inventory Quest relocation notice.";
+      type = types.bool;
+    };
+    disableQuestsPageSponsoredBanner = mkOption {
+      default = false;
+      description = "Disable the sponsored banner on the Quest page.";
       type = types.bool;
     };
     disableQuestsPopupAboveAccountPanel = mkOption {
@@ -2837,6 +3395,11 @@ in
       description = "The color of unclaimed Quest tiles in the Quests page.";
       type = types.int;
     };
+    resumeQuestIDs = mkOption {
+      default = { };
+      description = "An array of Quest IDs that are being auto-completed in the background.";
+      type = types.attrs;
+    };
     triggerQuestsRerender = mkOption {
       default = false;
       description = "Trigger a rerender of the Quests page by toggling this setting.";
@@ -2894,18 +3457,37 @@ in
     };
   };
   quoter = {
-    enable = mkEnableOption "Adds the ability to create an inspirational quote image from a message (Equicord-only)";
-    userIdentifier = mkOption {
-      default = 0;
-      description = ''
-        What the author's name should be displayed as
-
-        Values: 0 = Display Name, 1 = Username, 2 = User ID'';
+    enable = mkEnableOption "Adds the ability to create an inspirational quote image from a message. (Equicord-only)";
+    grayscale = mkOption {
+      default = true;
+      description = "Enable grayscale by default";
+      type = types.bool;
+    };
+    quoteFont = mkOption {
+      default = "M PLUS Rounded 1c";
+      description = "Font for quote text (author/username always use M PLUS Rounded 1c)";
       type = types.enum [
-        0
-        1
-        2
+        "M PLUS Rounded 1c"
+        "Open Sans"
+        "Momo Signature"
+        "Lora"
+        "Merriweather"
       ];
+    };
+    saveAsGif = mkOption {
+      default = false;
+      description = "Save as GIF by default";
+      type = types.bool;
+    };
+    showWatermark = mkOption {
+      default = false;
+      description = "Show watermark by default";
+      type = types.bool;
+    };
+    watermark = mkOption {
+      default = "Made with Equicord";
+      description = "Custom watermark text (max 32 characters)";
+      type = types.str;
     };
   };
   randomVoice = {
@@ -3031,6 +3613,9 @@ in
   remixRevived = {
     enable = mkEnableOption "Revives Remix and breings it to Desktop (Equicord-only)";
   };
+  repeatMessages = {
+    enable = mkEnableOption "Allows you to repeat messages quickly. If you hold shift while clicking the Repeat option, it will reply to the message. (Equicord-only)";
+  };
   replyPingControl = {
     enable = mkEnableOption "Control whether to always or never get pinged on message replies, with a whitelist feature (Equicord-only)";
     alwaysPingOnReply = mkOption {
@@ -3042,6 +3627,297 @@ in
       default = "";
       description = "Comma-separated list of User IDs to always receive reply pings from";
       type = types.str;
+    };
+  };
+  richMagnetLinks = {
+    enable = mkEnableOption "Renders magnet links like message links (Equicord-only)";
+  };
+  richPresence = {
+    enable = mkEnableOption "Unified rich presence hub for AudioBookShelf, osu!, stats.fm, Jellyfin, ListenBrainz, and Gensokyo Radio. (Equicord-only)";
+    absEnabled = mkOption {
+      default = false;
+      description = "Enable AudioBookShelf presence.";
+      type = types.bool;
+    };
+    absPassword = mkOption {
+      default = "";
+      description = "AudioBookShelf password.";
+      type = types.str;
+    };
+    absServerUrl = mkOption {
+      default = "";
+      description = "AudioBookShelf server URL.";
+      type = types.str;
+    };
+    absUsername = mkOption {
+      default = "";
+      description = "AudioBookShelf username.";
+      type = types.str;
+    };
+    enabled = mkOption {
+      default = true;
+      description = "Enable rich presence services.";
+      type = types.bool;
+    };
+    grEnabled = mkOption {
+      default = false;
+      description = "Enable Gensokyo Radio presence.";
+      type = types.bool;
+    };
+    grRefreshInterval = mkOption {
+      default = 15.0;
+      description = "Refresh interval in seconds.";
+      type = types.float;
+    };
+    jfApiKey = mkOption {
+      default = "";
+      description = "Jellyfin API key.";
+      type = types.str;
+    };
+    jfCoverType = mkOption {
+      default = "series";
+      description = "Cover type for TV shows.";
+      type = types.enum [
+        "series"
+        "episode"
+      ];
+    };
+    jfCustomName = mkOption {
+      default = "";
+      description = "Custom name template.";
+      type = types.str;
+    };
+    jfEnabled = mkOption {
+      default = false;
+      description = "Enable Jellyfin presence.";
+      type = types.bool;
+    };
+    jfEpisodeFormat = mkOption {
+      default = "long";
+      description = "Episode number format.";
+      type = types.enum [
+        "long"
+        "short"
+        "fulltext"
+      ];
+    };
+    jfNameDisplay = mkOption {
+      default = "default";
+      description = "Name display format.";
+      type = types.enum [
+        "default"
+        "full"
+        "custom"
+      ];
+    };
+    jfOverrideType = mkOption {
+      default = "off";
+      description = "Override rich presence type.";
+      type = types.enum [
+        "off"
+        "2"
+        "0"
+        "1"
+        "3"
+      ];
+    };
+    jfPrivacyMode = mkOption {
+      default = false;
+      description = "Hide media details.";
+      type = types.bool;
+    };
+    jfServerUrl = mkOption {
+      default = "";
+      description = "Jellyfin server URL.";
+      type = types.str;
+    };
+    jfShowEpisodeName = mkOption {
+      default = false;
+      description = "Show episode name after season/episode info.";
+      type = types.bool;
+    };
+    jfShowPausedState = mkOption {
+      default = true;
+      description = "Show presence when media is paused.";
+      type = types.bool;
+    };
+    jfUserId = mkOption {
+      default = "";
+      description = "Jellyfin user ID.";
+      type = types.str;
+    };
+    lbEnabled = mkOption {
+      default = false;
+      description = "Enable ListenBrainz presence.";
+      type = types.bool;
+    };
+    lbHideWithActivity = mkOption {
+      default = false;
+      description = "Hide presence if any other presence exists.";
+      type = types.bool;
+    };
+    lbHideWithSpotify = mkOption {
+      default = true;
+      description = "Hide presence if Spotify is running.";
+      type = types.bool;
+    };
+    lbMbContact = mkOption {
+      default = "";
+      description = "MusicBrainz contact for user agent.";
+      type = types.str;
+    };
+    lbMissingArt = mkOption {
+      default = "listenbrainzLogo";
+      description = "Fallback when art is missing.";
+      type = types.enum [
+        "listenbrainzLogo"
+        "placeholder"
+      ];
+    };
+    lbNameFormat = mkOption {
+      default = "status-name";
+      description = "Name format.";
+      type = types.enum [
+        "status-name"
+        "artist-first"
+        "song-first"
+        "artist"
+        "song"
+        "album"
+      ];
+    };
+    lbShareSong = mkOption {
+      default = true;
+      description = "Show link to song on ListenBrainz.";
+      type = types.bool;
+    };
+    lbShareUsername = mkOption {
+      default = false;
+      description = "Show link to ListenBrainz profile.";
+      type = types.bool;
+    };
+    lbStatusName = mkOption {
+      default = "some music";
+      description = "Custom status text.";
+      type = types.str;
+    };
+    lbUseListeningStatus = mkOption {
+      default = true;
+      description = "Show listening status.";
+      type = types.bool;
+    };
+    lbUseLogo = mkOption {
+      default = true;
+      description = "Show ListenBrainz logo on album art.";
+      type = types.bool;
+    };
+    lbUseTimeBar = mkOption {
+      default = true;
+      description = "Use track duration to display a time bar.";
+      type = types.bool;
+    };
+    lbUsername = mkOption {
+      default = "";
+      description = "ListenBrainz username.";
+      type = types.str;
+    };
+    sfmAlwaysHideArt = mkOption {
+      default = false;
+      description = "Disable downloading album art.";
+      type = types.bool;
+    };
+    sfmEnabled = mkOption {
+      default = false;
+      description = "Enable stats.fm presence.";
+      type = types.bool;
+    };
+    sfmHideWithExternalRpc = mkOption {
+      default = false;
+      description = "Hide stats.fm presence if an external RPC is running.";
+      type = types.bool;
+    };
+    sfmHideWithSpotify = mkOption {
+      default = false;
+      description = "Hide stats.fm presence if Spotify is running.";
+      type = types.bool;
+    };
+    sfmMissingArt = mkOption {
+      default = "StatsFmLogo";
+      description = "Fallback when art is missing.";
+      type = types.enum [
+        "StatsFmLogo"
+        "placeholder"
+      ];
+    };
+    sfmNameFormat = mkOption {
+      default = "status-name";
+      description = "Name format.";
+      type = types.enum [
+        "status-name"
+        "artist-first"
+        "song-first"
+        "artist"
+        "song"
+        "album"
+      ];
+    };
+    sfmShareSong = mkOption {
+      default = true;
+      description = "Show link to song on stats.fm.";
+      type = types.bool;
+    };
+    sfmShareUsername = mkOption {
+      default = false;
+      description = "Show link to stats.fm profile.";
+      type = types.bool;
+    };
+    sfmShowLogo = mkOption {
+      default = true;
+      description = "Show Stats.fm logo next to album art.";
+      type = types.bool;
+    };
+    sfmStatusName = mkOption {
+      default = "Stats.fm";
+      description = "Custom status text.";
+      type = types.str;
+    };
+    sfmUseListeningStatus = mkOption {
+      default = true;
+      description = "Show listening status.";
+      type = types.bool;
+    };
+    sfmUsername = mkOption {
+      default = "";
+      description = "Stats.fm username.";
+      type = types.str;
+    };
+    tosuEnabled = mkOption {
+      default = false;
+      description = "Enable osu! (tosu) presence.";
+      type = types.bool;
+    };
+  };
+  scheduledMessages = {
+    enable = mkEnableOption "Schedule messages to be sent at a specific time or after a delay. (Equicord-only)";
+    checkIntervalSeconds = mkOption {
+      default = 10.0;
+      description = "How often to check for messages to send (seconds).";
+      type = types.float;
+    };
+    maxMessagesPerMinute = mkOption {
+      default = 3.0;
+      description = "Max scheduled messages per channel that can fire in the same minute.";
+      type = types.float;
+    };
+    showNotifications = mkOption {
+      default = true;
+      description = "Show toast notifications when messages are sent.";
+      type = types.bool;
+    };
+    showPhantomMessages = mkOption {
+      default = true;
+      description = "Show scheduled messages as phantom messages in chat.";
+      type = types.bool;
     };
   };
   screenRecorder = {
@@ -3059,7 +3935,7 @@ in
     };
   };
   selfForward = {
-    enable = mkEnableOption "adds the current channel to the forward list popup (Equicord-only)";
+    enable = mkEnableOption "Adds the current channel to the forward list popup (Equicord-only)";
   };
   serverInfo = {
     enable = mkEnableOption "Allows you to view info about a server (Equicord-only)";
@@ -3173,10 +4049,20 @@ in
     };
   };
   showMeYourName = {
-    enable = mkEnableOption "Display any permutation of nicknames, display names, and usernames in chat. (Equicord-only)";
+    enable = mkEnableOption "Display any permutation of custom nicknames, friend nicknames, server nicknames, display names, and usernames in chat. (Equicord-only)";
     animateGradients = mkOption {
       default = false;
-      description = ''For the second, third, and fourth names, if the role has a gradient, animate it. This is disabled by "Ignore Gradients" and reduced motion.'';
+      description = ''For the non-primary names, if the role has a gradient or nitro effect, animate it. This is disabled by "Ignore Gradients" and reduced motion.'';
+      type = types.bool;
+    };
+    customNameColor = mkOption {
+      default = "Role-25";
+      description = ''The color to use for the custom name you assigned a user if it's not the first displayed. Accepts any valid CSS input. Use "Role" to follow the user's top role colors, nitro effect colors, or IRCColors color if enabled. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
+      type = types.str;
+    };
+    customNameOnlyInDirectMessages = mkOption {
+      default = false;
+      description = "Only display custom names when in DMs, and not in servers.";
       type = types.bool;
     };
     discriminators = mkOption {
@@ -3186,13 +4072,18 @@ in
     };
     displayNameColor = mkOption {
       default = "Role-25";
-      description = ''The color to use for the display name if it's not the first displayed. Leave blank for default. Accepts hex(a), rgb(a), or hsl(a) input. Use "Role" to follow the user's top role color. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
+      description = ''The color to use for the display name if it's not the first displayed. Accepts any valid CSS input. Use "Role" to follow the user's top role colors, nitro effect colors, or IRCColors color if enabled. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
       type = types.str;
     };
     friendNameColor = mkOption {
       default = "Role-25";
-      description = ''The color to use for a friend's nickname if it's not the first displayed. Leave blank for default. Accepts hex(a), rgb(a), or hsl(a) input. Use "Role" to follow the user's top role color. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
+      description = ''The color to use for a friend's nickname if it's not the first displayed. Accepts any valid CSS input. Use "Role" to follow the user's top role colors, nitro effect colors, or IRCColors color if enabled. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
       type = types.str;
+    };
+    friendNameOnlyInDirectMessages = mkOption {
+      default = false;
+      description = "Only display friend names when in DMs, and not in servers.";
+      type = types.bool;
     };
     hideDefaultAtSign = mkOption {
       default = false;
@@ -3201,22 +4092,22 @@ in
     };
     ignoreFonts = mkOption {
       default = false;
-      description = "For the second, third, and fourth names, use GG SANS regardless of the user's custom font.";
+      description = "For the non-primary names, use Discord's default fonts regardless of the user's custom nitro font.";
       type = types.bool;
     };
     ignoreGradients = mkOption {
       default = true;
-      description = "For the second, third, and fourth names, if the role has a gradient, ignore it in favor of the value below.";
+      description = ''For the non-primary names, if the role has a gradient and the color below is set to "Role+-#", use the primary color instead of the whole gradient, and if it has a nitro effect, ignore it entirely.'';
       type = types.bool;
     };
     includedNames = mkOption {
-      default = "{friend, nick} [{display}] (@{user})";
-      description = "The order to display usernames, display names, nicknames, and friend names. Use the following placeholders: {user}, {display}, {nick}, {friend}. You can provide multiple name options to use as fallbacks if one is unavailable by separating them with commas as such: {friend, nick, display}. You can have up to three prefixes and three suffixes per name.";
+      default = "{custom, friend, nick} [{display}] (@{user})";
+      description = "The order to display usernames, display names, nicknames, friend names, and custom names. Use the following placeholders: {user}, {display}, {nick}, {friend}, {custom}. You can provide multiple name options to use as fallbacks if one is unavailable by separating them with commas as such: {custom, friend, nick}. You can have up to three prefixes and three suffixes per name.";
       type = types.str;
     };
     memberList = mkOption {
       default = true;
-      description = "Display the first available name listed in your custom name format in the member list.";
+      description = "Display the first available name listed in your custom name format in the members list, DMs list, and friends list.";
       type = types.bool;
     };
     mentions = mkOption {
@@ -3236,7 +4127,7 @@ in
     };
     nicknameColor = mkOption {
       default = "Role-25";
-      description = ''The color to use for the nickname if it's not the first displayed. Leave blank for default. Accepts hex(a), rgb(a), or hsl(a) input. Use "Role" to follow the user's top role color. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
+      description = ''The color to use for the nickname if it's not the first displayed. Accepts any valid CSS input. Use "Role" to follow the user's top role colors, nitro effect colors, or IRCColors color if enabled. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
       type = types.str;
     };
     profilePopout = mkOption {
@@ -3269,9 +4160,14 @@ in
       description = "Truncate all names, not just usernames, while in Streamer Mode.";
       type = types.bool;
     };
+    typingIndicator = mkOption {
+      default = true;
+      description = "Display the first available name listed in your custom name format in the typing indicator.";
+      type = types.bool;
+    };
     usernameColor = mkOption {
       default = "Role-25";
-      description = ''The color to use for the username if it's not the first displayed. Leave blank for default. Accepts hex(a), rgb(a), or hsl(a) input. Use "Role" to follow the user's top role color. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
+      description = ''The color to use for the username if it's not the first displayed. Accepts any valid CSS input. Use "Role" to follow the user's top role colors, nitro effect colors, or IRCColors color if enabled. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
       type = types.str;
     };
     voiceChannels = mkOption {
@@ -3285,6 +4181,9 @@ in
   };
   showResourceChannels = {
     enable = mkEnableOption "shows the channels hidden behind the server resources in the channel list (Equicord-only)";
+  };
+  showSongName = {
+    enable = mkEnableOption "Shows song name instead of artist for Spotify activity (Equicord-only)";
   };
   sidebarChat = {
     enable = mkEnableOption "Open a another channel or a DM as a sidebar or as a popout (Equicord-only)";
@@ -3314,10 +4213,7 @@ in
     textHeader = mkOption {
       default = ">";
       description = "What header to preface text with";
-      type = types.enum [
-        ">"
-        "-#"
-      ];
+      type = types.str;
     };
   };
   silentTyping = {
@@ -3433,7 +4329,7 @@ in
       type = types.float;
     };
     imageLink = mkOption {
-      default = "https://images.equicord.org/api/files/raw/0199e730-70d5-7000-a44f-d1acb42064cc";
+      default = "https://equicord.org/assets/plugins/soggy/cat.png";
       description = "URL for the image (button and modal)";
       type = types.str;
     };
@@ -3466,6 +4362,19 @@ in
       type = types.str;
     };
   };
+  songSpotlight = {
+    enable = mkEnableOption "Show off songs on your profile (Equicord-only)";
+    collapseSongList = mkOption {
+      default = false;
+      description = "Collapses the song list on user profiles to a button which opens a separate menu";
+      type = types.bool;
+    };
+    profileSongsLimit = mkOption {
+      default = 6.0;
+      description = "How many songs are shown when initially clicking on a user";
+      type = types.float;
+    };
+  };
   sortFriends = {
     enable = mkEnableOption "Sorts friend requests by date of receipt (Equicord-only)";
     showDates = mkOption {
@@ -3483,14 +4392,6 @@ in
         ".ogg"
         ".mp3"
         ".wav"
-      ];
-    };
-    iconLocation = mkOption {
-      default = "toolbar";
-      description = "choose where to show the SoundBoard Log icon (requires restart) (restart required)";
-      type = types.enum [
-        "toolbar"
-        "chat"
       ];
     };
     soundVolume = mkOption {
@@ -3534,73 +4435,13 @@ in
   };
   spotifyActivityToggle = {
     enable = mkEnableOption "Adds a toggle button for Spotify activity visibility. (Equicord-only)";
-  };
-  statsfmPresence = {
-    enable = mkEnableOption "Statsfm presence to track your music (Equicord-only)";
-    alwaysHideArt = mkOption {
-      default = false;
-      description = "Disable downloading album art";
-      type = types.bool;
-    };
-    hideWithExternalRPC = mkOption {
-      default = false;
-      description = "Hides stats.fm presence if an external RPC is running";
-      type = types.bool;
-    };
-    hideWithSpotify = mkOption {
-      default = false;
-      description = "Hide stats.fm presence if spotify is running";
-      type = types.bool;
-    };
-    missingArt = mkOption {
-      default = "StatsFmLogo";
-      description = "When albums or albums art is missing";
+    location = mkOption {
+      default = "PANEL";
+      description = "Where to show the Spotify toggle button.";
       type = types.enum [
-        "StatsFmLogo"
-        "placeholder"
+        "PANEL"
+        "TOOLBOX"
       ];
-    };
-    nameFormat = mkOption {
-      default = "status-name";
-      description = "Show name of song and artist in status name";
-      type = types.enum [
-        "status-name"
-        "artist-first"
-        "song-first"
-        "artist"
-        "song"
-        "albums"
-      ];
-    };
-    shareSong = mkOption {
-      default = true;
-      description = "Show link to song on stats.fm";
-      type = types.bool;
-    };
-    shareUsername = mkOption {
-      default = false;
-      description = "Show link to stats.fm profile";
-      type = types.bool;
-    };
-    showStatsFmLogo = mkOption {
-      default = true;
-      description = "Show the Stats.fm next to the albums cover";
-      type = types.bool;
-    };
-    statusName = mkOption {
-      default = "Stats.fm";
-      description = "Custom status text";
-      type = types.str;
-    };
-    useListeningStatus = mkOption {
-      default = true;
-      description = ''Show "Listening to" status instead of "Playing"'';
-      type = types.bool;
-    };
-    username = mkOption {
-      default = null;
-      description = "Stats.fm username";
-      type = types.nullOr types.str;
     };
   };
   statusPresets = {
@@ -3625,7 +4466,7 @@ in
     };
   };
   steamStatusSync = {
-    enable = mkEnableOption "Sync your status to Steam! (Equicord-only)";
+    enable = mkEnableOption "Sync your status to Steam! (Online, Away, Invisible, or Offline.) (Equicord-only)";
     dndStatus = mkOption {
       default = "none";
       description = "Steam status when on Do Not Disturb";
@@ -3748,14 +4589,6 @@ in
   };
   tidalEmbeds = {
     enable = mkEnableOption "Embeds TIDAL songs to make them playable in Discord. (Equicord-only)";
-  };
-  timelessClips = {
-    enable = mkEnableOption "Add a your own clip length (Equicord-only)";
-    clipLength = mkOption {
-      default = 5.0;
-      description = "Add clip length option in minutes";
-      type = types.float;
-    };
   };
   timezones = {
     enable = mkEnableOption "Shows the local time of users in profiles and message headers (Equicord-only)";
@@ -3928,11 +4761,6 @@ in
       description = "Custom tone indicators (format: jk=Joking; srs=Serious)";
       type = types.str;
     };
-    maxIndicators = mkOption {
-      default = 5;
-      description = "Maximum number of tone indicators to show per message";
-      type = types.int;
-    };
     prefix = mkOption {
       default = "/";
       description = "Prefix character(s) for tone indicators.";
@@ -3997,6 +4825,29 @@ in
       ];
     };
   };
+  typingTweaks = {
+    enable = mkEnableOption "Show avatars and role colours in the typing indicator (Equicord-only)";
+    alternativeFormatting = mkOption {
+      default = true;
+      description = "Show a more useful message when several users are typing";
+      type = types.bool;
+    };
+    amITyping = mkOption {
+      default = false;
+      description = "Shows you if other people can see you typing (restart required)";
+      type = types.bool;
+    };
+    showAvatars = mkOption {
+      default = true;
+      description = "Show avatars in the typing indicator";
+      type = types.bool;
+    };
+    showRoleColors = mkOption {
+      default = true;
+      description = "Show role colors in the typing indicator";
+      type = types.bool;
+    };
+  };
   unitConverter = {
     enable = mkEnableOption "Converts metric units to Imperal units and vice versa (Equicord-only)";
     myUnits = mkOption {
@@ -4042,16 +4893,49 @@ in
       type = types.bool;
     };
   };
+  urlHighlighter = {
+    enable = mkEnableOption "Highlights URLs in messages that match your patterns. (Equicord-only)";
+    boldUrls = mkOption {
+      default = false;
+      description = "Make highlighted URLs bold.";
+      type = types.bool;
+    };
+    highlightEmbeds = mkOption {
+      default = false;
+      description = "Also highlight URLs in embed content.";
+      type = types.bool;
+    };
+    patterns = mkOption {
+      default = { };
+      description = "URL patterns to highlight using glob patterns.";
+      type = types.attrs;
+    };
+  };
   vcNarratorCustom = {
-    enable = mkEnableOption "Announces when users join, leave, or move voice channels via narrator. TikTok TTS version; speechSynthesis is pretty boring. Ported from https://github.com/Loukious/Vencord (Equicord-only)";
+    enable = mkEnableOption "Announces when users join, leave, or move voice channels via narrator using TikTok TTS. Revamped and back from the dead. (Equicord-only)";
+    announceOthersDeafen = mkOption {
+      default = false;
+      description = "Announce when other users deafen/undeafen in your current VC";
+      type = types.bool;
+    };
+    announceOthersMute = mkOption {
+      default = false;
+      description = "Announce when other users mute/unmute in your current VC";
+      type = types.bool;
+    };
+    announceOthersStream = mkOption {
+      default = false;
+      description = "Announce when other users start/stop streaming in your current VC";
+      type = types.bool;
+    };
+    announceSelfStream = mkOption {
+      default = false;
+      description = "Announce when you start/stop streaming";
+      type = types.bool;
+    };
     customVoice = mkOption {
       default = "en_us_001";
-      description = "Custom voice id, currently just tiktok";
-      type = types.str;
-    };
-    deafenMessage = mkOption {
-      default = "{{DISPLAY_NAME}} deafened";
-      description = "Deafen Message (only self for now)";
+      description = "Narrator voice";
       type = types.str;
     };
     ignoreSelf = mkOption {
@@ -4061,7 +4945,7 @@ in
     };
     joinMessage = mkOption {
       default = "{{DISPLAY_NAME}} joined";
-      description = "Join Message";
+      description = "Placeholders: {{USER}}, {{DISPLAY_NAME}}, {{NICKNAME}}, {{CHANNEL}}";
       type = types.str;
     };
     latinOnly = mkOption {
@@ -4079,11 +4963,6 @@ in
       description = "Move Message";
       type = types.str;
     };
-    muteMessage = mkOption {
-      default = "{{DISPLAY_NAME}} muted";
-      description = "Mute Message (only self for now)";
-      type = types.str;
-    };
     rate = mkOption {
       default = 1.0;
       description = "Narrator Speed";
@@ -4094,14 +4973,28 @@ in
       description = "Say own name";
       type = types.bool;
     };
-    undeafenMessage = mkOption {
-      default = "{{DISPLAY_NAME}} undeafened";
-      description = "Undeafen Message (only self for now)";
+    stateChangeCooldownMs = mkOption {
+      default = 1500.0;
+      description = "State-change announce cooldown (ms)";
+      type = types.float;
+    };
+    stateChangeFilterList = mkOption {
+      default = "";
+      description = "Comma-separated user IDs for whitelist/blacklist. Right-click users to add/remove.";
       type = types.str;
     };
-    unmuteMessage = mkOption {
-      default = "{{DISPLAY_NAME}} unmuted";
-      description = "Unmute Message (only self for now)";
+    stateChangeFilterMode = mkOption {
+      default = "off";
+      description = "Filter which users trigger state-change announcements";
+      type = types.enum [
+        "off"
+        "whitelist"
+        "blacklist"
+      ];
+    };
+    userVoiceMap = mkOption {
+      default = "";
+      description = "Per-user voice overrides (format: userId:voiceId,userId2:voiceId2). Right-click users to set.";
       type = types.str;
     };
     volume = mkOption {
@@ -4110,19 +5003,19 @@ in
       type = types.float;
     };
   };
-  videoSpeed = {
-    enable = mkEnableOption "Allows you to change the speed of videos (Equicord-only)";
-    preservePitch = mkOption {
-      default = false;
-      description = "Should pitch be preserved when changing speed? (restart required)";
-      type = types.bool;
-    };
-  };
   viewRawVariant = {
     enable = mkEnableOption "Copy/View raw content of any message, channel, or guild, but show in the right click menu. (Equicord-only)";
   };
   voiceButtons = {
     enable = mkEnableOption "Quickly DM, mute, or deafen any user right from the voice-call panel. (Equicord-only)";
+    buttonPosition = mkOption {
+      default = "left";
+      description = "Choose where to place voice buttons in the voice user row.";
+      type = types.enum [
+        "left"
+        "right"
+      ];
+    };
     disableVideo = mkOption {
       default = true;
       description = "Toggles their video upon clicking deafen button.";
@@ -4131,6 +5024,11 @@ in
     muteSoundboard = mkOption {
       default = true;
       description = "Toggles their soundboard upon clicking deafen button.";
+      type = types.bool;
+    };
+    serverSelf = mkOption {
+      default = false;
+      description = "Deafen / Mute yourself on the server when using mute/deafen.";
       type = types.bool;
     };
     showButtonsSelf = mkOption {
@@ -4157,13 +5055,18 @@ in
       description = "Whether you want to display the mute button (restart required)";
       type = types.bool;
     };
+    useServer = mkOption {
+      default = false;
+      description = "Use server mute/deafen instead of local when you have permission.";
+      type = types.bool;
+    };
     whichNameToShow = mkOption {
       default = "both";
       description = "Choose whether to show nickname or username in tooltip.";
       type = types.enum [
+        "both"
         "global"
         "username"
-        "both"
       ];
     };
   };
@@ -4252,6 +5155,70 @@ in
       description = "Do not send messages about blocked users joining/leaving/moving voice channels";
       type = types.bool;
     };
+    ignoredFriends = mkOption {
+      default = "";
+      description = "Comma or space separated list of friends' user IDs you do NOT want to recieve join messages from";
+      type = types.str;
+    };
+  };
+  voiceMessageTranscriber = {
+    enable = mkEnableOption "On-device transcriptions for voice messages powered by Whisper v3 (Equicord-only)";
+    quantized = mkOption {
+      default = true;
+      description = "Use quantized model (smaller size, slightly lower accuracy)";
+      type = types.bool;
+    };
+    selectedModel = mkOption {
+      default = "Xenova/whisper-base";
+      description = "Model size";
+      type = types.enum [
+        "Xenova/whisper-tiny"
+        "Xenova/whisper-base"
+        "Xenova/whisper-small"
+        "Xenova/whisper-medium"
+      ];
+    };
+  };
+  voiceRejoin = {
+    enable = mkEnableOption "Rejoins DM/Server call automatically when restarting Discord. (Equicord-only)";
+    applyOnlyToDms = mkOption {
+      default = false;
+      description = "Only apply to DMs.";
+      type = types.bool;
+    };
+    preventReconnectIfCallEnded = mkOption {
+      default = "both";
+      description = "Do not reconnect if the call has ended or the voice channel is empty or does not exist.";
+      type = types.enum [
+        "none"
+        "dms"
+        "servers"
+        "both"
+      ];
+    };
+    rejoinDelay = mkOption {
+      default = 2.0;
+      description = "Set Delay before rejoining voice channel.";
+      type = types.float;
+    };
+    rejoinTimeout = mkOption {
+      default = 30.0;
+      description = "Don't attempt to rejoin after this many seconds have passed since disconnecting.";
+      type = types.float;
+    };
+  };
+  waitForSlot = {
+    enable = mkEnableOption "Automatically join a full voice channel when a slot opens. (Equicord-only)";
+    autoJoin = mkOption {
+      default = false;
+      description = "Join the channel immediately instead of showing a notice.";
+      type = types.bool;
+    };
+    notificationSound = mkOption {
+      default = true;
+      description = "Play a sound when a slot becomes available.";
+      type = types.bool;
+    };
   };
   wallpaperFree = {
     enable = mkEnableOption "Recreation of the old DM wallpaper experiment; Set a background image for any channel, user or server. (Equicord-only)";
@@ -4313,8 +5280,5 @@ in
       description = "Strings not to capitilise (seperate with a comma)";
       type = types.str;
     };
-  };
-  youtubeDescription = {
-    enable = mkEnableOption "Adds descriptions to youtube video embeds (Equicord-only)";
   };
 }

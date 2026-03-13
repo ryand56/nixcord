@@ -3,9 +3,7 @@
 
 {
   lowerPluginTitles = [
-    "arRPCBun"
     "oneko"
-    "petpet"
   ];
   upperNames = [
     "usrbg"

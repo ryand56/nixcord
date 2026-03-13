@@ -24,7 +24,7 @@ in
     };
     apiKey = mkOption {
       default = null;
-      description = "Custom Last.fm API key. You shouldn't need to set this";
+      description = "Custom Last.fm API key. Not required but highly recommended to avoid rate limiting with our shared key";
       type = types.nullOr types.str;
     };
     clickableLinks = mkOption {
@@ -334,9 +334,6 @@ in
   betterGifAltText = {
     enable = mkEnableOption "Change GIF alt text from simply being 'GIF' to containing the gif tags / filename (Shared between Vencord and Equicord)";
   };
-  betterGifPicker = {
-    enable = mkEnableOption "Makes the gif picker open the favourite category by default (Shared between Vencord and Equicord)";
-  };
   betterNotesBox = {
     enable = mkEnableOption "Hide notes or disable spellcheck (Configure in settings!!) (Shared between Vencord and Equicord)";
     hide = mkOption {
@@ -412,17 +409,6 @@ in
   biggerStreamPreview = {
     enable = mkEnableOption "This plugin allows you to enlarge stream previews (Shared between Vencord and Equicord)";
   };
-  callTimer = {
-    enable = mkEnableOption "Adds a timer to vcs (Shared between Vencord and Equicord)";
-    format = mkOption {
-      default = "stopwatch";
-      description = "The timer format. This can be any valid moment.js format";
-      type = types.enum [
-        "stopwatch"
-        "human"
-      ];
-    };
-  };
   clientTheme = {
     enable = mkEnableOption "Recreation of the old client theme experiment. Add a color to your Discord client theme (Shared between Vencord and Equicord)";
     color = mkOption {
@@ -458,7 +444,7 @@ in
     };
     whitelistedLoggers = mkOption {
       default = "GatewaySocket; Routing/Utils";
-      description = "Semi colon separated list of loggers to allow even if others are hidden";
+      description = "Semicolon (;) separated list of loggers to allow even if others are hidden";
       type = types.str;
     };
   };
@@ -569,14 +555,6 @@ in
   dontRoundMyTimestamps = {
     enable = mkEnableOption "Always rounds relative timestamps down, so 7.6y becomes 7y instead of 8y (Shared between Vencord and Equicord)";
   };
-  experiments = {
-    enable = mkEnableOption "Enable Access to Experiments & other dev-only features in Discord! (Shared between Vencord and Equicord)";
-    toolbarDevMenu = mkOption {
-      default = false;
-      description = "Change the Help (?) toolbar button (top right in chat) to Discord's developer menu (restart required)";
-      type = types.bool;
-    };
-  };
   expressionCloner = {
     enable = mkEnableOption "Allows you to clone Emotes & Stickers to your own server (right click them) (Shared between Vencord and Equicord)";
   };
@@ -654,9 +632,6 @@ in
       type = types.bool;
     };
   };
-  favoriteEmojiFirst = {
-    enable = mkEnableOption "Puts your favorite emoji first in the emoji autocomplete. (Shared between Vencord and Equicord)";
-  };
   favoriteGifSearch = {
     enable = mkEnableOption "Adds a search bar to favorite gifs. (Shared between Vencord and Equicord)";
     searchOption = mkOption {
@@ -673,7 +648,12 @@ in
     enable = mkEnableOption "Removes the gap between codeblocks and text below it (Shared between Vencord and Equicord)";
   };
   fixImagesQuality = {
-    enable = mkEnableOption "Improves quality of images in chat by forcing png format (Shared between Vencord and Equicord)";
+    enable = mkEnableOption "Improves quality of images by loading them at their original resolution (Shared between Vencord and Equicord)";
+    originalImagesInChat = mkOption {
+      default = false;
+      description = "Also load the original image in Chat. WARNING: Read the caveats above";
+      type = types.bool;
+    };
   };
   fixSpotifyEmbeds = {
     enable = mkEnableOption "Fixes spotify embeds being incredibly loud by letting you customise the volume (Shared between Vencord and Equicord)";
@@ -685,6 +665,11 @@ in
   };
   fixYoutubeEmbeds = {
     enable = mkEnableOption "Bypasses youtube videos being blocked from display on Discord (for example by UMG) (Shared between Vencord and Equicord)";
+    youtubeDescription = mkOption {
+      default = false;
+      description = "Adds descriptions to youtube video embeds (restart required)";
+      type = types.bool;
+    };
   };
   forceOwnerCrown = {
     enable = mkEnableOption "Force the owner crown next to usernames even if the server is large. (Shared between Vencord and Equicord)";
@@ -703,6 +688,14 @@ in
   };
   gameActivityToggle = {
     enable = mkEnableOption "Adds a button next to the mic and deafen button to toggle game activity. (Shared between Vencord and Equicord)";
+    location = mkOption {
+      default = "PANEL";
+      description = "Where to show the game activity toggle button";
+      type = types.enum [
+        "PANEL"
+        "TOOLBOX"
+      ];
+    };
     oldIcon = mkOption {
       default = false;
       description = "Use the old icon style before Discord icon redesign";
@@ -913,29 +906,6 @@ in
       type = types.bool;
     };
   };
-  messageClickActions = {
-    enable = mkEnableOption "Hold Backspace and click to delete, double click to edit/reply (Shared between Vencord and Equicord)";
-    enableDeleteOnClick = mkOption {
-      default = true;
-      description = "Enable delete on click while holding backspace";
-      type = types.bool;
-    };
-    enableDoubleClickToEdit = mkOption {
-      default = true;
-      description = "Enable double click to edit";
-      type = types.bool;
-    };
-    enableDoubleClickToReply = mkOption {
-      default = true;
-      description = "Enable double click to reply";
-      type = types.bool;
-    };
-    requireModifier = mkOption {
-      default = false;
-      description = "Only do double click actions when shift/ctrl is held";
-      type = types.bool;
-    };
-  };
   messageLatency = {
     enable = mkEnableOption "Displays an indicator for messages that took ≥n seconds to send (Shared between Vencord and Equicord)";
     detectDiscordKotlin = mkOption {
@@ -1051,7 +1021,7 @@ in
     };
     roleList = mkOption {
       default = "1234567890123445,1234567890123445";
-      description = "List of roles to allow or exempt pings for (separated by commas or spaces)";
+      description = "List of role ids to allow or exempt pings for (separated by commas or spaces)";
       type = types.str;
     };
     shouldPingListed = mkOption {
@@ -1061,7 +1031,7 @@ in
     };
     userList = mkOption {
       default = "1234567890123445,1234567890123445";
-      description = "List of users to allow or exempt pings for (separated by commas or spaces)";
+      description = "List of user ids to allow or exempt pings for (separated by commas or spaces)";
       type = types.str;
     };
   };
@@ -1165,43 +1135,6 @@ in
   };
   plainFolderIcon = {
     enable = mkEnableOption "Dont show the small guild icons in folders (Shared between Vencord and Equicord)";
-  };
-  platformIndicators = {
-    enable = mkEnableOption "Adds platform indicators (Desktop, Mobile, Web...) to users (Shared between Vencord and Equicord)";
-    colorMobileIndicator = mkOption {
-      default = true;
-      description = "Whether to make the mobile indicator match the color of the user status. (restart required)";
-      type = types.bool;
-    };
-    consoleIcon = mkOption {
-      default = "equicord";
-      description = "What console icon to use (restart required)";
-      type = types.enum [
-        "equicord"
-        "suncord"
-        "vencord"
-      ];
-    };
-    list = mkOption {
-      default = true;
-      description = "Show indicators in the member list";
-      type = types.bool;
-    };
-    messages = mkOption {
-      default = true;
-      description = "Show indicators inside messages";
-      type = types.bool;
-    };
-    profiles = mkOption {
-      default = true;
-      description = "Show indicators in user profiles";
-      type = types.bool;
-    };
-    showBots = mkOption {
-      default = false;
-      description = "Whether to show platform indicators on bots";
-      type = types.bool;
-    };
   };
   previewMessage = {
     enable = mkEnableOption "Lets you preview your message before sending it. (Shared between Vencord and Equicord)";
@@ -1573,29 +1506,6 @@ in
     showAutoTranslateTooltip = mkOption {
       default = true;
       description = "Show a tooltip on the ChatBar button whenever a message is automatically translated";
-      type = types.bool;
-    };
-    showChatBarButton = mkOption {
-      default = true;
-      description = "Show translate button in chat bar";
-      type = types.bool;
-    };
-  };
-  typingTweaks = {
-    enable = mkEnableOption "Show avatars and role colours in the typing indicator (Shared between Vencord and Equicord)";
-    alternativeFormatting = mkOption {
-      default = true;
-      description = "Show a more useful message when several users are typing";
-      type = types.bool;
-    };
-    showAvatars = mkOption {
-      default = true;
-      description = "Show avatars in the typing indicator";
-      type = types.bool;
-    };
-    showRoleColors = mkOption {
-      default = true;
-      description = "Show role colors in the typing indicator";
       type = types.bool;
     };
   };

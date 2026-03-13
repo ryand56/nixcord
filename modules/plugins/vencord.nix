@@ -168,11 +168,59 @@ in
       type = types.bool;
     };
   };
+  betterGifPicker = {
+    enable = mkEnableOption "Makes the gif picker open the favourite category by default (Vencord-only)";
+  };
+  callTimer = {
+    enable = mkEnableOption "Adds a timer to vcs (Vencord-only)";
+    format = mkOption {
+      default = "stopwatch";
+      description = "The timer format. This can be any valid moment.js format";
+      type = types.enum [
+        "stopwatch"
+        "human"
+      ];
+    };
+  };
   devCompanion = {
     enable = mkEnableOption "Dev Companion Plugin (Vencord-only)";
     notifyOnAutoConnect = mkOption {
       default = true;
       description = "Whether to notify when Dev Companion has automatically connected.";
+      type = types.bool;
+    };
+  };
+  experiments = {
+    enable = mkEnableOption "Enable Access to Experiments & other dev-only features in Discord! (Vencord-only)";
+    toolbarDevMenu = mkOption {
+      default = false;
+      description = "Change the Help (?) toolbar button (top right in chat) to Discord's developer menu (restart required)";
+      type = types.bool;
+    };
+  };
+  favoriteEmojiFirst = {
+    enable = mkEnableOption "Puts your favorite emoji first in the emoji autocomplete. (Vencord-only)";
+  };
+  messageClickActions = {
+    enable = mkEnableOption "Hold Backspace and click to delete, double click to edit/reply (Vencord-only)";
+    enableDeleteOnClick = mkOption {
+      default = true;
+      description = "Enable delete on click while holding backspace";
+      type = types.bool;
+    };
+    enableDoubleClickToEdit = mkOption {
+      default = true;
+      description = "Enable double click to edit";
+      type = types.bool;
+    };
+    enableDoubleClickToReply = mkOption {
+      default = true;
+      description = "Enable double click to reply";
+      type = types.bool;
+    };
+    requireModifier = mkOption {
+      default = false;
+      description = "Only do double click actions when shift/ctrl is held";
       type = types.bool;
     };
   };
@@ -301,6 +349,14 @@ in
   };
   oneko = {
     enable = mkEnableOption "cat follow mouse (real) (Vencord-only)";
+  };
+  platformIndicators = {
+    enable = mkEnableOption "Adds platform indicators (Desktop, Mobile, Web...) to users (Vencord-only)";
+    colorMobileIndicator = mkOption {
+      default = true;
+      description = "Whether to make the mobile indicator match the color of the user status. (restart required)";
+      type = types.bool;
+    };
   };
   serverInfo = {
     enable = mkEnableOption "Allows you to view info about a server (Vencord-only)";
@@ -443,6 +499,24 @@ in
         1
         2
       ];
+    };
+  };
+  typingTweaks = {
+    enable = mkEnableOption "Show avatars and role colours in the typing indicator (Vencord-only)";
+    alternativeFormatting = mkOption {
+      default = true;
+      description = "Show a more useful message when several users are typing";
+      type = types.bool;
+    };
+    showAvatars = mkOption {
+      default = true;
+      description = "Show avatars in the typing indicator";
+      type = types.bool;
+    };
+    showRoleColors = mkOption {
+      default = true;
+      description = "Show role colors in the typing indicator";
+      type = types.bool;
     };
   };
   vencordToolbox = {

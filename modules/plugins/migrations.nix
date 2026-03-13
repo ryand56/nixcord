@@ -12,6 +12,1036 @@ let
 in
 {
   imports = [
+    # AllCallTimers -> CallTimer
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "allCallTimers"
+          "allCallTimers"
+        ]
+      )
+      (
+        base
+        ++ [
+          "callTimer"
+          "allCallTimers"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "allCallTimers"
+          "enable"
+        ]
+      )
+      (
+        base
+        ++ [
+          "callTimer"
+          "enable"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "allCallTimers"
+          "format"
+        ]
+      )
+      (
+        base
+        ++ [
+          "callTimer"
+          "format"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "allCallTimers"
+          "showRoleColor"
+        ]
+      )
+      (
+        base
+        ++ [
+          "callTimer"
+          "showRoleColor"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "allCallTimers"
+          "showSeconds"
+        ]
+      )
+      (
+        base
+        ++ [
+          "callTimer"
+          "showSeconds"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "allCallTimers"
+          "showWithoutHover"
+        ]
+      )
+      (
+        base
+        ++ [
+          "callTimer"
+          "showWithoutHover"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "allCallTimers"
+          "trackSelf"
+        ]
+      )
+      (
+        base
+        ++ [
+          "callTimer"
+          "trackSelf"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "allCallTimers"
+          "watchLargeGuilds"
+        ]
+      )
+      (
+        base
+        ++ [
+          "callTimer"
+          "watchLargeGuilds"
+        ]
+      )
+    )
+
+    # AmITyping -> TypingTweaks
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "AmITyping"
+          "alternativeFormatting"
+        ]
+      )
+      (
+        base
+        ++ [
+          "typingTweaks"
+          "alternativeFormatting"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "AmITyping"
+          "amITyping"
+        ]
+      )
+      (
+        base
+        ++ [
+          "typingTweaks"
+          "amITyping"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "AmITyping"
+          "enable"
+        ]
+      )
+      (
+        base
+        ++ [
+          "typingTweaks"
+          "enable"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "AmITyping"
+          "showAvatars"
+        ]
+      )
+      (
+        base
+        ++ [
+          "typingTweaks"
+          "showAvatars"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "AmITyping"
+          "showRoleColors"
+        ]
+      )
+      (
+        base
+        ++ [
+          "typingTweaks"
+          "showRoleColors"
+        ]
+      )
+    )
+
+    # QuestCompleter -> Questify
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "claimedSubsort"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "claimedSubsort"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "completeAchievementQuestsInBackground"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "completeAchievementQuestsInBackground"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "completeGameQuestsInBackground"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "completeGameQuestsInBackground"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "completeVideoQuestsInBackground"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "completeVideoQuestsInBackground"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableFriendsListActiveNowPromotion"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableFriendsListActiveNowPromotion"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableMembersListActivelyPlayingIcon"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableMembersListActivelyPlayingIcon"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableQuestsBadgeOnUserProfiles"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableQuestsBadgeOnUserProfiles"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableQuestsDirectMessagesTab"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableQuestsDirectMessagesTab"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableQuestsDiscoveryTab"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableQuestsDiscoveryTab"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableQuestsEverything"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableQuestsEverything"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableQuestsFetchingQuests"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableQuestsFetchingQuests"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableQuestsGiftInventoryRelocationNotice"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableQuestsGiftInventoryRelocationNotice"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableQuestsPageSponsoredBanner"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableQuestsPageSponsoredBanner"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "disableQuestsPopupAboveAccountPanel"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "disableQuestsPopupAboveAccountPanel"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "enable"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "enable"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "expiredSubsort"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "expiredSubsort"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "fetchingQuestsAlert"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "fetchingQuestsAlert"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "fetchingQuestsAlertVolume"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "fetchingQuestsAlertVolume"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "fetchingQuestsInterval"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "fetchingQuestsInterval"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "ignoredQuestIDs"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "ignoredQuestIDs"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "ignoredQuestProfile"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "ignoredQuestProfile"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "ignoredSubsort"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "ignoredSubsort"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "lastQuestPageFilters"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "lastQuestPageFilters"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "lastQuestPageSort"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "lastQuestPageSort"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "makeMobileQuestsDesktopCompatible"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "makeMobileQuestsDesktopCompatible"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "notifyOnQuestComplete"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "notifyOnQuestComplete"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "onQuestsPage"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "onQuestsPage"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questButtonBadgeColor"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questButtonBadgeColor"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questButtonDisplay"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questButtonDisplay"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questButtonLeftClickAction"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questButtonLeftClickAction"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questButtonMiddleClickAction"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questButtonMiddleClickAction"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questButtonRightClickAction"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questButtonRightClickAction"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questButtonUnclaimed"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questButtonUnclaimed"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questRewardIncludeCollectibles"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questRewardIncludeCollectibles"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questRewardIncludeInGame"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questRewardIncludeInGame"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questRewardIncludeNitroCode"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questRewardIncludeNitroCode"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questRewardIncludeOrbs"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questRewardIncludeOrbs"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "questRewardIncludeRewardCode"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "questRewardIncludeRewardCode"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "rememberQuestPageFilters"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "rememberQuestPageFilters"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "rememberQuestPageSort"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "rememberQuestPageSort"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "reorderQuests"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "reorderQuests"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "restyleQuestsClaimed"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "restyleQuestsClaimed"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "restyleQuestsExpired"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "restyleQuestsExpired"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "restyleQuestsGradient"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "restyleQuestsGradient"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "restyleQuestsIgnored"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "restyleQuestsIgnored"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "restyleQuestsPreload"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "restyleQuestsPreload"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "restyleQuestsUnclaimed"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "restyleQuestsUnclaimed"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "resumeQuestIDs"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "resumeQuestIDs"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "triggerQuestsRerender"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "triggerQuestsRerender"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "unclaimedSubsort"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "unclaimedSubsort"
+        ]
+      )
+    )
+    (lib.modules.mkRenamedOptionModule
+      (
+        base
+        ++ [
+          "questCompleter"
+          "unclaimedUnignoredQuests"
+        ]
+      )
+      (
+        base
+        ++ [
+          "questify"
+          "unclaimedUnignoredQuests"
+        ]
+      )
+    )
+
     # Setting renames: fontLoader
     (lib.modules.doRename {
       from = base ++ [
@@ -21,6 +1051,21 @@ in
       to = base ++ [
         "fontLoader"
         "applyOnCodeBlocks"
+      ];
+      visible = false;
+      warn = true;
+      use = x: x;
+    })
+
+    # Setting renames: globalBadges
+    (lib.modules.doRename {
+      from = base ++ [
+        "globalBadges"
+        "showRa1ncord"
+      ];
+      to = base ++ [
+        "globalBadges"
+        "showRaincord"
       ];
       visible = false;
       warn = true;
