@@ -19,8 +19,8 @@ export default defineConfig({
     globals: true,
     include: ['tests/**/*.test.ts'],
     testTimeout: 20000,
-    maxWorkers: 4,
-    pool: 'forks',
+    pool: 'threads',
+    isolate: false,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

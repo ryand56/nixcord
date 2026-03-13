@@ -3,19 +3,30 @@ import { Project, ModuleKind } from 'ts-morph';
 import { createMinimalProps } from '../../src/extractor/type-inference/types.js';
 import type { SettingProperties } from '../../src/extractor/type-inference/types.js';
 
+let cachedProject: Project | undefined;
+
 export function createProject(): Project {
-  return new Project({
-    skipAddingFilesFromTsConfig: true,
-    skipFileDependencyResolution: true,
-    skipLoadingLibFiles: true,
-    compilerOptions: {
-      target: 99, // ES2022
-      module: ModuleKind.ESNext,
-      jsx: 2, // React
-      allowJs: true,
-      skipLibCheck: true,
-    },
-  });
+  if (!cachedProject) {
+    cachedProject = new Project({
+      skipAddingFilesFromTsConfig: true,
+      skipFileDependencyResolution: true,
+      skipLoadingLibFiles: true,
+      compilerOptions: {
+        target: 99, // ES2022
+        module: ModuleKind.ESNext,
+        jsx: 2, // React
+        allowJs: true,
+        skipLibCheck: true,
+      },
+    });
+  }
+
+  // Clear source files from previous test to avoid name collisions
+  for (const sf of cachedProject.getSourceFiles()) {
+    cachedProject.removeSourceFile(sf);
+  }
+
+  return cachedProject;
 }
 
 export function createSettingProperties(

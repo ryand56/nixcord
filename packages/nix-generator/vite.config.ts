@@ -26,7 +26,6 @@ export default defineConfig({
     globals: true,
     include: ['tests/**/*.test.ts'],
     testTimeout: 20000,
-    maxWorkers: 4,
-    pool: 'forks',
+    pool: 'threads',
   },
 });
