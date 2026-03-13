@@ -2,7 +2,7 @@
   config,
   lib,
   pkgs,
-  nixcordPkgs ? {},
+  nixcordPkgs ? { },
   ...
 }:
 let
@@ -17,6 +17,8 @@ let
     applyPostPatch
     mkIsQuickCssUsed
     mkPluginKit
+    mkAssertions
+    mkDorionConfigAttrs
     ;
 
   dop = with types; coercedTo package (a: a.outPath) pathInStore;
@@ -203,11 +205,13 @@ in
         })
         {
           home.file."${cfg.vesktop.configDir}/settings/settings.json".text = builtins.toJSON (
-            mkVencordCfg (filterPluginsFor "vencord" (mergeAttrsList [
-              cfg.config
-              cfg.extraConfig
-              cfg.vesktopConfig
-            ]))
+            mkVencordCfg (
+              filterPluginsFor "vencord" (mergeAttrsList [
+                cfg.config
+                cfg.extraConfig
+                cfg.vesktopConfig
+              ])
+            )
           );
         }
         (mkIf (cfg.vesktop.settings != { }) {
@@ -235,11 +239,13 @@ in
         })
         {
           home.file."${cfg.equibop.configDir}/settings/settings.json".text = builtins.toJSON (
-            mkVencordCfg (filterPluginsFor "equicord" (mergeAttrsList [
-              cfg.config
-              cfg.extraConfig
-              cfg.equibopConfig
-            ]))
+            mkVencordCfg (
+              filterPluginsFor "equicord" (mergeAttrsList [
+                cfg.config
+                cfg.extraConfig
+                cfg.equibopConfig
+              ])
+            )
           );
         }
         (mkIf (cfg.equibop.settings != { }) {
@@ -264,26 +270,7 @@ in
       (mkIf cfg.dorion.enable (mkMerge [
         {
           home.file."${cfg.dorion.configDir}/config.json".text =
-            let
-              toSnakeCase =
-                str:
-                lib.pipe str [
-                  (builtins.split "([A-Z])")
-                  (builtins.foldl' (
-                    acc: part:
-                    if builtins.isList part then acc + "_" + (lib.toLower (builtins.elemAt part 0)) else acc + part
-                  ) "")
-                  (builtins.replaceStrings [ "__" ] [ "_" ])
-                ];
-              dorionConfig = {
-                autoupdate = false;
-              }
-              // (lib.mapAttrs' (name: value: {
-                name = toSnakeCase name;
-                inherit value;
-              }) (builtins.removeAttrs cfg.dorion [ "extraSettings" ]));
-            in
-            builtins.toJSON (dorionConfig // cfg.dorion.extraSettings);
+            builtins.toJSON (mkDorionConfigAttrs { inherit cfg; });
         }
         {
           home.activation.setupDorionVencordSettings = activationScripts.setupDorionVencordSettings;
@@ -300,35 +287,9 @@ in
             ;
         };
 
-        assertions =
-          let
-            allPlugins = { plugins =
-              (cfg.config.plugins or {})
-              // (cfg.extraConfig.plugins or {})
-              // (cfg.vencordConfig.plugins or {})
-              // (cfg.equicordConfig.plugins or {})
-              // (cfg.vesktopConfig.plugins or {})
-              // (cfg.equibopConfig.plugins or {});
-            };
-            wrongEquicordPlugins = collectEnabledEquicordOnlyPlugins allPlugins;
-            wrongVencordPlugins = collectEnabledVencordOnlyPlugins allPlugins;
-            hasVencordClient = cfg.discord.vencord.enable || cfg.vesktop.enable;
-            hasEquicordClient = cfg.discord.equicord.enable || cfg.equibop.enable;
-          in
-          [
-            {
-              assertion = !(cfg.discord.vencord.enable && cfg.discord.equicord.enable);
-              message = "programs.nixcord.discord.vencord.enable and programs.nixcord.discord.equicord.enable cannot both be enabled at the same time. They are mutually exclusive.";
-            }
-            {
-              assertion = !(hasVencordClient && !hasEquicordClient) || wrongEquicordPlugins == [];
-              message = "The following Equicord-only plugins are enabled but only Vencord-based clients are active: ${lib.concatStringsSep ", " wrongEquicordPlugins}. These plugins are not available in Vencord.";
-            }
-            {
-              assertion = !(hasEquicordClient && !hasVencordClient) || wrongVencordPlugins == [];
-              message = "The following Vencord-only plugins are enabled but only Equicord-based clients are active: ${lib.concatStringsSep ", " wrongVencordPlugins}. These plugins are not available in Equicord.";
-            }
-          ];
+        assertions = mkAssertions {
+          inherit cfg collectEnabledEquicordOnlyPlugins collectEnabledVencordOnlyPlugins;
+        };
       }
     ])
   );

@@ -83,9 +83,14 @@ let
         let
           allowedNames =
             builtins.attrNames sharedPlugins
-            ++ (if client == "vencord" then builtins.attrNames vencordOnlyPlugins
-                else if client == "equicord" then builtins.attrNames equicordOnlyPlugins
-                else []);
+            ++ (
+              if client == "vencord" then
+                builtins.attrNames vencordOnlyPlugins
+              else if client == "equicord" then
+                builtins.attrNames equicordOnlyPlugins
+              else
+                [ ]
+            );
           mask = lib.genAttrs allowedNames (_: null);
           plugins = configAttrs.plugins or { };
         in
@@ -93,11 +98,14 @@ let
 
       filterPluginsForClient =
         configAttrs:
-        filterPluginsFor
-          (if cfg.discord.vencord.enable then "vencord"
-           else if cfg.discord.equicord.enable then "equicord"
-           else "none")
-          configAttrs;
+        filterPluginsFor (
+          if cfg.discord.vencord.enable then
+            "vencord"
+          else if cfg.discord.equicord.enable then
+            "equicord"
+          else
+            "none"
+        ) configAttrs;
 
       mkFullConfig =
         {
@@ -215,6 +223,128 @@ let
     lib.concatMapStringsSep "\n" lib.id (
       discordCopies ++ vesktopCopies ++ equibopCopies ++ dorionCopies
     );
+  toSnakeCase =
+    str:
+    lib.pipe str [
+      (builtins.split "([A-Z])")
+      (builtins.foldl' (
+        acc: part:
+        if builtins.isList part then acc + "_" + (lib.toLower (builtins.elemAt part 0)) else acc + part
+      ) "")
+      (builtins.replaceStrings [ "__" ] [ "_" ])
+    ];
+
+  mkDorionConfigAttrs =
+    { cfg }:
+    let
+      dorionConfig = {
+        autoupdate = false;
+      }
+      // (lib.mapAttrs' (name: value: {
+        name = toSnakeCase name;
+        inherit value;
+      }) (builtins.removeAttrs cfg.dorion [ "extraSettings" ]));
+    in
+    dorionConfig // cfg.dorion.extraSettings;
+
+  mkAssertions =
+    {
+      cfg,
+      collectEnabledEquicordOnlyPlugins,
+      collectEnabledVencordOnlyPlugins,
+    }:
+    let
+      allPlugins = {
+        plugins =
+          (cfg.config.plugins or { })
+          // (cfg.extraConfig.plugins or { })
+          // (cfg.vencordConfig.plugins or { })
+          // (cfg.equicordConfig.plugins or { })
+          // (cfg.vesktopConfig.plugins or { })
+          // (cfg.equibopConfig.plugins or { });
+      };
+      wrongEquicordPlugins = collectEnabledEquicordOnlyPlugins allPlugins;
+      wrongVencordPlugins = collectEnabledVencordOnlyPlugins allPlugins;
+      hasVencordClient = cfg.discord.vencord.enable || cfg.vesktop.enable;
+      hasEquicordClient = cfg.discord.equicord.enable || cfg.equibop.enable;
+    in
+    [
+      {
+        assertion = !(cfg.discord.vencord.enable && cfg.discord.equicord.enable);
+        message = "programs.nixcord.discord.vencord.enable and programs.nixcord.discord.equicord.enable cannot both be enabled at the same time. They are mutually exclusive.";
+      }
+      {
+        assertion = !(hasVencordClient && !hasEquicordClient) || wrongEquicordPlugins == [ ];
+        message = "The following Equicord-only plugins are enabled but only Vencord-based clients are active: ${lib.concatStringsSep ", " wrongEquicordPlugins}. These plugins are not available in Vencord.";
+      }
+      {
+        assertion = !(hasEquicordClient && !hasVencordClient) || wrongVencordPlugins == [ ];
+        message = "The following Vencord-only plugins are enabled but only Equicord-based clients are active: ${lib.concatStringsSep ", " wrongVencordPlugins}. These plugins are not available in Equicord.";
+      }
+    ];
+
+  mkSettingsFiles =
+    {
+      pkgs,
+      cfg,
+      mkVencordCfg,
+      vencordFullConfig,
+      equicordFullConfig,
+      vesktopFullConfig,
+      equibopFullConfig,
+    }:
+    {
+      vencordSettingsFile = pkgs.writeText "nixcord-settings.json" (
+        builtins.toJSON (mkVencordCfg vencordFullConfig)
+      );
+      equicordSettingsFile = pkgs.writeText "nixcord-equicord-settings.json" (
+        builtins.toJSON (mkVencordCfg equicordFullConfig)
+      );
+      discordSettingsFile =
+        if cfg.discord.settings != { } then
+          pkgs.writeText "nixcord-discord-settings.json" (builtins.toJSON (mkVencordCfg cfg.discord.settings))
+        else
+          null;
+      vesktopSettingsFile = pkgs.writeText "nixcord-vesktop-settings.json" (
+        builtins.toJSON (mkVencordCfg vesktopFullConfig)
+      );
+      vesktopClientSettingsFile =
+        if cfg.vesktop.settings != { } then
+          pkgs.writeText "nixcord-vesktop-client-settings.json" (
+            builtins.toJSON (mkVencordCfg cfg.vesktop.settings)
+          )
+        else
+          null;
+      vesktopStateFile =
+        if cfg.vesktop.state != { } then
+          pkgs.writeText "nixcord-vesktop-state.json" (builtins.toJSON (mkVencordCfg cfg.vesktop.state))
+        else
+          null;
+      equibopSettingsFile = pkgs.writeText "nixcord-equibop-settings.json" (
+        builtins.toJSON (mkVencordCfg equibopFullConfig)
+      );
+      equibopClientSettingsFile =
+        if cfg.equibop.settings != { } then
+          pkgs.writeText "nixcord-equibop-client-settings.json" (
+            builtins.toJSON (mkVencordCfg cfg.equibop.settings)
+          )
+        else
+          null;
+      equibopStateFile =
+        if cfg.equibop.state != { } then
+          pkgs.writeText "nixcord-equibop-state.json" (builtins.toJSON (mkVencordCfg cfg.equibop.state))
+        else
+          null;
+    };
+
+  mkThemeFile =
+    { pkgs }:
+    name: value:
+    if builtins.isPath value || lib.isStorePath value then
+      value
+    else
+      pkgs.writeText "nixcord-theme-${name}.css" value;
+
 in
 {
   inherit
@@ -223,5 +353,10 @@ in
     mkIsQuickCssUsed
     mkPluginKit
     mkCopyCommands
+    toSnakeCase
+    mkDorionConfigAttrs
+    mkAssertions
+    mkSettingsFiles
+    mkThemeFile
     ;
 }
