@@ -2,9 +2,14 @@
   "name": "@nixcord/parser",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
   "exports": {
     ".": "./src/index.ts"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "dependencies": {
     "@nixcord/ast": "^1.0.0",
     "@nixcord/shared": "^1.0.0",

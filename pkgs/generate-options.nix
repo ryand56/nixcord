@@ -23,6 +23,7 @@ stdenv.mkDerivation {
       || baseName == "package-lock.json"
       || baseName == "tsconfig.base.json"
       || baseName == "vitest.workspace.ts"
+      || baseName == "vitest.projects.ts"
       || relPath == "modules"
       || relPath == "modules/plugins"
       || relPath == "modules/plugins/deprecated.nix"
@@ -41,6 +42,12 @@ stdenv.mkDerivation {
 
   npmDeps = importNpmLock { npmRoot = ../.; };
 
+  buildPhase = ''
+    runHook preBuild
+    npm run build --workspaces
+    runHook postBuild
+  '';
+
   doCheck = true;
 
   checkPhase = ''
@@ -55,7 +62,7 @@ stdenv.mkDerivation {
     mkdir -p "$out/plugins"
     cp modules/plugins/deprecated.nix "$out/plugins/deprecated.nix"
 
-    ${lib.getExe nodejs} --import tsx packages/cli/src/index.ts \
+    ${lib.getExe nodejs} packages/cli/dist/index.js \
       --vencord "${vencord.src}" \
       --vencord-plugins src/plugins \
       --equicord "${equicord.src}" \

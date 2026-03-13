@@ -2,9 +2,14 @@
   "name": "@nixcord/git-analyzer",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
   "exports": {
     ".": "./src/index.ts"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "dependencies": {
     "pathe": "^2.0.3"
   }
