@@ -92,6 +92,9 @@ tags
 
 ### Node.js ###
 node_modules/
+
+# Bun
+bun.lockb
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

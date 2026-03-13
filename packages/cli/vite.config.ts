@@ -11,6 +11,7 @@ export default defineConfig({
       output: {
         format: 'esm',
         entryFileNames: 'index.js',
+        banner: 'import { fileURLToPath as __fileURLToPath } from "node:url"; import { dirname as __pathDirname } from "node:path"; const __filename = __fileURLToPath(import.meta.url); const __dirname = __pathDirname(__filename);',
       },
     },
   },

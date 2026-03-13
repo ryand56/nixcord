@@ -1,13 +1,14 @@
 {
-  stdenv,
+  stdenvNoCC,
   lib,
   nodejs,
-  importNpmLock,
+  bun,
+  writableTmpDirAsHomeHook,
   vencord,
   equicord,
   nix,
 }:
-stdenv.mkDerivation {
+stdenvNoCC.mkDerivation (finalAttrs: {
   name = "nixcord-plugin-options";
   version = "generated";
 
@@ -20,7 +21,7 @@ stdenv.mkDerivation {
         relPath = lib.removePrefix (toString ../. + "/") (toString path);
       in
       baseName == "package.json"
-      || baseName == "package-lock.json"
+      || baseName == "bun.lock"
       || baseName == "tsconfig.base.json"
       || baseName == "vitest.workspace.ts"
       || baseName == "vitest.projects.ts"
@@ -34,17 +35,67 @@ stdenv.mkDerivation {
         && !(lib.hasInfix "/dist/" relPath);
   };
 
+  node_modules = stdenvNoCC.mkDerivation {
+    pname = "nixcord-node_modules";
+    inherit (finalAttrs) version src;
+
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+      "GIT_PROXY_COMMAND"
+      "SOCKS_SERVER"
+    ];
+
+    nativeBuildInputs = [
+      bun
+      writableTmpDirAsHomeHook
+    ];
+
+    dontConfigure = true;
+
+    buildPhase = ''
+      runHook preBuild
+
+      bun install \
+        --frozen-lockfile \
+        --ignore-scripts \
+        --no-progress
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out
+      find . -type d -name node_modules -exec cp -R --parents {} $out \;
+
+      runHook postInstall
+    '';
+
+    dontFixup = true;
+
+    outputHash = "sha256-pZ53nXpnJ3KWLkybMQXflrTiXNiz4BE+obbaVcQQhjc=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
   nativeBuildInputs = [
+    bun
     nodejs
     nix
-    importNpmLock.hooks.npmConfigHook
+    writableTmpDirAsHomeHook
   ];
 
-  npmDeps = importNpmLock { npmRoot = ../.; };
+  configurePhase = ''
+    runHook preConfigure
+
+    cp -R ${finalAttrs.node_modules}/. .
+
+    runHook postConfigure
+  '';
 
   buildPhase = ''
     runHook preBuild
-    npm run build --workspaces
+    bun run --filter '*' build
     runHook postBuild
   '';
 
@@ -91,4 +142,4 @@ stdenv.mkDerivation {
 
     runHook postInstallCheck
   '';
-}
+})
