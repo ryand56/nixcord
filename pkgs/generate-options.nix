@@ -116,7 +116,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ${lib.getExe nodejs} packages/cli/dist/index.js \
       --vencord "${vencord.src}" \
       --vencord-plugins src/plugins \
-      --equicord "${equicord.src}" \
+      --equicord "${equicord.srcWithGit or equicord.src}" \
       --equicord-plugins src/equicordplugins \
       --output "$out/dummy.nix" \
       --verbose

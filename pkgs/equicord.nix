@@ -15,11 +15,8 @@
 }:
 let
   version = "v1.14.5.0";
-  hash =
-    if stdenvNoCC.isDarwin then
-      "sha256-GTe0NpOo85isCQB/PeHM7+THV8OjACtfDAGIykOCL3Q="
-    else
-      "sha256-oAzmphZbd7dbxoqXxWxEPDA1yTntkRPQJVAqZjS4EHA=";
+  hash = "sha256-oAzmphZbd7dbxoqXxWxEPDA1yTntkRPQJVAqZjS4EHA=";
+  gitHash = "sha256-fT9vC6jNIbmk6vjsbAVuVsVmr5Bnehz/D4a/rXI5LMY=";
   pnpmDepsHashDarwin = "sha256-dudV1ZQXFlXfU6yRrQYsfQmXD8jb0QNICva/cdS/s+4=";
   pnpmDepsHashLinux = "sha256-7YkB7KO96UUeVAk5VwxGcAhHYDTue7gj0nk/gxs3BmI=";
   pnpmDepsHash = if stdenvNoCC.isDarwin then pnpmDepsHashDarwin else pnpmDepsHashLinux;
@@ -29,6 +26,11 @@ let
     inherit owner repo;
     tag = version;
     inherit hash;
+  };
+  srcWithGit = fetchFromGitHub {
+    inherit owner repo;
+    tag = version;
+    hash = gitHash;
     leaveDotGit = true;
   };
   updateScript = writeShellApplication {
@@ -77,16 +79,23 @@ let
 
       prefetch_github() {
         local rev="$1"
+        local leave_dot_git="''${2:-}"
         local output
-        output=$(nix-prefetch-github "${equicord.src.owner}" "${equicord.src.repo}" --rev "$rev" 2>/dev/null) || return 1
+        if [[ "$leave_dot_git" == "--leave-dot-git" ]]; then
+          output=$(nix-prefetch-github "${equicord.src.owner}" "${equicord.src.repo}" --rev "$rev" --leave-dot-git 2>/dev/null) || return 1
+        else
+          output=$(nix-prefetch-github "${equicord.src.owner}" "${equicord.src.repo}" --rev "$rev" 2>/dev/null) || return 1
+        fi
         echo "$output" | jq -r .hash
       }
 
       update_version_and_hash() {
         local new_tag="$1"
         local new_hash="$2"
+        local new_git_hash="$3"
         update_value "version" "$new_tag"
         update_value "hash" "$new_hash"
+        update_value "gitHash" "$new_git_hash"
       }
 
       platform_hash_var() {
@@ -125,8 +134,9 @@ let
 
       echo "Updating to version: $new_tag"
       new_hash=$(prefetch_github "$new_tag") || { echo "Failed to prefetch GitHub" >&2; exit 1; }
+      new_git_hash=$(prefetch_github "$new_tag" --leave-dot-git) || { echo "Failed to prefetch GitHub (git)" >&2; exit 1; }
 
-      update_version_and_hash "$new_tag" "$new_hash"
+      update_version_and_hash "$new_tag" "$new_hash" "$new_git_hash"
 
       echo "Updating pnpm dependencies hash for $(uname)..."
       old_hash=$(get_current_pnpm_deps_hash)
@@ -154,6 +164,7 @@ in
     hash = pnpmDepsHash;
   };
   passthru.updateScript = updateScript;
+  passthru.srcWithGit = srcWithGit;
   env = {
     EQUICORD_REMOTE = "${owner}/${repo}";
     EQUICORD_HASH = "${src.tag}";
