@@ -87,7 +87,15 @@ in
       quickCssFile = pkgs.writeText "nixcord-quickcss.css" cfg.quickCss;
 
       settingsFiles = mkSettingsFiles {
-        inherit pkgs cfg mkVencordCfg vencordFullConfig equicordFullConfig vesktopFullConfig equibopFullConfig;
+        inherit
+          pkgs
+          cfg
+          mkVencordCfg
+          vencordFullConfig
+          equicordFullConfig
+          vesktopFullConfig
+          equibopFullConfig
+          ;
       };
       inherit (settingsFiles)
         vencordSettingsFile
@@ -106,7 +114,9 @@ in
       dorionConfigFile =
         if cfg.dorion.enable then
           pkgs.writeText "nixcord-dorion-config.json" (
-            builtins.toJSON (mkDorionConfigAttrs { inherit cfg; })
+            builtins.toJSON (mkDorionConfigAttrs {
+              inherit cfg;
+            })
           )
         else
           null;

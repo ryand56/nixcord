@@ -3,15 +3,6 @@
 
 {
   renames = {
-    AllCallTimers = {
-      to = "CallTimer";
-    };
-    AmITyping = {
-      to = "TypingTweaks";
-    };
-    QuestCompleter = {
-      to = "Questify";
-    };
     emojiAlias = {
       to = "favEmojiFirst";
       date = "2026-02-11";

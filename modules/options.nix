@@ -3,7 +3,7 @@
   pkgs,
   dop,
   applyPostPatch ? null,
-  nixcordPkgs ? {},
+  nixcordPkgs ? { },
 }:
 let
   inherit (lib) mkEnableOption mkOption types;
@@ -485,12 +485,9 @@ in
     frameless = mkEnableOption "Make client frameless";
     transparent = mkEnableOption "Enable client transparency";
     disableMinSize = mkEnableOption "Disable minimum window size for client";
-    plugins =
-      lib.recursiveUpdate
-        (lib.recursiveUpdate (import ./plugins/shared.nix { inherit lib; }) (
-          import ./plugins/vencord.nix { inherit lib; }
-        ))
-        (import ./plugins/equicord.nix { inherit lib; });
+    plugins = lib.recursiveUpdate (lib.recursiveUpdate (import ./plugins/shared.nix { inherit lib; }) (
+      import ./plugins/vencord.nix { inherit lib; }
+    )) (import ./plugins/equicord.nix { inherit lib; });
   };
   vesktopConfig = mkOption {
     type = types.attrs;

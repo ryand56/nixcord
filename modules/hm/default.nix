@@ -269,8 +269,9 @@ in
       ]))
       (mkIf cfg.dorion.enable (mkMerge [
         {
-          home.file."${cfg.dorion.configDir}/config.json".text =
-            builtins.toJSON (mkDorionConfigAttrs { inherit cfg; });
+          home.file."${cfg.dorion.configDir}/config.json".text = builtins.toJSON (mkDorionConfigAttrs {
+            inherit cfg;
+          });
         }
         {
           home.activation.setupDorionVencordSettings = activationScripts.setupDorionVencordSettings;

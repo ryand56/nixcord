@@ -193,6 +193,13 @@ export async function updateDeprecatedPlugins(
   // Remove circular rename pairs (ping-pong renames that cancel each other out)
   removeCircularRenames(existing.renames);
 
+  // Remove permanent (dateless) renames — they predate the date system and are well past expiry
+  for (const [name, entry] of Object.entries(existing.renames)) {
+    if (!entry.date) {
+      delete existing.renames[name];
+    }
+  }
+
   // Prune expired dated entries
   for (const [name, entry] of Object.entries(existing.renames)) {
     if (entry.date && isExpired(entry.date, RENAME_EXPIRY_DAYS)) {

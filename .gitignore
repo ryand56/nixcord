@@ -5,6 +5,7 @@ outputs/
 result-*
 result
 repl-result-*
+*-src-result
 /*.log
 temp-wrapper.nix
 
