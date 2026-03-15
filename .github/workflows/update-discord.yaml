@@ -221,38 +221,65 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-          commit_body=""
-          linux_changes=()
-          darwin_changes=()
+          changed_branches=()
+          linux_body=""
+          darwin_body=""
 
           # Check for Linux changes
-          [[ "$OLD_linux_stable" != "$NEW_linux_stable" ]] && linux_changes+=("stable: $OLD_linux_stable -> $NEW_linux_stable")
-          [[ "$OLD_linux_ptb" != "$NEW_linux_ptb" ]] && linux_changes+=("ptb: $OLD_linux_ptb -> $NEW_linux_ptb")
-          [[ "$OLD_linux_canary" != "$NEW_linux_canary" ]] && linux_changes+=("canary: $OLD_linux_canary -> $NEW_linux_canary")
-          [[ "$OLD_linux_development" != "$NEW_linux_development" ]] && linux_changes+=("development: $OLD_linux_development -> $NEW_linux_development")
+          if [[ "$OLD_linux_stable" != "$NEW_linux_stable" ]]; then
+            changed_branches+=("stable")
+            linux_body+="  stable: $OLD_linux_stable -> $NEW_linux_stable"$'\n'
+          fi
+          if [[ "$OLD_linux_ptb" != "$NEW_linux_ptb" ]]; then
+            changed_branches+=("ptb")
+            linux_body+="  ptb: $OLD_linux_ptb -> $NEW_linux_ptb"$'\n'
+          fi
+          if [[ "$OLD_linux_canary" != "$NEW_linux_canary" ]]; then
+            changed_branches+=("canary")
+            linux_body+="  canary: $OLD_linux_canary -> $NEW_linux_canary"$'\n'
+          fi
+          if [[ "$OLD_linux_development" != "$NEW_linux_development" ]]; then
+            changed_branches+=("development")
+            linux_body+="  development: $OLD_linux_development -> $NEW_linux_development"$'\n'
+          fi
 
           # Check for Darwin changes
-          [[ "$OLD_darwin_stable" != "$NEW_darwin_stable" ]] && darwin_changes+=("stable: $OLD_darwin_stable -> $NEW_darwin_stable")
-          [[ "$OLD_darwin_ptb" != "$NEW_darwin_ptb" ]] && darwin_changes+=("ptb: $OLD_darwin_ptb -> $NEW_darwin_ptb")
-          [[ "$OLD_darwin_canary" != "$NEW_darwin_canary" ]] && darwin_changes+=("canary: $OLD_darwin_canary -> $NEW_darwin_canary")
-          [[ "$OLD_darwin_development" != "$NEW_darwin_development" ]] && darwin_changes+=("development: $OLD_darwin_development -> $NEW_darwin_development")
-
-          # Build commit message
-          if [[ ${#linux_changes[@]} -gt 0 ]]; then
-            commit_body+="- linux: $(IFS=, ; echo "${linux_changes[*]}")\n"
+          if [[ "$OLD_darwin_stable" != "$NEW_darwin_stable" ]]; then
+            [[ ! " ${changed_branches[*]} " =~ " stable " ]] && changed_branches+=("stable")
+            darwin_body+="  stable: $OLD_darwin_stable -> $NEW_darwin_stable"$'\n'
           fi
-          if [[ ${#darwin_changes[@]} -gt 0 ]]; then
-            commit_body+="- darwin: $(IFS=, ; echo "${darwin_changes[*]}")\n"
+          if [[ "$OLD_darwin_ptb" != "$NEW_darwin_ptb" ]]; then
+            [[ ! " ${changed_branches[*]} " =~ " ptb " ]] && changed_branches+=("ptb")
+            darwin_body+="  ptb: $OLD_darwin_ptb -> $NEW_darwin_ptb"$'\n'
+          fi
+          if [[ "$OLD_darwin_canary" != "$NEW_darwin_canary" ]]; then
+            [[ ! " ${changed_branches[*]} " =~ " canary " ]] && changed_branches+=("canary")
+            darwin_body+="  canary: $OLD_darwin_canary -> $NEW_darwin_canary"$'\n'
+          fi
+          if [[ "$OLD_darwin_development" != "$NEW_darwin_development" ]]; then
+            [[ ! " ${changed_branches[*]} " =~ " development " ]] && changed_branches+=("development")
+            darwin_body+="  development: $OLD_darwin_development -> $NEW_darwin_development"$'\n'
           fi
 
-          if [[ -z "$commit_body" ]]; then
+          if [[ -z "$linux_body" && -z "$darwin_body" ]]; then
             echo "::notice::No version changes detected, skipping commit"
             exit 0
           fi
 
-          # Remove trailing newline
-          commit_body=$(echo -e "$commit_body" | sed '/^$/d' | sed '$ s/\\n$//')
-          COMMIT_MSG="github: update discord versions\n\n$commit_body"
+          # Build commit body grouped by platform
+          commit_body=""
+          if [[ -n "$linux_body" ]]; then
+            commit_body+="linux:"$'\n'"${linux_body}"
+          fi
+          if [[ -n "$darwin_body" ]]; then
+            [[ -n "$commit_body" ]] && commit_body+=$'\n'
+            commit_body+="darwin:"$'\n'"${darwin_body}"
+          fi
+
+          # Build title with affected branches
+          branch_list=$(IFS=','; echo "${changed_branches[*]}" | sed 's/,/, /g')
+          commit_body=$(echo -n "$commit_body" | sed '/^$/d')
+          COMMIT_MSG="chore(discord): update ${branch_list}"$'\n\n'"${commit_body}"
 
           echo "::endgroup::"
 

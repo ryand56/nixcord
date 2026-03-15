@@ -131,7 +131,13 @@ jobs:
 
           if [[ -n "$(git status --porcelain pkgs/${{ matrix.package_file }} modules/plugins/)" ]]; then
             git add pkgs/${{ matrix.package_file }} modules/plugins/
-            git commit -m "github: update ${{ matrix.commit_prefix }} ${{ steps.old-version.outputs.version }} -> ${{ steps.new-version.outputs.version }}"
+            COMMIT_MSG=$(cat <<EOF
+          chore(${{ matrix.commit_prefix }}): update to ${{ steps.new-version.outputs.version }}
+
+          Bump ${{ matrix.variant }} from ${{ steps.old-version.outputs.version }} to ${{ steps.new-version.outputs.version }}.
+          EOF
+          )
+            git commit -m "$COMMIT_MSG"
             echo "changes=true" >> $GITHUB_OUTPUT
           else
             echo "changes=false" >> $GITHUB_OUTPUT
@@ -240,7 +246,7 @@ jobs:
 
           if [[ -n "$(git status --porcelain pkgs/equicord.nix)" ]]; then
             git add pkgs/equicord.nix
-            git commit -m "github: update equicord Darwin pnpmDeps hash"
+            git commit -m "chore(equicord): update Darwin \`pnpmDeps\` hash"
             echo "changes=true" >> $GITHUB_OUTPUT
           else
             echo "changes=false" >> $GITHUB_OUTPUT
@@ -353,7 +359,7 @@ jobs:
           if [[ -n "$(git status --porcelain)" ]]; then
             echo "::notice::Changes detected, committing..."
             git add -A
-            git commit -m "github: regenerate plugin options"
+            git commit -m "chore(plugins): regenerate plugin options"
             echo "changes=true" >> $GITHUB_OUTPUT
           else
             echo "::notice::No changes to commit"
