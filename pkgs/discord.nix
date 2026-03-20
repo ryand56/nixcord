@@ -26,7 +26,7 @@ let
   versions = {
     linux = {
       stable = "0.0.129";
-      ptb = "0.0.182";
+      ptb = "0.0.183";
       canary = "0.0.916";
       development = "0.0.99";
     };
@@ -41,7 +41,7 @@ let
   hashes = {
     x86_64-linux = {
       stable = "sha256-CscycDRH5N1etiYmjm7wFzL5dFxr7xOX9MkZTHqcFOo=";
-      ptb = "sha256-Oywm/ckDY3Mhoy3rbW5PdBSQVsPG4vzR/zHXBFfda4c=";
+      ptb = "sha256-vnzEamdX8pCzFtYLoWHvxcznHD1FCcgKnwQOx8BkWu0=";
       canary = "sha256-ACZujXU4eY7GZ5htYDABF+Q5KJjuE7h6yWjhslX7lXo=";
       development = "sha256-Xe5PjHDWXU+eIAcBID34gjuADmAl1JAQLmXUAi/p4tg=";
     };
