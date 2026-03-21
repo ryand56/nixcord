@@ -3,48 +3,8 @@
 
 {
   renames = {
-    emojiAlias = {
-      to = "favEmojiFirst";
-      date = "2026-02-11";
-    };
   };
   removals = {
-    absRPC = {
-      date = "2026-03-07";
-    };
-    betterUserArea = {
-      date = "2026-03-01";
-    };
-    dmKeeper = {
-      date = "2026-03-02";
-    };
-    favEmojiFirst = {
-      date = "2026-02-11";
-    };
-    gensokyoRadioRPC = {
-      date = "2026-03-07";
-    };
-    iRememberYou = {
-      date = "2026-03-07";
-    };
-    listenBrainzRPC = {
-      date = "2026-03-07";
-    };
-    noAppsAllowed = {
-      date = "2026-03-07";
-    };
-    tosuRPC = {
-      date = "2026-03-07";
-    };
-    translatePlus = {
-      date = "2026-03-07";
-    };
-    triviaAI = {
-      date = "2026-03-07";
-    };
-    unreadBadgeCount = {
-      date = "2026-03-07";
-    };
   };
   settingRenames = {
     fontLoader = {

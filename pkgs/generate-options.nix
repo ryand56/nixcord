@@ -73,7 +73,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     dontFixup = true;
 
-    outputHash = "sha256-iRDjSgJNrQGhmThU1b0VnS3ZS3ssBMxAYnF9cuax7+g=";
+    outputHash = "sha256-o9yBJY2CKID+Ysixmm2hON7KzqwPVrGzidGm7/XkvMw=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
@@ -89,6 +89,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook preConfigure
 
     cp -R ${finalAttrs.node_modules}/. .
+    patchShebangs node_modules
 
     runHook postConfigure
   '';

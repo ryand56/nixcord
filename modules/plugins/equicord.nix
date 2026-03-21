@@ -39,11 +39,6 @@ in
   };
   FullVCPFP = {
     enable = mkEnableOption "Makes avatars take up the entire vc tile (Equicord-only)";
-    useServerProfileAvatars = mkOption {
-      default = false;
-      description = "Use server profile avatars in guild voice channels when available.";
-      type = types.bool;
-    };
   };
   IRememberYou = {
     enable = mkEnableOption "Locally saves everyone you've been communicating with (including servers), in case of lose (Equicord-only)";
@@ -1096,28 +1091,19 @@ in
   };
   commandPalette = {
     enable = mkEnableOption "Quickly run actions through a searchable command palette (Equicord-only)";
-    enableTagFilter = mkOption {
+    closeAfterExecute = mkOption {
       default = true;
-      description = "Show the tag filter bar";
+      description = "Close palette after executing a command.";
+      type = types.bool;
+    };
+    compactStartEnabled = mkOption {
+      default = true;
+      description = "Open the palette in compact mode first.";
       type = types.bool;
     };
     hotkey = mkOption {
       default = { };
-      description = "Hotkey used to open the command palette";
       type = types.attrs;
-    };
-    showTags = mkOption {
-      default = true;
-      description = "Display tag chips for commands";
-      type = types.bool;
-    };
-    visualStyle = mkOption {
-      default = "classic";
-      description = "Palette appearance";
-      type = types.enum [
-        "classic"
-        "polished"
-      ];
     };
   };
   components = {
@@ -1511,10 +1497,25 @@ in
       description = "Auto copy upload URL";
       type = types.bool;
     };
+    autoFormat = mkOption {
+      default = false;
+      description = "Wrap inserted URL in angle brackets";
+      type = types.bool;
+    };
+    autoSend = mkOption {
+      default = false;
+      description = "Insert uploaded URL in chat input";
+      type = types.bool;
+    };
     catboxUserhash = mkOption {
       default = "";
       description = "Catbox userhash for account binding";
       type = types.str;
+    };
+    disableFallbacks = mkOption {
+      default = false;
+      description = "Disable fallback upload services";
+      type = types.bool;
     };
     ezHostKey = mkOption {
       default = "";
@@ -1525,6 +1526,16 @@ in
       default = "";
       description = "Optional Zipline folder ID";
       type = types.str;
+    };
+    gofileToken = mkOption {
+      default = "";
+      description = "Optional GoFile API token";
+      type = types.str;
+    };
+    interceptDiscordUpload = mkOption {
+      default = false;
+      description = "Intercept Discord uploads and use FileUpload instead.";
+      type = types.bool;
     };
     litterboxExpiry = mkOption {
       default = "24h";
@@ -1596,6 +1607,11 @@ in
         "s3"
         "catbox"
         "litterbox"
+        "gofile"
+        "tmpfiles"
+        "buzzheavier"
+        "tempsh"
+        "filebin"
         "sharex"
       ];
     };
@@ -1613,6 +1629,11 @@ in
       default = false;
       description = "Strip query params from uploaded URLs";
       type = types.bool;
+    };
+    uploadTimeoutMs = mkOption {
+      default = 300000;
+      description = "Upload timeout in milliseconds";
+      type = types.int;
     };
     ziplineToken = mkOption {
       default = "";
@@ -1782,11 +1803,6 @@ in
   };
   gitHubRepos = {
     enable = mkEnableOption "Displays a user's public GitHub repositories in their profile (Equicord-only)";
-    showInMiniProfile = mkOption {
-      default = true;
-      description = "Show full ui in the mini profile instead of just a button";
-      type = types.bool;
-    };
     showLanguage = mkOption {
       default = true;
       description = "Show repository language";
@@ -4942,6 +4958,16 @@ in
       default = false;
       description = "Ignore yourself for all events.";
       type = types.bool;
+    };
+    ignoredUsers = mkOption {
+      default = "";
+      description = "Comma-separated user IDs to completely ignore (no join/leave/move/state announcements). Right-click users to add/remove.";
+      type = types.str;
+    };
+    joinLeaveTimeout = mkOption {
+      default = 0.0;
+      description = "Per-user cooldown for join/leave/move announcements (seconds). Prevents spam from rapid rejoiners.";
+      type = types.float;
     };
     joinMessage = mkOption {
       default = "{{DISPLAY_NAME}} joined";

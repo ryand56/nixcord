@@ -495,6 +495,13 @@ in
       ];
     };
   };
+  customCommands = {
+    enable = mkEnableOption "Allows you to create custom slash commands / tags (Shared between Vencord and Equicord)";
+    tagsList = mkOption {
+      default = { };
+      type = types.attrs;
+    };
+  };
   customIdle = {
     enable = mkEnableOption "Allows you to set the time before Discord goes idle (or disable auto-idle) (Shared between Vencord and Equicord)";
     idleTimeout = mkOption {
@@ -959,17 +966,8 @@ in
       type = types.bool;
     };
   };
-  messageTags = {
-    enable = mkEnableOption "Allows you to save messages and to use them with a simple command. (Shared between Vencord and Equicord)";
-    clyde = mkOption {
-      default = true;
-      description = "If enabled, clyde will send you an ephemeral message when a tag was used.";
-      type = types.bool;
-    };
-    tagsList = mkOption {
-      default = { };
-      type = types.attrs;
-    };
+  noDefaultHangStatus = {
+    enable = mkEnableOption "Disable the default hang status when joining voice channels (Shared between Vencord and Equicord)";
   };
   noDevtoolsWarning = {
     enable = mkEnableOption "Disables the 'HOLD UP' banner in the console. As a side effect, also prevents Discord from hiding your token, which prevents random logouts. (Shared between Vencord and Equicord)";
