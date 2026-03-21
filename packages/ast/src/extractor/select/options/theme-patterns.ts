@@ -80,8 +80,7 @@ const extractFromArrowFunctionBody = (args: Node[], checker: TypeChecker): Selec
     );
   }
 
-  let body = arrowFunc.getBody();
-  if (body) body = unwrapNode(body);
+  const body = unwrapNode(arrowFunc.getBody());
 
   const obj = body.asKind(SyntaxKind.ObjectLiteralExpression);
   if (!obj) return themePatternError(body);

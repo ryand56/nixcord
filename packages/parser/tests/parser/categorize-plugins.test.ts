@@ -36,12 +36,11 @@ describe('categorizePlugins()', () => {
     const result = categorizePlugins(vencordResult, equicordResult);
     const sharedPlugin = result.generic['Shared Plugin'];
 
-    if (sharedPlugin) {
-      expect(sharedPlugin.name).toBe('Shared Plugin');
-      expect(result.vencordOnly['Shared Plugin']).toBeUndefined();
-    } else {
+    if (!sharedPlugin) {
       throw new Error('Expected Shared Plugin to be categorized as generic');
     }
+    expect(sharedPlugin.name).toBe('Shared Plugin');
+    expect(result.vencordOnly['Shared Plugin']).toBeUndefined();
   });
 
   test('categorizes vencord-only plugins', () => {
@@ -155,14 +154,13 @@ describe('categorizePlugins()', () => {
 
     const shared = result.generic['Shared Plugin'];
     if (
-      shared !== undefined &&
-      shared.description === 'Equicord description' &&
-      (shared.settings.setting as PluginSetting).default === 'equicord-value'
+      shared === undefined ||
+      shared.description !== 'Equicord description' ||
+      (shared.settings.setting as PluginSetting).default !== 'equicord-value'
     ) {
-      expect(shared.name).toBe('Shared Plugin');
-    } else {
       throw new Error('Shared Plugin should prefer the Equicord definition');
     }
+    expect(shared.name).toBe('Shared Plugin');
   });
 });
 

@@ -271,13 +271,13 @@ describe('extractDefaultValue()', () => {
     const result = unwrapResult(extractDefaultValue(objLiteral, checker));
     // Should extract shape-only default (object) - function calls can resolve if arrow function body is available
     expect(typeof result).toBe('object');
-    if (result && typeof result === 'object' && result !== null) {
-      // Function call may resolve to actual object if it's an arrow function, or empty object if not
-      expect(Array.isArray(result)).toBe(false);
-    } else {
+    if (!result || typeof result !== 'object' || result === null) {
       // Or may be undefined if function can't be resolved
       expect(result).toBeUndefined();
+      return;
     }
+    // Function call may resolve to actual object if it's an arrow function, or empty object if not
+    expect(Array.isArray(result)).toBe(false);
   });
 
   test('handles function call returning array literal', () => {

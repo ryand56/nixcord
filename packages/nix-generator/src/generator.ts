@@ -69,7 +69,8 @@ const buildNixOptionConfig = (setting: Readonly<PluginSetting>): NixAttrSet => {
   if (setting.default !== undefined) {
     if (setting.default === null) {
       config.default = null;
-    } else {
+    }
+    if (setting.default !== null) {
       const defaultResult = (() => {
         const type = setting.type;
         const val = setting.default;

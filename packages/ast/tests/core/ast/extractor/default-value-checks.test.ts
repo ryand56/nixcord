@@ -40,23 +40,23 @@ describe('default value structural helpers', () => {
   });
 
   test('hasObjectArrayDefault handles call expressions and identifier resolution', () => {
-    const { literal: fromCall, checker: callChecker } = getOptionLiteral(`
+    const fromCallResult = getOptionLiteral(`
       const makeRules = () => [{ label: "one" }, { label: "two" }];
       const option = { default: makeRules() };
     `);
-    expect(hasObjectArrayDefault(fromCall, callChecker)).toBe(true);
+    expect(hasObjectArrayDefault(fromCallResult.literal, fromCallResult.checker)).toBe(true);
 
-    const { literal: fromIdentifier, checker } = getOptionLiteral(`
+    const fromIdentifierResult = getOptionLiteral(`
       const RAW = [{ id: 1 }, { id: 2 }];
       const option = { default: RAW };
     `);
-    expect(hasObjectArrayDefault(fromIdentifier, checker)).toBe(true);
+    expect(hasObjectArrayDefault(fromIdentifierResult.literal, fromIdentifierResult.checker)).toBe(true);
 
-    const { literal: notObjects, checker: notChecker } = getOptionLiteral(`
+    const notObjectsResult = getOptionLiteral(`
       const NUMS = [1, 2, 3];
       const option = { default: NUMS };
     `);
-    expect(hasObjectArrayDefault(notObjects, notChecker)).toBe(false);
+    expect(hasObjectArrayDefault(notObjectsResult.literal, notObjectsResult.checker)).toBe(false);
   });
 
   test('hasEmptyArrayWithTypeAnnotation recognises typed arrays and helper factories', () => {

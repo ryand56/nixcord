@@ -47,26 +47,26 @@ const getRecentCommits = async (
   repoPath: string,
   days: number = DAYS_TO_CHECK
 ): Promise<Array<{ hash: string; date: string }>> => {
-  const { stdout } = await execAsync(
+  const logResult = await execAsync(
     `git log --since="${days} days ago" --pretty=format:"%H|%cI"`,
     { cwd: repoPath }
   );
-  if (!stdout.trim()) return [];
+  if (!logResult.stdout.trim()) return [];
 
-  return stdout
+  return logResult.stdout
     .trim()
     .split('\n')
     .map((line) => {
-      const [hash, date] = line.split('|');
-      return { hash, date };
+      const parts = line.split('|');
+      return { hash: parts[0], date: parts[1] };
     });
 };
 
 const getCommitFiles = async (repoPath: string, commitHash: string): Promise<string[]> => {
-  const { stdout } = await execAsync(`git diff-tree --name-only -r ${commitHash}`, {
+  const diffResult = await execAsync(`git diff-tree --name-only -r ${commitHash}`, {
     cwd: repoPath,
   });
-  return stdout.trim().split('\n').filter(Boolean);
+  return diffResult.stdout.trim().split('\n').filter(Boolean);
 };
 
 const getRemovedSettings = async (
@@ -76,10 +76,10 @@ const getRemovedSettings = async (
   newHash: string
 ): Promise<string[]> => {
   try {
-    const { stdout } = await execAsync(`git diff ${oldHash}..${newHash} -- "${filePath}"`, {
+    const diffResult = await execAsync(`git diff ${oldHash}..${newHash} -- "${filePath}"`, {
       cwd: repoPath,
     });
-    return stdout
+    return diffResult.stdout
       .split('\n')
       .filter((line) => line.startsWith('-') && !line.startsWith('---'))
       .map((line) => line.match(/["'](\w+)["']\s*:/)?.[1])
@@ -123,16 +123,16 @@ export const extractPluginRenames = async (
 
   const globs = buildPluginGlobs(pluginsDirs);
   try {
-    const { stdout } = await execAsync(
+    const renameResult = await execAsync(
       `git log --since="${days} days ago" -M --diff-filter=R --name-status --pretty=format:"COMMIT:%H|%cI" -- ${globs}`,
       { cwd: repoPath, maxBuffer: 10 * 1024 * 1024 }
     );
-    if (!stdout.trim()) return [];
+    if (!renameResult.stdout.trim()) return [];
 
     const renames: PluginRename[] = [];
     let currentCommit: { hash: string; date: string } | null = null;
 
-    for (const line of stdout.split('\n')) {
+    for (const line of renameResult.stdout.split('\n')) {
       const trimmed = line.trim();
       if (!trimmed) continue;
 
@@ -187,11 +187,11 @@ export const extractPluginDeletions = async (
 
   const globs = buildPluginGlobs(pluginsDirs);
   try {
-    const { stdout } = await execAsync(
+    const deleteResult = await execAsync(
       `git log --since="${days} days ago" --diff-filter=D --name-status --pretty=format:"COMMIT:%H|%cI" -- ${globs}`,
       { cwd: repoPath, maxBuffer: 10 * 1024 * 1024 }
     );
-    if (!stdout.trim()) return [];
+    if (!deleteResult.stdout.trim()) return [];
 
     // Also get renames so we can exclude renamed files from deletions
     const renames = await extractPluginRenames(repoPath, pluginsDirs, days);
@@ -200,7 +200,7 @@ export const extractPluginDeletions = async (
     const deletions: PluginDeletion[] = [];
     let currentCommit: { hash: string; date: string } | null = null;
 
-    for (const line of stdout.split('\n')) {
+    for (const line of deleteResult.stdout.split('\n')) {
       const trimmed = line.trim();
       if (!trimmed) continue;
 

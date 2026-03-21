@@ -144,11 +144,10 @@ describe('extractSelectDefault()', () => {
     const checker = project.getTypeChecker();
     const result = extractSelectDefault(objLiteral, checker);
     expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.value).toBeUndefined();
-    } else {
+    if (!result.ok) {
       throw new Error('Expected successful result');
     }
+    expect(result.value).toBeUndefined();
   });
 
   // Array.from() without arguments throws before we can analyze it, so we skip testing that branch

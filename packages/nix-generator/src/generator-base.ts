@@ -78,38 +78,36 @@ export class NixGenerator {
     if (items.length === 0) return NIX_EMPTY_LIST;
     const indent = this.indent(level);
     const itemIndent = this.indent(level + 1);
-    const result: string[] = [NIX_LIST_OPEN];
-    for (const item of items) result.push(`${itemIndent}${this.value(item, level + 1)}`);
-    result.push(`${indent}${NIX_LIST_CLOSE}`);
-    return result.join(NIX_LIST_SEPARATOR);
+    return [
+      NIX_LIST_OPEN,
+      ...items.map((item) => `${itemIndent}${this.value(item, level + 1)}`),
+      `${indent}${NIX_LIST_CLOSE}`,
+    ].join(NIX_LIST_SEPARATOR);
   }
 
   attrSet(attrs: ReadonlyNixAttrSet | NixAttrSet, level: number = 0): string {
     const filteredAttrs = Object.fromEntries(
       Object.entries(attrs).filter(([, value]) => value !== undefined)
     );
-    let sortedKeys = Object.keys(filteredAttrs).sort();
-    const enableIdx = sortedKeys.indexOf('enable');
-    if (enableIdx !== -1) {
-      sortedKeys = [...sortedKeys];
-      sortedKeys.splice(enableIdx, 1);
-      sortedKeys.unshift('enable');
-    }
+    const rawKeys = Object.keys(filteredAttrs).sort();
+    const enableIdx = rawKeys.indexOf('enable');
+    const sortedKeys = enableIdx !== -1
+      ? ['enable', ...rawKeys.filter((_, i) => i !== enableIdx)]
+      : rawKeys;
 
     if (sortedKeys.length === 0) return NIX_EMPTY_ATTR_SET;
 
     const indent = this.indent(level);
     const propIndent = this.indent(level + 1);
-    const result: string[] = [NIX_ATTR_SET_OPEN];
-    for (const key of sortedKeys) {
-      const attrValue = filteredAttrs[key];
-      if (attrValue === undefined) continue;
-      result.push(
-        `${propIndent}${this.identifier(key)}${NIX_ASSIGNMENT}${this.value(attrValue as NixValue, level + 1)}${NIX_STATEMENT_TERMINATOR}`
-      );
-    }
-    result.push(`${indent}${NIX_ATTR_SET_CLOSE}`);
-    return result.join(NIX_LIST_SEPARATOR);
+    return [
+      NIX_ATTR_SET_OPEN,
+      ...sortedKeys
+        .filter((key) => filteredAttrs[key] !== undefined)
+        .map((key) =>
+          `${propIndent}${this.identifier(key)}${NIX_ASSIGNMENT}${this.value(filteredAttrs[key] as NixValue, level + 1)}${NIX_STATEMENT_TERMINATOR}`
+        ),
+      `${indent}${NIX_ATTR_SET_CLOSE}`,
+    ].join(NIX_LIST_SEPARATOR);
   }
 
   value(val: NixValue, level: number = 0): string {
@@ -158,18 +156,7 @@ export class NixGenerator {
     const needsPrefix =
       sanitized.length === 0 || !NixGenerator.VALID_IDENTIFIER_START_PATTERN.test(sanitized);
 
-    let hasAcronym = false;
-    for (let i = 0; i < sanitized.length - 1; i++) {
-      if (
-        sanitized.charAt(i) >= 'A' &&
-        sanitized.charAt(i) <= 'Z' &&
-        sanitized.charAt(i + 1) >= 'A' &&
-        sanitized.charAt(i + 1) <= 'Z'
-      ) {
-        hasAcronym = true;
-        break;
-      }
-    }
+    const hasAcronym = /[A-Z]{2}/.test(sanitized);
 
     const needsCamelCase = sanitized.includes('_') || sanitized.includes(' ');
     if (!hasAcronym || needsCamelCase) {

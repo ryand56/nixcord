@@ -118,13 +118,12 @@ export function resolveDefaultValue(
   }
 
   if (finalNixType === NIX_TYPE_STR && defaultValue === undefined) {
+    finalNixTypeWithNull = NIX_TYPE_NULL_OR_STR;
+    defaultValue = null;
     const attrsResult = classifyAsAttrsType(valueObj, checker);
     if (attrsResult) {
       finalNixTypeWithNull = NIX_TYPE_ATTRS;
       defaultValue = attrsResult.defaultValue;
-    } else {
-      finalNixTypeWithNull = NIX_TYPE_NULL_OR_STR;
-      defaultValue = null;
     }
   }
 

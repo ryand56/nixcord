@@ -34,8 +34,8 @@ export const getInitializerFromDecl = (valueDecl?: Node): Node | undefined =>
     : undefined;
 
 export const resolveSymbolInit = (node: Node, checker?: TypeChecker): Node | undefined => {
-  const { valueDecl } = resolveSymbol(node, checker);
-  return getInitializerFromDecl(valueDecl);
+  const symbolResult = resolveSymbol(node, checker);
+  return getInitializerFromDecl(symbolResult.valueDecl);
 };
 
 export const resolveIdentifier = (
@@ -97,15 +97,15 @@ export const resolveArrowBody = (node: Node, checker?: TypeChecker): Node | unde
 
   const ident = node.asKind(SyntaxKind.Identifier);
   if (ident) {
-    const { valueDecl } = resolveSymbol(node, checker);
-    if (!valueDecl) {
+    const symbolResult = resolveSymbol(node, checker);
+    if (!symbolResult.valueDecl) {
       const decl = ident.getSourceFile().getVariableDeclaration(ident.getText());
       const initArrow = decl?.getInitializer()?.asKind(SyntaxKind.ArrowFunction);
       return initArrow ? unwrapNode(initArrow.getBody()) : undefined;
     }
-    const declArrow = valueDecl.asKind(SyntaxKind.ArrowFunction);
+    const declArrow = symbolResult.valueDecl.asKind(SyntaxKind.ArrowFunction);
     if (declArrow) return unwrapNode(declArrow.getBody());
-    const initArrow = getInitializerFromDecl(valueDecl)?.asKind(SyntaxKind.ArrowFunction);
+    const initArrow = getInitializerFromDecl(symbolResult.valueDecl)?.asKind(SyntaxKind.ArrowFunction);
     if (initArrow) return unwrapNode(initArrow.getBody());
   }
   return undefined;
@@ -115,15 +115,13 @@ export const resolveToObjectLiteral = (
   node: Node,
   checker: TypeChecker
 ): ObjectLiteralExpression | undefined => {
-  let resolved: Node | undefined;
+  let resolved: Node | undefined = node;
   if (node.getKind() === SyntaxKind.Identifier) {
     resolved = resolveNode(node, checker);
     if (!resolved) {
-      const { valueDecl } = resolveSymbol(node, checker);
-      resolved = getInitializerFromDecl(valueDecl) ?? resolveIdentifierWithFallback(node, checker);
+      const symbolResult = resolveSymbol(node, checker);
+      resolved = getInitializerFromDecl(symbolResult.valueDecl) ?? resolveIdentifierWithFallback(node, checker);
     }
-  } else {
-    resolved = node;
   }
   if (!resolved) return undefined;
   const unwrapped = unwrapNode(resolved);

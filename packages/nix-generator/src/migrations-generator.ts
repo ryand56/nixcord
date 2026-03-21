@@ -101,10 +101,11 @@ export function generateMigrationsModule(
 
   const lines: string[] = [...AUTO_GENERATED_HEADER.split('\n'), ''];
 
+  if (!hasRenames && !hasSettingRenames) {
+    lines.push('');
+  }
   if (hasRenames || hasSettingRenames) {
     lines.push('{ lib, ... }:', 'let', `  base = ${BASE_PATH}];`, 'in');
-  } else {
-    lines.push('');
   }
 
   lines.push('{', '  imports = [');
@@ -116,14 +117,14 @@ export function generateMigrationsModule(
 
     lines.push(`    # ${oldName} -> ${newName}`);
 
-    if (targetPlugin) {
+    if (!targetPlugin) {
+      // Target plugin not found in parsed data — just forward enable
+      lines.push(mkRenamedLine(oldName, newName, 'enable'));
+    } else {
       const settingNames = collectSettingNames(targetPlugin);
       for (const setting of settingNames.sort()) {
         lines.push(mkRenamedLine(oldName, newName, setting));
       }
-    } else {
-      // Target plugin not found in parsed data — just forward enable
-      lines.push(mkRenamedLine(oldName, newName, 'enable'));
     }
     lines.push('');
   }

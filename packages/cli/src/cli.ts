@@ -59,52 +59,44 @@ export const buildCli = (): Command => {
         throw new CliExecutionError(new Error(`Invalid CLI options: ${zodError.message}`), false);
       }
 
-      const {
-        equicord: equicordPath,
-        output,
-        verbose,
-        vencord: vencordOption,
-        vencordPlugins,
-        equicordPlugins,
-      } = validationResult.data;
-      const vencordPath = vencordOption ?? vencordArg;
+      const vencordPath = validationResult.data.vencord ?? vencordArg;
       if (!vencordPath) {
         throw new CliExecutionError(
           new Error('Missing Vencord source path. Provide --vencord or the positional argument.'),
-          verbose
+          validationResult.data.verbose
         );
       }
 
-      const logger = createLogger(verbose);
-      const resolvedOutputPath = resolve(process.cwd(), output);
+      const logger = createLogger(validationResult.data.verbose);
+      const resolvedOutputPath = resolve(process.cwd(), validationResult.data.output);
 
       const baseParams: GeneratePluginOptionsParams = {
         vencordPath,
         outputPath: resolvedOutputPath,
-        verbose,
+        verbose: validationResult.data.verbose,
         logger,
-        vencordPluginsDir: vencordPlugins,
-        equicordPluginsDir: equicordPlugins,
+        vencordPluginsDir: validationResult.data.vencordPlugins,
+        equicordPluginsDir: validationResult.data.equicordPlugins,
       };
 
-      const params: GeneratePluginOptionsParams = equicordPath
-        ? { ...baseParams, equicordPath }
+      const params: GeneratePluginOptionsParams = validationResult.data.equicord
+        ? { ...baseParams, equicordPath: validationResult.data.equicord }
         : baseParams;
 
       const result = await runGeneratePluginOptions(params);
 
-      if (result.ok) {
-        const summary = result.value;
-        logger.success(
-          `${CLI_CONFIG.symbols.success} Generated plugin options in ${summary.pluginsDir}:\n` +
-            `  - ${CLI_CONFIG.filenames.shared}: ${summary.sharedCount} plugins (shared)\n` +
-            `  - ${CLI_CONFIG.filenames.vencord}: ${summary.vencordOnlyCount} plugins (Vencord-only)\n` +
-            `  - ${CLI_CONFIG.filenames.equicord}: ${summary.equicordOnlyCount} plugins (Equicord-only)\n` +
-            `  - ${CLI_CONFIG.filenames.parseRules}: parser rename rules`
-        );
-      } else {
-        throw new CliExecutionError(result.error, verbose);
+      if (!result.ok) {
+        throw new CliExecutionError(result.error, validationResult.data.verbose);
       }
+
+      const summary = result.value;
+      logger.success(
+        `${CLI_CONFIG.symbols.success} Generated plugin options in ${summary.pluginsDir}:\n` +
+          `  - ${CLI_CONFIG.filenames.shared}: ${summary.sharedCount} plugins (shared)\n` +
+          `  - ${CLI_CONFIG.filenames.vencord}: ${summary.vencordOnlyCount} plugins (Vencord-only)\n` +
+          `  - ${CLI_CONFIG.filenames.equicord}: ${summary.equicordOnlyCount} plugins (Equicord-only)\n` +
+          `  - ${CLI_CONFIG.filenames.parseRules}: parser rename rules`
+      );
     });
 };
 

@@ -59,8 +59,8 @@ export async function extractMigrations(
 async function readDeprecatedNix(filePath: string): Promise<DeprecatedData> {
   const empty: DeprecatedData = { renames: {}, removals: {}, settingRenames: {} };
   try {
-    const { stdout } = await execAsync(`nix eval --json --file "${filePath}"`);
-    const parsed = JSON.parse(stdout) as {
+    const evalResult = await execAsync(`nix eval --json --file "${filePath}"`);
+    const parsed = JSON.parse(evalResult.stdout) as {
       renames?: Record<string, unknown>;
       removals?: Record<string, unknown>;
       settingRenames?: Record<string, Record<string, string>>;
@@ -166,11 +166,9 @@ export async function updateDeprecatedPlugins(
   normalizePluginName?: (name: string) => string
 ): Promise<DeprecatedData> {
   const deprecatedPath = join(pluginsDir, 'deprecated.nix');
-  let existing: DeprecatedData = { renames: {}, removals: {}, settingRenames: {} };
-
-  if (await fse.pathExists(deprecatedPath)) {
-    existing = await readDeprecatedNix(deprecatedPath);
-  }
+  const existing: DeprecatedData = (await fse.pathExists(deprecatedPath))
+    ? await readDeprecatedNix(deprecatedPath)
+    : { renames: {}, removals: {}, settingRenames: {} };
 
   // Merge new renames (skip dot-named plugins, don't overwrite existing entries)
   for (const rename of migrations.renames) {

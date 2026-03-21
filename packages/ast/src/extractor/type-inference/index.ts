@@ -50,15 +50,15 @@ export function inferNixTypeAndEnumValues(
   pluginName?: string,
   settingName?: string
 ): TypeInferenceResult {
-  const { nixType: baseType, enumValues } = tsTypeToNixType(rawSetting, program, checker);
+  const typeResult = tsTypeToNixType(rawSetting, program, checker);
 
   const astEnumResult = extractSelectOptions(valueObj, checker);
   const astEnumLiterals = astEnumResult.ok ? astEnumResult.value.values : [];
   const hasAstEnumValues = astEnumLiterals.length > 0;
 
   const selectEnumValues =
-    enumValues && enumValues.length > 0
-      ? enumValues
+    typeResult.enumValues && typeResult.enumValues.length > 0
+      ? typeResult.enumValues
       : hasAstEnumValues
         ? astEnumLiterals
         : undefined;
@@ -85,7 +85,7 @@ export function inferNixTypeAndEnumValues(
     };
   }
 
-  const classification = classifySetting(valueObj, props, baseType, checker);
+  const classification = classifySetting(valueObj, props, typeResult.nixType, checker);
 
   return {
     finalNixType: classification.nixType,

@@ -169,39 +169,32 @@ const writeOutputs = async ({
 export const runGeneratePluginOptions = async (
   rawParams: GeneratePluginOptionsParams
 ): Promise<Result<GeneratePluginOptionsSummary, Error>> => {
-  const {
-    vencordPath,
-    equicordPath,
-    vencordPluginsDir,
-    equicordPluginsDir,
-    outputPath,
-    verbose = false,
-    logger,
-  } = GeneratePluginOptionsParamsSchema.parse(rawParams);
+  const parsedParams = GeneratePluginOptionsParamsSchema.parse(rawParams);
+  const verbose = parsedParams.verbose ?? false;
   try {
-    const resolvedVencordPath = resolve(process.cwd(), vencordPath);
+    const resolvedVencordPath = resolve(process.cwd(), parsedParams.vencordPath);
     const vencordPackageJsonPath = resolve(resolvedVencordPath, CLI_CONFIG.filenames.packageJson);
     await ensurePathExists(
       vencordPackageJsonPath,
       `Vencord source path does not exist or is not a directory: ${resolvedVencordPath}`
     );
 
-    const vencordPluginsPath = resolve(resolvedVencordPath, vencordPluginsDir);
+    const vencordPluginsPath = resolve(resolvedVencordPath, parsedParams.vencordPluginsDir);
     await ensurePathExists(
       vencordPluginsPath,
       `Vencord plugins directory not found: ${vencordPluginsPath}`
     );
 
     const resolvedEquicordPath = await (async () => {
-      if (typeof equicordPath !== 'string') return undefined;
-      const resolved = resolve(process.cwd(), equicordPath);
+      if (typeof parsedParams.equicordPath !== 'string') return undefined;
+      const resolved = resolve(process.cwd(), parsedParams.equicordPath);
       const equicordPackageJsonPath = resolve(resolved, CLI_CONFIG.filenames.packageJson);
       await ensurePathExists(
         equicordPackageJsonPath,
         `Equicord source path does not exist or is not a directory: ${resolved}`
       );
 
-      const equicordPluginsPath = resolve(resolved, equicordPluginsDir);
+      const equicordPluginsPath = resolve(resolved, parsedParams.equicordPluginsDir);
       await ensurePathExists(
         equicordPluginsPath,
         `Equicord plugins directory not found: ${equicordPluginsPath}`
@@ -210,15 +203,15 @@ export const runGeneratePluginOptions = async (
     })();
 
     const parseOptions: ParsePluginsOptions = {
-      vencordPluginsDir,
-      equicordPluginsDir,
+      vencordPluginsDir: parsedParams.vencordPluginsDir,
+      equicordPluginsDir: parsedParams.equicordPluginsDir,
     };
 
     const vencordResult = await parseSource({
       label: 'Vencord',
       path: resolvedVencordPath,
       verbose,
-      logger,
+      logger: parsedParams.logger,
       parseOptions,
     });
 
@@ -227,49 +220,49 @@ export const runGeneratePluginOptions = async (
           label: 'Equicord',
           path: resolvedEquicordPath,
           verbose,
-          logger,
+          logger: parsedParams.logger,
           parseOptions,
         })
       : undefined;
 
     validateParsedResults(vencordResult, equicordResult);
 
-    const { generic, vencordOnly, equicordOnly } = categorizePlugins(vencordResult, equicordResult);
+    const categorized = categorizePlugins(vencordResult, equicordResult);
 
     if (verbose) {
-      logger.info(
+      parsedParams.logger.info(
         `Found ${Object.keys(vencordResult.vencordPlugins).length} plugins in Vencord src/plugins`
       );
       if (equicordResult) {
-        logger.info(
+        parsedParams.logger.info(
           `Found ${Object.keys(equicordResult.vencordPlugins).length} plugins in Equicord src/plugins`
         );
-        logger.info(
+        parsedParams.logger.info(
           `Found ${Object.keys(equicordResult.equicordPlugins).length} plugins in Equicord src/equicordplugins`
         );
       }
-      logger.info(
-        `Categorized: ${Object.keys(generic).length} generic (shared), ${Object.keys(vencordOnly).length} Vencord-only, ${
-          Object.keys(equicordOnly).length
+      parsedParams.logger.info(
+        `Categorized: ${Object.keys(categorized.generic).length} generic (shared), ${Object.keys(categorized.vencordOnly).length} Vencord-only, ${
+          Object.keys(categorized.equicordOnly).length
         } Equicord-only`
       );
     }
 
     const summary = await writeOutputs({
-      generic,
-      vencordOnly,
-      equicordOnly,
-      outputPath,
+      generic: categorized.generic,
+      vencordOnly: categorized.vencordOnly,
+      equicordOnly: categorized.equicordOnly,
+      outputPath: parsedParams.outputPath,
     });
 
     // Extract migrations and update deprecated.nix + migrations.nix
     try {
-      const pluginsDir = getPluginsDir(outputPath);
+      const pluginsDir = getPluginsDir(parsedParams.outputPath);
 
       // Run migration extraction on both repos
-      const vencordMigrations = await extractMigrations(resolvedVencordPath, [vencordPluginsDir]);
+      const vencordMigrations = await extractMigrations(resolvedVencordPath, [parsedParams.vencordPluginsDir]);
       const equicordMigrations = resolvedEquicordPath
-        ? await extractMigrations(resolvedEquicordPath, [vencordPluginsDir, equicordPluginsDir])
+        ? await extractMigrations(resolvedEquicordPath, [parsedParams.vencordPluginsDir, parsedParams.equicordPluginsDir])
         : { renames: [], deletions: [] };
 
       // Combine migrations from both repos
@@ -285,7 +278,7 @@ export const runGeneratePluginOptions = async (
       ];
 
       // Combine all parsed plugins for the migrations generator
-      const allPlugins = { ...generic, ...vencordOnly, ...equicordOnly };
+      const allPlugins = { ...categorized.generic, ...categorized.vencordOnly, ...categorized.equicordOnly };
 
       // Build set of active plugin names to filter false-positive removals
       const activePluginNames = new Set(Object.keys(allPlugins));
@@ -295,22 +288,22 @@ export const runGeneratePluginOptions = async (
         combinedMigrations,
         pluginsDir,
         verbose,
-        logger,
+        parsedParams.logger,
         allSettingRenames,
         activePluginNames,
         (name) => gen.identifier(name)
       );
       const migrationsNix = generateMigrationsModule(deprecated, allPlugins, [
-        generic,
-        vencordOnly,
-        equicordOnly,
+        categorized.generic,
+        categorized.vencordOnly,
+        categorized.equicordOnly,
       ]);
       const migrationsPath = resolve(pluginsDir, CLI_CONFIG.filenames.migrations);
       await fse.writeFile(migrationsPath, migrationsNix);
     } catch (error) {
       // Migration extraction is best-effort; don't fail the build if it fails
       if (verbose) {
-        logger.warn(`Failed to extract migrations: ${error}`);
+        parsedParams.logger.warn(`Failed to extract migrations: ${error}`);
       }
     }
 

@@ -158,25 +158,25 @@ export function extractSettingsFromPropertyIterable(
           hidden: props.hidden,
           options: extractedOptions,
         };
-        const { nixType: finalNixType, enumValues: selectEnumValues } = tsTypeToNixType(
+        const typeResult = tsTypeToNixType(
           rawSetting,
           program,
           checker
         );
-        const { finalNixType: resolvedNixType, defaultValue } = resolveDefaultValue(
+        const defaultResolution = resolveDefaultValue(
           valueObj,
-          finalNixType,
+          typeResult.nixType,
           props.defaultLiteralValue,
-          selectEnumValues,
+          typeResult.enumValues,
           checker
         );
 
         acc[key] = buildPluginSetting(
           key,
-          resolvedNixType,
+          defaultResolution.finalNixType,
           props.description,
-          defaultValue,
-          selectEnumValues,
+          defaultResolution.defaultValue,
+          typeResult.enumValues,
           extractedLabels,
           props.placeholder,
           props.hidden,
