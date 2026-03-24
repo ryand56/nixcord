@@ -5,6 +5,102 @@
   lowerPluginTitles = [
     "oneko"
   ];
+  settingRenames = {
+    hideChatButtons = {
+      color = "Color";
+      open = "Open";
+    };
+    messageLoggerEnhanced = {
+      showLogsButton = "ShowLogsButton";
+      showWhereMessageIsFrom = "ShowWhereMessageIsFrom";
+    };
+    musicControls = {
+      fallbackProvider = "FallbackProvider";
+      lyricDelay = "LyricDelay";
+      lyricsConversion = "LyricsConversion";
+      lyricsPosition = "LyricsPosition";
+      lyricsProvider = "LyricsProvider";
+      showFailedToasts = "ShowFailedToasts";
+      showMusicNoteOnNoLyrics = "ShowMusicNoteOnNoLyrics";
+      translateTo = "TranslateTo";
+      youtubeMusicApiUrl = "YoutubeMusicApiUrl";
+    };
+    platformIndicators = {
+      consoleIcon = "ConsoleIcon";
+    };
+    randomVoice = {
+      servers = "Servers";
+      userAmount = "UserAmount";
+      userAmountOperation = "UserAmountOperation";
+    };
+    richPresence = {
+      absEnabled = "abs_enabled";
+      absPassword = "abs_password";
+      absServerUrl = "abs_serverUrl";
+      absUsername = "abs_username";
+      grEnabled = "gr_enabled";
+      grRefreshInterval = "gr_refreshInterval";
+      jfApiKey = "jf_apiKey";
+      jfCoverType = "jf_coverType";
+      jfCustomName = "jf_customName";
+      jfEnabled = "jf_enabled";
+      jfEpisodeFormat = "jf_episodeFormat";
+      jfNameDisplay = "jf_nameDisplay";
+      jfOverrideType = "jf_overrideType";
+      jfPrivacyMode = "jf_privacyMode";
+      jfServerUrl = "jf_serverUrl";
+      jfShowEpisodeName = "jf_showEpisodeName";
+      jfShowPausedState = "jf_showPausedState";
+      jfUserId = "jf_userId";
+      lbEnabled = "lb_enabled";
+      lbHideWithActivity = "lb_hideWithActivity";
+      lbHideWithSpotify = "lb_hideWithSpotify";
+      lbMbContact = "lb_mbContact";
+      lbMissingArt = "lb_missingArt";
+      lbNameFormat = "lb_nameFormat";
+      lbShareSong = "lb_shareSong";
+      lbShareUsername = "lb_shareUsername";
+      lbStatusName = "lb_statusName";
+      lbUseListeningStatus = "lb_useListeningStatus";
+      lbUseLogo = "lb_useLogo";
+      lbUseTimeBar = "lb_useTimeBar";
+      lbUsername = "lb_username";
+      sfmAlwaysHideArt = "sfm_alwaysHideArt";
+      sfmEnabled = "sfm_enabled";
+      sfmHideWithExternalRpc = "sfm_hideWithExternalRPC";
+      sfmHideWithSpotify = "sfm_hideWithSpotify";
+      sfmMissingArt = "sfm_missingArt";
+      sfmNameFormat = "sfm_nameFormat";
+      sfmShareSong = "sfm_shareSong";
+      sfmShareUsername = "sfm_shareUsername";
+      sfmShowLogo = "sfm_showLogo";
+      sfmStatusName = "sfm_statusName";
+      sfmUseListeningStatus = "sfm_useListeningStatus";
+      sfmUsername = "sfm_username";
+      tosuEnabled = "tosu_enabled";
+    };
+    sekaiStickers = {
+      autoCloseModal = "AutoCloseModal";
+    };
+    showBadgesInChat = {
+      discordNitroPosition = "DiscordNitroPosition";
+      discordProfilePosition = "DiscordProfilePosition";
+      equicordContributorPosition = "EquicordContributorPosition";
+      equicordDonorPosition = "EquicordDonorPosition";
+      vencordContributorPosition = "VencordContributorPosition";
+      vencordDonorPosition = "VencordDonorPosition";
+    };
+    soundBoardLogger = {
+      fileType = "FileType";
+    };
+    statusPresets = {
+      statusPresets = "StatusPresets";
+    };
+    timezones = {
+      _24hTime = "\"24h Time\"";
+      showOwnTimezone = "\"Show Own Timezone\"";
+    };
+  };
   upperNames = [
     "usrbg"
     "webhook"
