@@ -1,4 +1,4 @@
-{ lib, parseRules, ... }:
+{ lib, parseRules, libva, stdenv, electron_40, ... }:
 let
   inherit (lib)
     attrsets
@@ -114,9 +114,18 @@ let
 
       equibop =
         if cfg.equibop.package != null then
-          cfg.equibop.package.override {
+          (cfg.equibop.package.override {
+            electron = electron_40;
             withMiddleClickScroll = cfg.equibop.autoscroll.enable;
-          }
+          }).overrideAttrs (old: {
+            postFixup = (old.postFixup or "") + ''
+              wrapProgram $out/bin/equibop \
+                --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [
+                  libva
+                  stdenv.cc.cc.lib
+                ]}"
+            '';
+          })
         else
           null;
 
