@@ -1,4 +1,4 @@
-{ lib, parseRules, ... }:
+{ lib, parseRules, libva, stdenv, electron_40, ... }:
 let
   inherit (lib)
     attrsets
@@ -17,6 +17,20 @@ let
 
   upperNames = mergeLists defaultParseRules.upperNames parseRules.upperNames;
   lowerPluginTitles = mergeLists defaultParseRules.lowerPluginTitles parseRules.lowerPluginTitles;
+  mergeSettingRenames =
+    base: extra:
+    let
+      allKeys = builtins.attrNames base ++ builtins.attrNames extra;
+    in
+    builtins.listToAttrs (
+      map (key: {
+        name = key;
+        value = (base.${key} or { }) // (extra.${key} or { });
+      }) (lists.unique allKeys)
+    );
+  settingRenames = mergeSettingRenames (defaultParseRules.settingRenames or { }) (
+    parseRules.settingRenames or { }
+  );
 
   isLowerCase = s: strings.toLower s == s;
 
@@ -49,9 +63,11 @@ let
   };
 
   normalizeName =
-    name: value:
+    context: name: value:
     if specialRenames ? ${name} then
       specialRenames.${name}
+    else if settingRenames ? ${context} && settingRenames.${context} ? ${name} then
+      settingRenames.${context}.${name}
     else if builtins.elem name upperNames then
       unNixify name
     else if builtins.elem name lowerPluginTitles then
@@ -61,15 +77,17 @@ let
     else
       name;
 
-  mkVencordCfg =
-    cfg:
+  mkVencordCfgInner =
+    context: cfg:
     mapAttrs' (
       name: value:
       let
-        normalizedValue = if builtins.isAttrs value then mkVencordCfg value else value;
+        normalizedValue = if builtins.isAttrs value then mkVencordCfgInner name value else value;
       in
-      nameValuePair (normalizeName name value) normalizedValue
+      nameValuePair (normalizeName context name value) normalizedValue
     ) cfg;
+
+  mkVencordCfg = mkVencordCfgInner "";
 
   mkFinalPackages =
     {
@@ -96,9 +114,18 @@ let
 
       equibop =
         if cfg.equibop.package != null then
-          cfg.equibop.package.override {
+          (cfg.equibop.package.override {
+            electron = electron_40;
             withMiddleClickScroll = cfg.equibop.autoscroll.enable;
-          }
+          }).overrideAttrs (old: {
+            postFixup = (old.postFixup or "") + ''
+              wrapProgram $out/bin/equibop \
+                --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [
+                  libva
+                  stdenv.cc.cc.lib
+                ]}"
+            '';
+          })
         else
           null;
 

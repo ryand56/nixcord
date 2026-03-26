@@ -42,16 +42,49 @@ function collectLowerPluginTitles(...collections: PluginCollections): string[] {
   return [...new Set([...baseLowerPluginTitles, ...lowerNames])].sort();
 }
 
+function collectSettingRenames(
+  ...collections: PluginCollections
+): Record<string, Record<string, string>> {
+  const renames: Record<string, Record<string, string>> = {};
+
+  const collectFromConfig = (
+    parentNixName: string,
+    config: ReadonlyDeep<PluginConfig>
+  ): void => {
+    for (const setting of Object.values(config.settings)) {
+      const nixName = gen.identifier(setting.name);
+      if (nixName !== setting.name) {
+        renames[parentNixName] ??= {};
+        renames[parentNixName][nixName] = setting.name;
+      }
+      if ('settings' in setting) {
+        const nestedNixName = gen.identifier(setting.name);
+        collectFromConfig(nestedNixName, setting as ReadonlyDeep<PluginConfig>);
+      }
+    }
+  };
+
+  for (const collection of collections) {
+    for (const [pluginSlug, config] of Object.entries(collection)) {
+      collectFromConfig(gen.identifier(pluginSlug), config);
+    }
+  }
+
+  return renames;
+}
+
 export function generateParseRulesModule(
   shared: ReadonlyDeep<Record<string, PluginConfig>>,
   vencordOnly: ReadonlyDeep<Record<string, PluginConfig>>,
   equicordOnly: ReadonlyDeep<Record<string, PluginConfig>>
 ): string {
   const lowerPluginTitles = collectLowerPluginTitles(shared, vencordOnly, equicordOnly);
+  const settingRenames = collectSettingRenames(shared, vencordOnly, equicordOnly);
 
   const output = gen.attrSet({
-    upperNames: [...baseUpperNames],
     lowerPluginTitles,
+    settingRenames,
+    upperNames: [...baseUpperNames],
   });
 
   return [...AUTO_GENERATED_HEADER.split('\n'), '', output].join('\n');
