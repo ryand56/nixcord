@@ -3,10 +3,6 @@
 
 {
   renames = {
-    emojiAlias = {
-      to = "favEmojiFirst";
-      date = "2026-02-11";
-    };
   };
   removals = {
     absRPC = {
