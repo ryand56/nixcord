@@ -132,8 +132,16 @@ in
         echo "Updated pnpmDeps hash to $new_hash"
       }
 
+      gh_curl() {
+        local curl_args=(-s)
+        if [[ -n "''${GITHUB_TOKEN:-}" ]]; then
+          curl_args+=(-H "Authorization: token $GITHUB_TOKEN")
+        fi
+        curl "''${curl_args[@]}" "$@"
+      }
+
       get_latest_stable_tag() {
-        curl -s "https://api.github.com/repos/${vencord.src.owner}/${vencord.src.repo}/tags" |
+        gh_curl "https://api.github.com/repos/${vencord.src.owner}/${vencord.src.repo}/tags" |
           jq -r '.[] | select(.name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' |
           sort -Vr |
           head -1
@@ -142,7 +150,7 @@ in
       fetch_github_commit() {
         local branch="$1"
         local field="$2"
-        curl -s "https://api.github.com/repos/${vencord.src.owner}/${vencord.src.repo}/commits/$branch" | jq -r "$field"
+        gh_curl "https://api.github.com/repos/${vencord.src.owner}/${vencord.src.repo}/commits/$branch" | jq -r "$field"
       }
 
       determine_update_version() {
@@ -169,7 +177,7 @@ in
         version=$(determine_update_version "$prefix")
 
         if [[ "$prefix" == "unstable" ]]; then
-          revision=$(curl -s "https://api.github.com/repos/${vencord.src.owner}/${vencord.src.repo}/commits/main" | jq -r '.sha')
+          revision=$(gh_curl "https://api.github.com/repos/${vencord.src.owner}/${vencord.src.repo}/commits/main" | jq -r '.sha')
           update_value "''${prefix}Rev" "$revision"
         else
           revision=$(get_latest_stable_tag)

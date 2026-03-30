@@ -71,7 +71,11 @@ let
 
       fetch_latest_tag() {
         local pattern="$1"
-        curl -s "https://api.github.com/repos/${equicord.src.owner}/${equicord.src.repo}/tags" |
+        local curl_args=(-s)
+        if [[ -n "''${GITHUB_TOKEN:-}" ]]; then
+          curl_args+=(-H "Authorization: token $GITHUB_TOKEN")
+        fi
+        curl "''${curl_args[@]}" "https://api.github.com/repos/${equicord.src.owner}/${equicord.src.repo}/tags" |
           jq -r --arg p "^$pattern" '.[] | select(.name | test($p)) | .name' |
           sort -V -r |
           head -1

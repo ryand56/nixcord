@@ -178,7 +178,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       # Fetch with retries
       for attempt in {1..3}; do
-        if LATEST_VERSION=$(timeout 30 curl -s "https://api.github.com/repos/SpikeHD/Dorion/releases/latest" 2>/dev/null | jq -r .tag_name 2>/dev/null); then
+        local curl_args=(-s)
+        if [[ -n "''${GITHUB_TOKEN:-}" ]]; then
+          curl_args+=(-H "Authorization: token $GITHUB_TOKEN")
+        fi
+        if LATEST_VERSION=$(timeout 30 curl "''${curl_args[@]}" "https://api.github.com/repos/SpikeHD/Dorion/releases/latest" 2>/dev/null | jq -r .tag_name 2>/dev/null); then
           break
         fi
         if [[ $attempt == 3 ]]; then
