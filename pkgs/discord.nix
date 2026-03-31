@@ -25,30 +25,30 @@
 let
   versions = {
     linux = {
-      stable = "0.0.130";
+      stable = "0.0.131";
       ptb = "0.0.184";
-      canary = "0.0.932";
+      canary = "0.0.933";
       development = "0.0.99";
     };
     darwin = {
-      stable = "0.0.382";
+      stable = "0.0.383";
       ptb = "0.0.227";
-      canary = "0.0.1044";
+      canary = "0.0.1046";
       development = "0.0.119";
     };
   };
 
   hashes = {
     x86_64-linux = {
-      stable = "sha256-FMIM/CWPk3Kcqp8iIg+gxiCpjD2DNk7dSBqnCBvzn5w=";
+      stable = "sha256-R98x+yYVesrW6iYr/YWE/i/KZSELQwy8CZGiEALlz7w=";
       ptb = "sha256-QarvA5/Cnd9E5PEROAzvfsUsUkA3ISoqAMvR2RqCkL8=";
-      canary = "sha256-eEeN9ju5+hVsAvRoMCURS6AoO/RMFoqTGysJWQqp6PU=";
+      canary = "sha256-lxVPEI+lg6r1s9S/xYJt35yk9DvhhnFI2RXo+psvJbM=";
       development = "sha256-Xe5PjHDWXU+eIAcBID34gjuADmAl1JAQLmXUAi/p4tg=";
     };
     x86_64-darwin = {
-      stable = "sha256-vBadXUHrYhvkqzkCvGnKf25A19TKcFs5D0tzC54E0Hk=";
+      stable = "sha256-91S8lqqJbMG/V1pTiaTnoTzRh+5u0cIU2+r3BeuPLiU=";
       ptb = "sha256-gZA7u3o1v5drlMfuDCCCZZpkB82HK0pnMsS4f5PsIvE=";
-      canary = "sha256-s3VH3I+WdARqu5wh9U5JtQ5FhucklFIXhqJwV0jzHXg=";
+      canary = "sha256-2JIZoXInfC8CiHhdoPXXceGOEfEXbXeIajio8NfjxJI=";
       development = "sha256-IUUk54PtcHXrCePwqWWNZv6ZD7DiClfQTLhQPOrZGc4=";
     };
   };
