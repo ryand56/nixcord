@@ -218,7 +218,7 @@ jobs:
           set -eo pipefail
           echo "::group::Updating Equicord Darwin pnpmDeps"
           nix build --impure --expr 'let pkgs = import <nixpkgs> {}; in (pkgs.callPackage ./pkgs/equicord.nix {}).passthru.updateScript'
-          ./result/bin/equicord-update
+          ./result/bin/equicord-update --pnpm-only
           echo "::endgroup::"
           rm ./result
 
@@ -295,13 +295,11 @@ jobs:
             fi
           done
 
-  generate-plugin-options:
-    name: Generate plugin options
-    outputs:
-      changes: ${{ steps.detect-changes.outputs.changes }}
+  generate-and-commit-plugin-options:
+    name: Generate and commit plugin options
     runs-on: ubuntu-latest
     needs: [update-plugin, update-equicord-darwin]
-    timeout-minutes: 5
+    timeout-minutes: 10
     permissions:
       contents: write
       actions: write
@@ -324,40 +322,27 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
+          NIX_FILE="./pkgs/generate-options.nix"
+
           echo "::group::Generating plugin options"
-          nix run .#generate
+          if ! output=$(nix run .#generate 2>&1); then
+            new_hash=$(echo "$output" | grep -oE "got:\s+sha256-[A-Za-z0-9+/=]+" | head -1 | sed 's/got:\s*//')
+            if [[ -n "$new_hash" ]]; then
+              echo "::notice::Updating nodeModulesHashLinux to $new_hash"
+              perl -pi -e "s|nodeModulesHashLinux = \".*\";|nodeModulesHashLinux = \"$new_hash\";|" "$NIX_FILE"
+              nix run .#generate
+            else
+              echo "$output"
+              exit 1
+            fi
+          fi
           echo "::endgroup::"
 
-      - name: Detect changes
-        id: detect-changes
-        shell: bash
-        run: |
-          set -eo pipefail
-          if [[ -n "$(git status --porcelain)" ]]; then
-            echo "changes=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changes=false" >> "$GITHUB_OUTPUT"
-          fi
-
-  commit-plugin-updates:
-    name: Commit plugin updates
-    runs-on: ubuntu-latest
-    needs: generate-plugin-options
-    timeout-minutes: 5
-    permissions:
-      contents: write
-      actions: write
-    if: needs.generate-plugin-options.result == 'success' && needs.generate-plugin-options.outputs.changes == 'true'
-    steps:
-      - uses: actions/checkout@v6.0.1
-
-      - name: Pull latest changes
-        run: git pull --rebase origin ${{ github.ref_name }}
-
-      - name: Commit changes
+      - name: Commit and push changes
         id: commit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: success()
         shell: bash
         run: |
           set -eo pipefail
@@ -368,30 +353,20 @@ jobs:
           git config --global pull.rebase true
           git config --global rebase.autoStash true
 
-          if [[ -n "$(git status --porcelain)" ]]; then
-            echo "::notice::Changes detected, committing..."
-            git add -A
-            git commit -m "chore(plugins): regenerate plugin options"
-            echo "changes=true" >> $GITHUB_OUTPUT
-          else
+          if [[ -z "$(git status --porcelain)" ]]; then
             echo "::notice::No changes to commit"
-            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "::endgroup::"
+            exit 0
           fi
+
+          echo "::notice::Changes detected, committing..."
+          git add -A
+          git commit -m "chore(plugins): regenerate plugin options"
           echo "::endgroup::"
 
-      - name: Push changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: success() && steps.commit.outputs.changes == 'true'
-        shell: bash
-        run: |
           echo "::group::Pushing changes"
-          echo "::notice::Pushing changes with retry logic..."
           for attempt in {1..5}; do
-            # Abort any in-progress rebase from a previous failed attempt
             git rebase --abort 2>/dev/null || true
-
-            echo "::debug::Push attempt $attempt/5"
 
             if git fetch origin 2>&1 && \
                git pull --rebase origin ${{ github.ref_name }} 2>&1 && \
@@ -400,12 +375,13 @@ jobs:
               echo "::endgroup::"
               break
             fi
-            
+
             if [[ $attempt == 5 ]]; then
               echo "::error::Failed to push after 5 attempts"
+              echo "::endgroup::"
               exit 1
             fi
-            
+
             echo "::warning::Push attempt $attempt failed, retrying in $((attempt * 2)) seconds..."
             sleep $((attempt * 2))
           done

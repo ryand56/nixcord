@@ -8,6 +8,11 @@
   equicord,
   nix,
 }:
+let
+  nodeModulesHashDarwin = "sha256-iRDjSgJNrQGhmThU1b0VnS3ZS3ssBMxAYnF9cuax7+g=";
+  nodeModulesHashLinux = "sha256-CpKWMgGkk3W64mZ7EFWfaW0A3kPEaT2jcn62+iJYQPM=";
+  nodeModulesHash = if stdenvNoCC.hostPlatform.isDarwin then nodeModulesHashDarwin else nodeModulesHashLinux;
+in
 stdenvNoCC.mkDerivation (finalAttrs: {
   name = "nixcord-plugin-options";
   version = "generated";
@@ -73,7 +78,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     dontFixup = true;
 
-    outputHash = "sha256-iRDjSgJNrQGhmThU1b0VnS3ZS3ssBMxAYnF9cuax7+g=";
+    outputHash = nodeModulesHash;
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };

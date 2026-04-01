@@ -131,10 +131,36 @@ let
         echo "$build_output" | grep -oE "got:\s+sha256-[A-Za-z0-9+/=]+" | perl -pe 's/got:\s*//' | tr -d '[:space:]' | head -1
       }
 
+      update_pnpm_deps() {
+        echo "Updating pnpm dependencies hash for $(uname)..."
+        old_hash=$(get_current_pnpm_deps_hash)
+        new_pnpm_hash=$(build_and_extract_hash)
+
+        if [[ -n "$new_pnpm_hash" ]]; then
+          set_pnpm_deps_hash "$new_pnpm_hash"
+          echo "Updated $(platform_hash_var) to $new_pnpm_hash"
+        else
+          set_pnpm_deps_hash "sha256-$old_hash"
+          echo "pnpmDepsHash is already correct or could not be determined"
+        fi
+      }
+
+      if [[ "''${1:-}" == "--pnpm-only" ]]; then
+        update_pnpm_deps
+        echo "pnpmDeps update complete"
+        exit 0
+      fi
+
       echo "Fetching latest Equicord tag..."
       new_tag=$(fetch_latest_tag "v\\d+\\.\\d+\\.\\d+(\\.\\d+)?")
 
       [[ ! "$new_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] && { echo "Invalid tag format" >&2; exit 1; }
+
+      current_tag=$(get_nix_value "version")
+      if [[ "$new_tag" == "$current_tag" ]]; then
+        echo "Already at latest version $new_tag, skipping update"
+        exit 0
+      fi
 
       echo "Updating to version: $new_tag"
       new_hash=$(prefetch_github "$new_tag") || { echo "Failed to prefetch GitHub" >&2; exit 1; }
@@ -142,18 +168,7 @@ let
 
       update_version_and_hash "$new_tag" "$new_hash" "$new_git_hash"
 
-      echo "Updating pnpm dependencies hash for $(uname)..."
-      old_hash=$(get_current_pnpm_deps_hash)
-      new_pnpm_hash=$(build_and_extract_hash)
-
-      if [[ -n "$new_pnpm_hash" ]]; then
-        set_pnpm_deps_hash "$new_pnpm_hash"
-        echo "Updated $(platform_hash_var) to $new_pnpm_hash"
-        echo "NOTE: run this script on the other platform to update its pnpm hash too"
-      else
-        set_pnpm_deps_hash "sha256-$old_hash"
-        echo "pnpmDepsHash is already correct or could not be determined"
-      fi
+      update_pnpm_deps
       echo "Update complete"
     '';
   };
