@@ -178,7 +178,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       # Fetch with retries
       for attempt in {1..3}; do
-        local curl_args=(-s)
+        curl_args=(-s)
         if [[ -n "''${GITHUB_TOKEN:-}" ]]; then
           curl_args+=(-H "Authorization: token $GITHUB_TOKEN")
         fi

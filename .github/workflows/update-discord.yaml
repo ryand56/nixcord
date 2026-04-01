@@ -292,19 +292,22 @@ jobs:
             echo "::notice::Pushing changes with retry logic..."
             for attempt in {1..5}; do
               echo "::debug::Push attempt $attempt/5"
-              
+
+              # Abort any in-progress rebase from a previous failed attempt
+              git rebase --abort 2>/dev/null || true
+
               if git fetch origin 2>&1 && \
                  git pull --rebase origin ${{ github.ref_name }} 2>&1 && \
                  git push origin HEAD:${{ github.ref_name }} 2>&1; then
                 echo "::notice::Successfully pushed changes on attempt $attempt"
                 break
               fi
-              
+
               if [[ $attempt == 5 ]]; then
                 echo "::error::Failed to push after 5 attempts"
                 exit 1
               fi
-              
+
               echo "::warning::Push attempt $attempt failed, retrying in $((attempt * 2)) seconds..."
               sleep $((attempt * 2))
             done

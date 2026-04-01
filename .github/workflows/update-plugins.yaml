@@ -151,26 +151,29 @@ jobs:
         run: |
           echo "::group::Pushing changes"
           for i in {1..5}; do
+            # Abort any in-progress rebase from a previous failed attempt
+            git rebase --abort 2>/dev/null || true
+
             echo "Attempt $i: Fetching latest changes..."
             git fetch origin
-            
+
             echo "Rebasing local changes..."
             if ! git pull --rebase origin ${{ github.ref_name }}; then
               echo "::warning::Rebase failed on attempt $i, retrying..."
               sleep $((i * 2))
               continue
             fi
-            
+
             echo "Pushing changes..."
             if git push origin HEAD:${{ github.ref_name }}; then
               echo "::notice::Successfully pushed changes on attempt $i"
               echo "::endgroup::"
               break
             fi
-            
+
             echo "::warning::Push failed on attempt $i, retrying in $((i * 2)) seconds..."
             sleep $((i * 2))
-            
+
             if [ $i -eq 5 ]; then
               echo "::error::Failed to push after 5 attempts"
               git log --oneline -5
@@ -260,6 +263,9 @@ jobs:
         run: |
           echo "::group::Pushing changes"
           for i in {1..5}; do
+            # Abort any in-progress rebase from a previous failed attempt
+            git rebase --abort 2>/dev/null || true
+
             echo "Attempt $i: Fetching latest changes..."
             git fetch origin
 
@@ -309,6 +315,9 @@ jobs:
             extra-nix-path = nixpkgs=flake:github:NixOS/nixpkgs/nixos-25.11
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Pull latest changes
+        run: git pull --rebase origin ${{ github.ref_name }}
+
       - name: Generate plugin options
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -341,6 +350,9 @@ jobs:
     if: needs.generate-plugin-options.result == 'success' && needs.generate-plugin-options.outputs.changes == 'true'
     steps:
       - uses: actions/checkout@v6.0.1
+
+      - name: Pull latest changes
+        run: git pull --rebase origin ${{ github.ref_name }}
 
       - name: Commit changes
         id: commit
@@ -376,8 +388,11 @@ jobs:
           echo "::group::Pushing changes"
           echo "::notice::Pushing changes with retry logic..."
           for attempt in {1..5}; do
+            # Abort any in-progress rebase from a previous failed attempt
+            git rebase --abort 2>/dev/null || true
+
             echo "::debug::Push attempt $attempt/5"
-            
+
             if git fetch origin 2>&1 && \
                git pull --rebase origin ${{ github.ref_name }} 2>&1 && \
                git push origin HEAD:${{ github.ref_name }} 2>&1; then
