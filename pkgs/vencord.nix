@@ -119,7 +119,9 @@ in
         old_hash=$(get_nix_value "''${prefix}PnpmDeps" | perl -pe 's/^sha256-//')
         [[ -z "$old_hash" ]] && return 1
 
-        update_value "''${prefix}PnpmDeps" ""
+        # Use a valid-but-wrong hash to guarantee a clean "hash mismatch" error.
+        # An empty string is not valid SRI and can cause a different error without "got:" output.
+        update_value "''${prefix}PnpmDeps" "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
         new_hash=$(build_and_extract_hash)
 
         if [[ -z "$new_hash" ]]; then

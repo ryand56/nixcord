@@ -120,7 +120,9 @@ let
       }
 
       build_and_extract_hash() {
-        set_pnpm_deps_hash ""
+        # Use a valid-but-wrong hash to guarantee a clean "hash mismatch" error.
+        # An empty string is not valid SRI and can cause a different error without "got:" output.
+        set_pnpm_deps_hash "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
         local build_output nixpkgs_path
         nixpkgs_path=$(nix eval --impure --raw --expr "(builtins.getFlake (toString ./.)).inputs.nixpkgs.outPath" 2>/dev/null) || nixpkgs_path=""
         if [[ -n "$nixpkgs_path" ]]; then
