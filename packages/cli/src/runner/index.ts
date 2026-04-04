@@ -4,7 +4,7 @@ import fse from 'fs-extra';
 import { z } from 'zod';
 import { type Result, Ok, Err, parseOrThrow } from '@nixcord/shared';
 import { oraPromise } from 'ora';
-import type { Simplify } from 'type-fest';
+import type { Simplify } from '@nixcord/shared';
 
 import { CLI_CONFIG } from '@nixcord/shared';
 import {

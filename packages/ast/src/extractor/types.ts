@@ -4,7 +4,7 @@
 
 import { type Result, Ok, Err } from '@nixcord/shared';
 import { z } from 'zod';
-import type { ReadonlyDeep } from 'type-fest';
+import type { ReadonlyDeep } from '@nixcord/shared';
 import type { Node } from 'ts-morph';
 import type { EnumLiteral } from '../foundation/index.js';
 

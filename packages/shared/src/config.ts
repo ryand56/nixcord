@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Simplify } from 'type-fest';
+import type { Simplify } from './type-utils.js';
 
 const CliConfigSchema = z.object({
   version: z.string().min(1),

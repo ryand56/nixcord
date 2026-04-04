@@ -1,7 +1,13 @@
 import { camelCase } from 'change-case';
 
-import type { ReadonlyDeep } from 'type-fest';
-import { isArray, isNonNullObject, isString, isNumber, isBoolean } from '@nixcord/shared';
+import {
+  type ReadonlyDeep,
+  isArray,
+  isNonNullObject,
+  isString,
+  isNumber,
+  isBoolean,
+} from '@nixcord/shared';
 import { escapeNixDoubleQuotedString, escapeNixString } from './utils/nix-escape.js';
 
 const visitedObjects = new WeakSet<object>();

@@ -1,5 +1,4 @@
-import type { ReadonlyDeep } from 'type-fest';
-import type { PluginConfig, ParsedPluginsResult } from '@nixcord/shared';
+import type { ReadonlyDeep, PluginConfig, ParsedPluginsResult } from '@nixcord/shared';
 import { filterNullish } from '@nixcord/shared';
 
 const PLUGIN_RENAME_MAP: Record<string, string> = { oneko: 'CursorBuddy' };

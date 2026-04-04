@@ -14,7 +14,6 @@ export default createViteConfig({
     'p-limit',
     'pathe',
     'ts-morph',
-    'type-fest',
     'zod',
   ],
   testTimeout: 20000,

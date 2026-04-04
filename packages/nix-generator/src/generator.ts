@@ -1,5 +1,4 @@
-import type { ReadonlyDeep } from 'type-fest';
-import type { PluginConfig, PluginSetting } from '@nixcord/shared';
+import type { ReadonlyDeep, PluginConfig, PluginSetting } from '@nixcord/shared';
 import { type NixAttrSet, NixGenerator, type NixRaw, type NixValue } from './generator-base.js';
 import {
   isBoolean,

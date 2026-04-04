@@ -4,8 +4,9 @@ import { basename, dirname, normalize, join } from 'pathe';
 import fse from 'fs-extra';
 import fg from 'fast-glob';
 import { z } from 'zod';
-import type { ReadonlyDeep, SetOptional } from 'type-fest';
 import type {
+  ReadonlyDeep,
+  SetOptional,
   PluginConfig,
   ParsedPluginsResult,
   PluginSetting,

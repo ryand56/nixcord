@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ReadonlyDeep, Simplify, Exact, SetRequired } from 'type-fest';
+import type { ReadonlyDeep, Simplify, Exact, SetRequired } from './type-utils.js';
 
 export interface PluginSetting {
   readonly name: string;

@@ -12,7 +12,6 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "consola": "^3.4.2",
-    "type-fest": "^5.4.4",
     "zod": "^4.3.6",
     "zod-validation-error": "^5.0.0"
   }

@@ -1,5 +1,4 @@
-import type { ReadonlyDeep } from 'type-fest';
-import type { PluginConfig, PluginSetting } from '@nixcord/shared';
+import type { ReadonlyDeep, PluginConfig, PluginSetting } from '@nixcord/shared';
 import { AUTO_GENERATED_HEADER, isNestedConfig, sortedEntries } from '@nixcord/shared';
 import type { DeprecatedData } from '@nixcord/parser';
 import { NixGenerator } from './generator-base.js';

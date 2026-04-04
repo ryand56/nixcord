@@ -1,8 +1,7 @@
 import { describe, test, expect } from 'vitest';
-import type { ReadonlyDeep } from 'type-fest';
 import { generateNixSetting, generateNixPlugin, generateNixModule } from '../src/generator.js';
 import type { NixAttrSet } from '../src/generator-base.js';
-import type { PluginSetting, PluginConfig } from '@nixcord/shared';
+import type { ReadonlyDeep, PluginSetting, PluginConfig } from '@nixcord/shared';
 
 describe('generateNixSetting()', () => {
   test('enable setting -> mkEnableOption', () => {

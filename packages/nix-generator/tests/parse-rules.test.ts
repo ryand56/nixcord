@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import type { ReadonlyDeep } from 'type-fest';
-import type { PluginConfig } from '@nixcord/shared';
+import type { ReadonlyDeep, PluginConfig } from '@nixcord/shared';
 import { generateParseRulesModule } from '../src/parse-rules.js';
 
 describe('generateParseRulesModule()', () => {
