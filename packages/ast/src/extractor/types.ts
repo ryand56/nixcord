@@ -51,7 +51,6 @@ export enum ExtractionErrorKind {
   /** Symbol cannot be resolved */
   UnresolvableSymbol = 'UnresolvableSymbol',
   /** Type inference failed */
-  TypeInferenceFailed = 'TypeInferenceFailed',
   /** Pattern not supported */
   UnsupportedPattern = 'UnsupportedPattern',
   /** Invalid node type */

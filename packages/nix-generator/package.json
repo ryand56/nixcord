@@ -12,6 +12,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@nixcord/ast": "^1.0.0",
+    "@nixcord/parser": "^1.0.0",
     "@nixcord/shared": "^1.0.0",
     "change-case": "^5.4.4",
     "type-fest": "^5.4.4"

@@ -10,17 +10,20 @@
     "typecheck": "tsc --build",
     "clean": "rm -rf packages/*/dist",
     "format": "prettier --write \"packages/*/src/**/*.{ts,tsx,json}\" \"packages/*/tests/**/*.{ts,tsx,json}\"",
-    "format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx,json}\" \"packages/*/tests/**/*.{ts,tsx,json}\""
+    "format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx,json}\" \"packages/*/tests/**/*.{ts,tsx,json}\"",
+    "lint": "fallow dead-code && fallow dupes",
+    "lint:health": "fallow health",
+    "check": "bun run typecheck && bun run lint && bun run format:check"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.5.2",
     "@vitest/coverage-v8": "~4.1.2",
     "@vitest/ui": "~4.1.2",
-    "fast-check": "^4.6.0",
+    "fallow": "^2.13.0",
+    "vitest": "~4.1.2",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2",
-    "vite": "~8.0.3",
-    "vitest": "~4.1.2"
+    "vite": "~8.0.3"
   }
 }

@@ -7,7 +7,7 @@ import { isLiteralNode } from './predicates.js';
 import { unwrapNode } from './unwrap.js';
 import { resolveIdentifierWithFallback, resolveToObjectLiteral } from './resolve.js';
 
-export const evaluateLiteral = (node: Node): EvaluationResult => {
+const evaluateLiteral = (node: Node): EvaluationResult => {
   const unwrapped = unwrapNode(node);
   const kind = unwrapped.getKind();
 
@@ -37,7 +37,7 @@ const EXTERNAL_ENUMS: Record<string, Record<string, number>> = {
 const getExternalEnumValue = (enumName: string, member: string): number | undefined =>
   EXTERNAL_ENUMS[enumName]?.[member];
 
-export const evaluatePropertyAccess = (
+const evaluatePropertyAccess = (
   node: Node,
   checker: TypeChecker,
   evaluateValue: (n: Node, c: TypeChecker) => EvaluationResult
@@ -86,7 +86,7 @@ export const evaluatePropertyAccess = (
   );
 };
 
-export const BINARY_OPERATORS: Record<number, (l: number, r: number) => number> = {
+const BINARY_OPERATORS: Record<number, (l: number, r: number) => number> = {
   [SyntaxKind.BarToken]: (l, r) => l | r,
   [SyntaxKind.AmpersandToken]: (l, r) => l & r,
   [SyntaxKind.CaretToken]: (l, r) => l ^ r,
@@ -100,7 +100,7 @@ export const BINARY_OPERATORS: Record<number, (l: number, r: number) => number> 
   [SyntaxKind.PercentToken]: (l, r) => l % r,
 };
 
-export const evaluateBinaryExpression = (
+const evaluateBinaryExpression = (
   node: Node,
   checker: TypeChecker,
   evaluateOperand: (n: Node, c: TypeChecker) => EvaluationResult
@@ -135,7 +135,7 @@ export const evaluateBinaryExpression = (
   return Ok(op(left, right));
 };
 
-export const isSupportedBinaryExpression = (node: Node): boolean => {
+const isSupportedBinaryExpression = (node: Node): boolean => {
   const binExpr = node.asKind(SyntaxKind.BinaryExpression);
   return binExpr !== undefined && binExpr.getOperatorToken().getKind() in BINARY_OPERATORS;
 };

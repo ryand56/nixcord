@@ -11,7 +11,7 @@ import { SyntaxKind } from 'ts-morph';
 import { unwrapNode } from './unwrap.js';
 import { asKind, iteratePropertyAssignments } from './property.js';
 
-export const resolveSymbol = (
+const resolveSymbol = (
   node: Node,
   checker?: TypeChecker
 ): { symbol: TsMorphSymbol | undefined; valueDecl: Node | undefined } => {
@@ -28,7 +28,7 @@ export const resolveSymbol = (
   return { symbol, valueDecl };
 };
 
-export const getInitializerFromDecl = (valueDecl?: Node): Node | undefined =>
+const getInitializerFromDecl = (valueDecl?: Node): Node | undefined =>
   valueDecl && 'getInitializer' in valueDecl
     ? (valueDecl as { getInitializer: () => Node | undefined }).getInitializer()
     : undefined;
@@ -38,10 +38,7 @@ export const resolveSymbolInit = (node: Node, checker?: TypeChecker): Node | und
   return getInitializerFromDecl(symbolResult.valueDecl);
 };
 
-export const resolveIdentifier = (
-  identifier: Identifier,
-  checker: TypeChecker
-): Node | undefined => {
+const resolveIdentifier = (identifier: Identifier, checker: TypeChecker): Node | undefined => {
   const symbol = identifier.getSymbol() ?? checker.getSymbolAtLocation(identifier);
   if (!symbol) return undefined;
 
@@ -56,7 +53,7 @@ export const resolveIdentifier = (
   return undefined;
 };
 
-export const resolveNode = (node: Node, checker: TypeChecker): Node | undefined => {
+const resolveNode = (node: Node, checker: TypeChecker): Node | undefined => {
   const ident = node.asKind(SyntaxKind.Identifier);
   if (!ident) return undefined;
   return resolveIdentifier(ident, checker);
@@ -67,7 +64,7 @@ export const resolveIdentifierInitializerNode = (
   checker: TypeChecker
 ): Node | undefined => resolveNode(node, checker);
 
-export const resolveIdentifierNode = (node: Node, checker: TypeChecker): Node =>
+const resolveIdentifierNode = (node: Node, checker: TypeChecker): Node =>
   resolveNode(node, checker) ?? node;
 
 export const resolveIdentifierWithFallback = (

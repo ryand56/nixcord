@@ -1,3 +1,4 @@
+// fallow-ignore-file duplicate-export
 import { expect } from 'vitest';
 import { Project, ModuleKind } from 'ts-morph';
 import { createMinimalProps } from '../../src/extractor/type-inference/types.js';

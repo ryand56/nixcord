@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-export
 /**
  * Plugin-specific navigation functions.
  *

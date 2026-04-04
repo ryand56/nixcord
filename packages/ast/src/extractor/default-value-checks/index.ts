@@ -9,7 +9,7 @@ import type {
 import { SyntaxKind } from 'ts-morph';
 import { STRING_ARRAY_TYPE_PATTERN, COMPONENT_PROPERTY } from '../constants.js';
 import { unwrapNode, resolveSymbolInit, resolveArrowBody, asKind } from '../../foundation/index.js';
-import { getDefaultPropertyInitializer } from '../type-helpers.js';
+import { getDefaultPropertyInitializer } from '../../foundation/index.js';
 
 const isStringArray = (arr: ArrayLiteralExpression): boolean =>
   arr.getElements().every((el) => el.getKind() === SyntaxKind.StringLiteral);

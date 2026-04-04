@@ -12,7 +12,8 @@ import {
   NIX_TYPE_LIST_OF_STR,
   COMPONENT_PROPERTY,
 } from './constants.js';
-import { getDefaultPropertyInitializer, isCustomType } from './type-helpers.js';
+import { getDefaultPropertyInitializer } from '../foundation/index.js';
+import { isCustomType } from './type-helpers.js';
 import { extractSelectDefault } from './select/index.js';
 import { extractDefaultValue } from './default-value.js';
 import {

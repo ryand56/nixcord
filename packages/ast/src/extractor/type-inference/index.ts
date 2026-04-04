@@ -28,7 +28,8 @@ import {
   hasEmptyArrayWithTypeAnnotation,
 } from '../default-value-checks/index.js';
 import { isBoolean, isString } from '@nixcord/shared';
-import { getDefaultPropertyInitializer, isCustomType } from '../type-helpers.js';
+import { getDefaultPropertyInitializer } from '../../foundation/index.js';
+import { isCustomType } from '../type-helpers.js';
 import type { SettingProperties, TypeInferenceResult } from './types.js';
 export type { SettingProperties, TypeInferenceResult } from './types.js';
 import { createMinimalProps } from './types.js';

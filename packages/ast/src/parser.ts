@@ -27,8 +27,7 @@ import {
   TS_ARRAY_BRACKET_PATTERN,
   TS_ARRAY_GENERIC_PATTERN,
 } from './extractor/constants.js';
-import { isBooleanEnumValues } from './extractor/type-helpers.js';
-import { evaluate, typeMatches } from './foundation/index.js';
+import { evaluate, typeMatches, isBooleanEnumValues } from './foundation/index.js';
 
 const isNode = (value: unknown): value is Node =>
   typeof value === 'object' && value !== null && typeof (value as Node).getKind === 'function';

@@ -34,6 +34,10 @@ export const getPropertyInitializer = (
   return prop.getInitializer() as Node | undefined;
 };
 
+export function getDefaultPropertyInitializer(obj: ObjectLiteralExpression): Node | undefined {
+  return getPropertyInitializer(obj, 'default');
+}
+
 export const extractStringLiteralValue = (
   obj: ObjectLiteralExpression,
   propName: string
@@ -110,13 +114,13 @@ export const getFirstArgumentOfKind = <T extends Node>(
   return firstArg ? asKind<T>(firstArg, kind) : undefined;
 };
 
-export const isArrayOf = (arr: ArrayLiteralExpression, kind: SyntaxKind): boolean =>
+const isArrayOf = (arr: ArrayLiteralExpression, kind: SyntaxKind): boolean =>
   arr.getElements().every((el) => el.getKind() === kind);
 
-export const isArrayOfStringLiterals = (arr: ArrayLiteralExpression): boolean =>
+const isArrayOfStringLiterals = (arr: ArrayLiteralExpression): boolean =>
   isArrayOf(arr, SyntaxKind.StringLiteral);
 
-export const isArrayOfObjectLiterals = (arr: ArrayLiteralExpression): boolean =>
+const isArrayOfObjectLiterals = (arr: ArrayLiteralExpression): boolean =>
   isArrayOf(arr, SyntaxKind.ObjectLiteralExpression);
 
 export const getPropertyAssignments = (obj: ObjectLiteralExpression): PropertyAssignment[] =>

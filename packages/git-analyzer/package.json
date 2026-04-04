@@ -10,7 +10,5 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "dependencies": {
-    "pathe": "^2.0.3"
-  }
+  "dependencies": {}
 }

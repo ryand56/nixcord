@@ -12,6 +12,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@nixcord/ast": "^1.0.0",
+    "@nixcord/git-analyzer": "^1.0.0",
     "@nixcord/shared": "^1.0.0",
     "fast-glob": "^3.3.3",
     "fs-extra": "^11.3.4",
