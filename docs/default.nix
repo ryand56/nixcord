@@ -41,23 +41,7 @@ let
 
   modules = [
     baseHMConfig
-    # Define options directly with mock config
-    (
-      {
-        config,
-        lib,
-        pkgs,
-        ...
-      }:
-      {
-        options.programs.nixcord = (
-          import ../modules/options.nix {
-            inherit lib pkgs;
-            dop = with lib.types; coercedTo package (a: a.outPath) pathInStore;
-          }
-        );
-      }
-    )
+    ../modules/options
     dontCheckModules
   ];
 
@@ -78,7 +62,7 @@ let
         ];
       declarations =
         if isNixcordOption && (opt.declarations == [ ]) then
-          [ (githubDeclaration "FlameFlag" "nixcord" "main" "modules/options.nix") ]
+          [ (githubDeclaration "FlameFlag" "nixcord" "main" "modules/options") ]
         else
           map (
             decl:

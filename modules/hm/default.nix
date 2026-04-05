@@ -21,7 +21,7 @@ let
 in
 {
   imports = [
-    ../options.nix
+    ../options
     ../plugins/migrations.nix
     ../warnings.nix
   ];
