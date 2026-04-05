@@ -18,6 +18,7 @@ let
     "types.float" = types.float;
     "types.attrs" = types.attrs;
     "types.nullOr types.str" = types.nullOr types.str;
+    "types.nullOr types.attrs" = types.nullOr types.attrs;
     "types.listOf types.str" = types.listOf types.str;
     "types.listOf types.attrs" = types.listOf types.attrs;
   };

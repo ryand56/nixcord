@@ -31,9 +31,11 @@
               hm-eval = import ./modules/tests/hm-eval.nix { inherit pkgs; };
               nixos-eval = import ./modules/tests/nixos-eval.nix { inherit pkgs; };
               darwin-eval = import ./modules/tests/darwin-eval.nix { inherit pkgs; };
+              config-output = import ./modules/tests/config-output.nix { inherit pkgs; };
+              assertions = import ./modules/tests/assertions.nix { inherit pkgs; };
             in
             {
-              inherit hm-eval nixos-eval;
+              inherit hm-eval nixos-eval config-output assertions;
             }
             // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
               inherit darwin-eval;

@@ -1,51 +1,22 @@
 { pkgs }:
 
 let
-  nixcordModule = import ../hm/default.nix;
+  testLib = import ./lib.nix { inherit pkgs; };
+  inherit (testLib) firstSharedPlugin;
 
-  baseHMConfig =
-    {
-      config,
-      lib,
-      pkgs,
-      ...
-    }:
-    {
-      options = {
-        home.homeDirectory = lib.mkOption {
-          type = lib.types.path;
-          default = "/home/testuser";
-          description = "User's home directory";
-        };
-        xdg.configHome = lib.mkOption {
-          type = lib.types.path;
-          default = "/home/testuser/.config";
-          description = "XDG config directory";
-        };
-      };
-      config = {
-        home.username = lib.mkDefault "testuser";
-        home.homeDirectory = lib.mkDefault "/home/testuser";
-        xdg.configHome = lib.mkDefault "/home/testuser/.config";
-      };
-    };
-
-  testEval = pkgs.lib.evalModules {
-    modules = [
-      baseHMConfig
-      nixcordModule
-      {
-        programs.nixcord = {
-          enable = true;
-          config.plugins.hideDisabledEmojis.enable = true;
-        };
-      }
-    ];
-    specialArgs = { inherit pkgs; };
+  evaluatedConfig = testLib.evalHM {
+    enable = true;
+    config.plugins.${firstSharedPlugin}.enable = true;
   };
 in
 
-pkgs.runCommand "hm-eval-test" { } ''
-  echo "Home Manager module evaluation successful"
-  touch $out
-''
+pkgs.runCommand "hm-eval-test"
+  {
+    passAsFile = [ "configJson" ];
+    configJson = testLib.serializeEvalConfig evaluatedConfig;
+  }
+  ''
+    echo "Home Manager module evaluation successful"
+    echo "Config size: $(wc -c < $configJsonPath) bytes"
+    touch $out
+  ''

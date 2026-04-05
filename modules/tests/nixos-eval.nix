@@ -1,31 +1,22 @@
 { pkgs }:
 
 let
-  nixcordModule = import ../nixos/default.nix;
+  testLib = import ./lib.nix { inherit pkgs; };
+  inherit (testLib) firstSharedPlugin;
 
-  testEval = pkgs.lib.evalModules {
-    modules = [
-      nixcordModule
-      {
-        programs.nixcord = {
-          enable = true;
-          user = "testuser";
-          config.plugins.hideDisabledEmojis.enable = true;
-        };
-
-        users.users.testuser = {
-          name = "testuser";
-          home = "/home/testuser";
-          isNormalUser = true;
-        };
-
-        system.stateVersion = "25.11";
-      }
-    ];
+  evaluatedConfig = testLib.evalNixOS {
+    enable = true;
+    config.plugins.${firstSharedPlugin}.enable = true;
   };
 in
 
-pkgs.runCommand "nixos-eval-test" { } ''
-  echo "NixOS module evaluation successful"
-  touch $out
-''
+pkgs.runCommand "nixos-eval-test"
+  {
+    passAsFile = [ "configJson" ];
+    configJson = testLib.serializeEvalConfig evaluatedConfig;
+  }
+  ''
+    echo "NixOS module evaluation successful"
+    echo "Config size: $(wc -c < $configJsonPath) bytes"
+    touch $out
+  ''

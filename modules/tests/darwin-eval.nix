@@ -1,28 +1,22 @@
 { pkgs }:
 
 let
-  nixcordModule = import ../darwin/default.nix;
+  testLib = import ./lib.nix { inherit pkgs; };
+  inherit (testLib) firstSharedPlugin;
 
-  testEval = pkgs.lib.evalModules {
-    modules = [
-      nixcordModule
-      {
-        programs.nixcord = {
-          enable = true;
-          user = "testuser";
-          config.plugins.hideDisabledEmojis.enable = true;
-        };
-
-        users.users.testuser = {
-          name = "testuser";
-          home = "/Users/testuser";
-        };
-      }
-    ];
+  evaluatedConfig = testLib.evalDarwin {
+    enable = true;
+    config.plugins.${firstSharedPlugin}.enable = true;
   };
 in
 
-pkgs.runCommand "darwin-eval-test" { } ''
-  echo "Darwin module evaluation successful"
-  touch $out
-''
+pkgs.runCommand "darwin-eval-test"
+  {
+    passAsFile = [ "configJson" ];
+    configJson = testLib.serializeEvalConfig evaluatedConfig;
+  }
+  ''
+    echo "Darwin module evaluation successful"
+    echo "Config size: $(wc -c < $configJsonPath) bytes"
+    touch $out
+  ''
