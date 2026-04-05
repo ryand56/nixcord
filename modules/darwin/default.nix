@@ -2,41 +2,30 @@
   config,
   lib,
   pkgs,
-  nixcordPkgs ? { },
   ...
 }:
 let
   inherit (lib)
     mkIf
     mkMerge
-    types
     ;
 
   inherit (pkgs.callPackage ../lib/shared.nix { inherit lib; })
     mergeAttrsList
     applyPostPatch
     mkPluginKit
-    mkAssertions
     mkSettingsFiles
     mkDorionConfigAttrs
     mkThemeFile
     ;
 
-  dop = with types; coercedTo package (a: a.outPath) pathInStore;
-
 in
 {
-  imports = [ ../plugins/migrations.nix ];
-
-  options.programs.nixcord = import ../options.nix {
-    inherit
-      lib
-      pkgs
-      dop
-      applyPostPatch
-      nixcordPkgs
-      ;
-  };
+  imports = [
+    ../options.nix
+    ../plugins/migrations.nix
+    ../warnings.nix
+  ];
 
   config = mkIf config.programs.nixcord.enable (
     let
@@ -52,10 +41,6 @@ in
       pluginKit = mkPluginKit { inherit cfg; };
 
       inherit (pluginKit)
-        pluginNameMigrations
-        collectDeprecatedPlugins
-        collectEnabledEquicordOnlyPlugins
-        collectEnabledVencordOnlyPlugins
         filterPluginsFor
         mkFullConfig
         ;
@@ -103,7 +88,6 @@ in
         discordSettingsFile
         vesktopSettingsFile
         vesktopClientSettingsFile
-        vesktopStateFile
         equibopSettingsFile
         equibopClientSettingsFile
         equibopStateFile
@@ -312,21 +296,6 @@ in
         system.activationScripts.nixcord-setupDorionVencordSettings.text =
           activationScripts.setupDorionVencordSettings;
       })
-      {
-        warnings = import ../../warnings.nix {
-          inherit
-            cfg
-            mkIf
-            lib
-            pluginNameMigrations
-            ;
-          deprecatedPlugins = collectDeprecatedPlugins cfg.config;
-        };
-
-        assertions = mkAssertions {
-          inherit cfg collectEnabledEquicordOnlyPlugins collectEnabledVencordOnlyPlugins;
-        };
-      }
     ])
   );
 }

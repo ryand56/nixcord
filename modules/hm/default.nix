@@ -2,14 +2,12 @@
   config,
   lib,
   pkgs,
-  nixcordPkgs ? { },
   ...
 }:
 let
   inherit (lib)
     mkIf
     mkMerge
-    types
     ;
 
   inherit (pkgs.callPackage ../lib/shared.nix { inherit lib; })
@@ -17,25 +15,16 @@ let
     applyPostPatch
     mkIsQuickCssUsed
     mkPluginKit
-    mkAssertions
     mkDorionConfigAttrs
     ;
 
-  dop = with types; coercedTo package (a: a.outPath) pathInStore;
-
 in
 {
-  imports = [ ../plugins/migrations.nix ];
-
-  options.programs.nixcord = import ../options.nix {
-    inherit
-      lib
-      pkgs
-      dop
-      applyPostPatch
-      nixcordPkgs
-      ;
-  };
+  imports = [
+    ../options.nix
+    ../plugins/migrations.nix
+    ../warnings.nix
+  ];
 
   config = mkIf config.programs.nixcord.enable (
     let
@@ -51,10 +40,6 @@ in
       pluginKit = mkPluginKit { inherit cfg; };
 
       inherit (pluginKit)
-        pluginNameMigrations
-        collectDeprecatedPlugins
-        collectEnabledEquicordOnlyPlugins
-        collectEnabledVencordOnlyPlugins
         filterPluginsFor
         mkFullConfig
         ;
@@ -80,14 +65,6 @@ in
 
       isQuickCssUsed = mkIsQuickCssUsed { inherit cfg; };
 
-      allPlugins =
-        cfg.config.plugins
-        // (cfg.extraConfig.plugins or { })
-        // (cfg.vencordConfig.plugins or { })
-        // (cfg.equicordConfig.plugins or { })
-        // (cfg.equibopConfig.plugins or { });
-
-      deprecatedPlugins = collectDeprecatedPlugins { plugins = allPlugins; };
     in
     mkMerge ([
       {
@@ -277,21 +254,6 @@ in
           home.activation.setupDorionVencordSettings = activationScripts.setupDorionVencordSettings;
         }
       ]))
-      {
-        warnings = import ../../warnings.nix {
-          inherit
-            cfg
-            mkIf
-            lib
-            deprecatedPlugins
-            pluginNameMigrations
-            ;
-        };
-
-        assertions = mkAssertions {
-          inherit cfg collectEnabledEquicordOnlyPlugins collectEnabledVencordOnlyPlugins;
-        };
-      }
     ])
   );
 }
