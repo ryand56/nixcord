@@ -47,15 +47,19 @@
     "packages/git-analyzer": {
       "name": "@nixcord/git-analyzer",
       "version": "1.0.0",
+      "dependencies": {
+        "@nixcord/shared": "^1.0.0",
+      },
     },
     "packages/nix-generator": {
       "name": "@nixcord/nix-generator",
       "version": "1.0.0",
       "dependencies": {
-        "@nixcord/ast": "^1.0.0",
-        "@nixcord/parser": "^1.0.0",
+        "@nixcord/git-analyzer": "^1.0.0",
         "@nixcord/shared": "^1.0.0",
         "change-case": "^5.4.4",
+        "fs-extra": "^11.3.4",
+        "pathe": "^2.0.3",
       },
     },
     "packages/parser": {

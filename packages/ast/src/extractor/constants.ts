@@ -27,16 +27,18 @@ export const TS_TYPE_UNDEFINED = 'undefined';
 export const TS_ARRAY_BRACKET_PATTERN = '[]';
 export const TS_ARRAY_GENERIC_PATTERN = 'Array<';
 
-// Canonical Nix type strings emitted in the generated module
-export const NIX_ENUM_TYPE = 'types.enum';
-export const NIX_TYPE_BOOL = 'types.bool';
-export const NIX_TYPE_STR = 'types.str';
-export const NIX_TYPE_INT = 'types.int';
-export const NIX_TYPE_FLOAT = 'types.float';
-export const NIX_TYPE_ATTRS = 'types.attrs';
-export const NIX_TYPE_NULL_OR_STR = 'types.nullOr types.str';
-export const NIX_TYPE_LIST_OF_STR = 'types.listOf types.str';
-export const NIX_TYPE_LIST_OF_ATTRS = 'types.listOf types.attrs';
+// Re-export canonical Nix type strings from shared (authoritative source)
+export {
+  NIX_ENUM_TYPE,
+  NIX_TYPE_BOOL,
+  NIX_TYPE_STR,
+  NIX_TYPE_INT,
+  NIX_TYPE_FLOAT,
+  NIX_TYPE_ATTRS,
+  NIX_TYPE_NULL_OR_STR,
+  NIX_TYPE_LIST_OF_STR,
+  NIX_TYPE_LIST_OF_ATTRS,
+} from '@nixcord/shared';
 
 // OptionType names as they appear in plugin sources
 export const OPTION_TYPE_BOOLEAN = 'BOOLEAN';
@@ -62,4 +64,4 @@ export const ARRAY_FIRST_INDEX = 0;
 // Regex helpers for identifier/type parsing
 export const RESTART_REQUIRED_SUFFIX = '(restart required)';
 export const STRING_ARRAY_TYPE_PATTERN = /string\[\]|\bArray<string>\b/;
-export const INTEGER_STRING_PATTERN = /^[0-9]+$/;
+export { INTEGER_STRING_PATTERN } from '@nixcord/shared';

@@ -7,18 +7,14 @@ import { oraPromise } from 'ora';
 import type { Simplify } from '@nixcord/shared';
 
 import { CLI_CONFIG } from '@nixcord/shared';
-import {
-  parsePlugins,
-  categorizePlugins,
-  extractMigrations,
-  updateDeprecatedPlugins,
-} from '@nixcord/parser';
+import { parsePlugins, categorizePlugins, extractMigrations } from '@nixcord/parser';
 import type { ParsePluginsOptions } from '@nixcord/parser';
 import {
   generateNixModule,
   generateParseRulesModule,
   generateMigrationsModule,
-  NixGenerator,
+  updateDeprecatedPlugins,
+  toNixIdentifier,
 } from '@nixcord/nix-generator';
 import { ParsedPluginsResultSchema, type ParsedPluginsResult } from '@nixcord/shared';
 import type { Logger } from '@nixcord/shared';
@@ -281,7 +277,6 @@ export const runGeneratePluginOptions = async (
 
       // Build set of active plugin names to filter false-positive removals
       const activePluginNames = new Set(Object.keys(allPlugins));
-      const gen = new NixGenerator();
 
       const deprecated = await updateDeprecatedPlugins(
         combinedMigrations,
@@ -290,7 +285,7 @@ export const runGeneratePluginOptions = async (
         parsedParams.logger,
         allSettingRenames,
         activePluginNames,
-        (name) => gen.identifier(name)
+        toNixIdentifier
       );
       const migrationsNix = generateMigrationsModule(deprecated, allPlugins, [
         categorized.generic,

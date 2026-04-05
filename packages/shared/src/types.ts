@@ -74,6 +74,21 @@ export interface PluginInfo {
   readonly description?: string;
 }
 
+export type DeprecatedRenameEntry = {
+  to: string;
+  date?: string;
+};
+
+export type DeprecatedRemovalEntry = {
+  date: string;
+};
+
+export type DeprecatedData = {
+  renames: Record<string, DeprecatedRenameEntry>;
+  removals: Record<string, DeprecatedRemovalEntry>;
+  settingRenames: Record<string, Record<string, string>>;
+};
+
 export type PluginInfoStrict = Simplify<Exact<PluginInfo, PluginInfo>>;
 
 export const OptionTypeMap: Readonly<Record<number, string>> = {

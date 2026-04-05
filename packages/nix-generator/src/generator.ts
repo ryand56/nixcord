@@ -9,8 +9,11 @@ import {
   isObject,
   isNestedConfig,
   AUTO_GENERATED_HEADER,
+  INTEGER_STRING_PATTERN,
+  NIX_ENUM_TYPE,
+  NIX_TYPE_FLOAT,
+  NIX_TYPE_INT,
 } from '@nixcord/shared';
-import { INTEGER_STRING_PATTERN, NIX_ENUM_TYPE, NIX_TYPE_FLOAT, NIX_TYPE_INT } from '@nixcord/ast';
 
 const gen = new NixGenerator();
 

@@ -1,5 +1,3 @@
-import { camelCase } from 'change-case';
-
 import {
   type ReadonlyDeep,
   isArray,
@@ -9,6 +7,7 @@ import {
   isBoolean,
 } from '@nixcord/shared';
 import { escapeNixDoubleQuotedString, escapeNixString } from './utils/nix-escape.js';
+import { toNixIdentifier } from './identifier.js';
 
 const visitedObjects = new WeakSet<object>();
 
@@ -143,48 +142,7 @@ export class NixGenerator {
     }
   }
 
-  private static readonly PARENTHESES_PATTERN = /\s*\([^)]*\)\s*/g;
-  private static readonly INVALID_CHARS_PATTERN = /[^A-Za-z0-9_'-]/g;
-  private static readonly LEADING_TRAILING_UNDERSCORES_PATTERN = /^_+|_+$/g;
-  private static readonly MULTIPLE_UNDERSCORES_PATTERN = /_+/g;
-  private static readonly VALID_IDENTIFIER_START_PATTERN = /^[A-Za-z_]/;
-  private static readonly LEADING_UNDERSCORE_PREFIX = '_';
-
   identifier(name: string): string {
-    const originalStartsWithUnderscore = name.startsWith('_');
-    const originalEndsWithUnderscore = name.endsWith('_');
-    let sanitized = name
-      .replace(NixGenerator.PARENTHESES_PATTERN, '')
-      .replace(NixGenerator.INVALID_CHARS_PATTERN, '_')
-      .replace(NixGenerator.LEADING_TRAILING_UNDERSCORES_PATTERN, '')
-      .replace(NixGenerator.MULTIPLE_UNDERSCORES_PATTERN, '_');
-
-    const needsPrefix =
-      sanitized.length === 0 || !NixGenerator.VALID_IDENTIFIER_START_PATTERN.test(sanitized);
-
-    const hasAcronym = /[A-Z]{2}/.test(sanitized);
-
-    const needsCamelCase = sanitized.includes('_') || sanitized.includes(' ');
-    if (!hasAcronym || needsCamelCase) {
-      try {
-        sanitized = camelCase(sanitized);
-      } catch {}
-    }
-
-    if (
-      originalStartsWithUnderscore &&
-      !originalEndsWithUnderscore &&
-      sanitized &&
-      NixGenerator.VALID_IDENTIFIER_START_PATTERN.test(sanitized)
-    )
-      return '_' + sanitized;
-    if (
-      needsPrefix ||
-      sanitized.length === 0 ||
-      !NixGenerator.VALID_IDENTIFIER_START_PATTERN.test(sanitized)
-    )
-      sanitized = NixGenerator.LEADING_UNDERSCORE_PREFIX + sanitized;
-
-    return sanitized;
+    return toNixIdentifier(name);
   }
 }

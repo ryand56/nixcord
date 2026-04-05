@@ -1,13 +1,12 @@
 // fallow-ignore-file code-duplication
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { RENAME_EXPIRY_DAYS, REMOVAL_EXPIRY_DAYS } from '@nixcord/shared';
 
 const execAsync = promisify(exec);
 
 const DAYS_TO_CHECK = 18;
 const PLUGIN_FILE_PATTERN = /index\.(ts|tsx)$/;
-const RENAME_DAYS = 40;
-const DELETION_DAYS = 50;
 
 export type DeprecationInfo = {
   plugin: string;
@@ -117,7 +116,7 @@ const buildPluginGlobs = (pluginsDirs: string[]): string => {
 export const extractPluginRenames = async (
   repoPath: string,
   pluginsDirs: string[],
-  days: number = RENAME_DAYS
+  days: number = RENAME_EXPIRY_DAYS
 ): Promise<PluginRename[]> => {
   if (!(await hasGit(repoPath))) return [];
 
@@ -181,7 +180,7 @@ export const extractPluginRenames = async (
 export const extractPluginDeletions = async (
   repoPath: string,
   pluginsDirs: string[],
-  days: number = DELETION_DAYS
+  days: number = REMOVAL_EXPIRY_DAYS
 ): Promise<PluginDeletion[]> => {
   if (!(await hasGit(repoPath))) return [];
 
@@ -243,8 +242,8 @@ export const extractPluginMigrations = async (
   pluginsDirs: string[]
 ): Promise<PluginMigrationInfo> => {
   const [renames, deletions] = await Promise.all([
-    extractPluginRenames(repoPath, pluginsDirs, RENAME_DAYS),
-    extractPluginDeletions(repoPath, pluginsDirs, DELETION_DAYS),
+    extractPluginRenames(repoPath, pluginsDirs, RENAME_EXPIRY_DAYS),
+    extractPluginDeletions(repoPath, pluginsDirs, REMOVAL_EXPIRY_DAYS),
   ]);
 
   return { renames, deletions };
