@@ -7,16 +7,9 @@
   ...
 }:
 let
-  inherit (lib)
-    attrsets
-    lists
-    strings
-    ;
+  inherit (lib) attrsets lists strings;
 
-  inherit (attrsets)
-    mapAttrs'
-    nameValuePair
-    ;
+  inherit (attrsets) mapAttrs' nameValuePair;
 
   defaultParseRules = builtins.fromJSON (builtins.readFile ../plugins/parse-rules.json);
 
@@ -25,31 +18,25 @@ let
 
   upperNames = mergeLists defaultParseRules.upperNames parseRules.upperNames;
   lowerPluginTitles = mergeLists defaultParseRules.lowerPluginTitles parseRules.lowerPluginTitles;
-  mergeSettingRenames =
-    base: extra:
-    let
-      allKeys = builtins.attrNames base ++ builtins.attrNames extra;
-    in
-    builtins.listToAttrs (
-      map (key: {
-        name = key;
-        value = (base.${key} or { }) // (extra.${key} or { });
-      }) (lists.unique allKeys)
-    );
+  mergeSettingRenames = base: extra: lib.recursiveUpdate base extra;
   settingRenames = mergeSettingRenames (defaultParseRules.settingRenames or { }) (
     parseRules.settingRenames or { }
   );
 
   isLowerCase = s: strings.toLower s == s;
 
+  # Converts camelCase to UPPER_SNAKE_CASE using the same split approach as toSnakeCase.
   unNixify =
     nixName:
     strings.toUpper (
-      strings.concatStrings (
-        builtins.map (char: if isLowerCase char then char else "_" + char) (
-          strings.stringToCharacters nixName
-        )
-      )
+      lib.pipe nixName [
+        (builtins.split "([A-Z])")
+        (builtins.foldl' (
+          acc: part:
+          if builtins.isList part then acc + "_" + (strings.toLower (builtins.elemAt part 0)) else acc + part
+        ) "")
+        (builtins.replaceStrings [ "__" ] [ "_" ])
+      ]
     );
 
   isLowerCamel = string: isLowerCase (builtins.substring 0 1 string);

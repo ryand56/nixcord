@@ -35,24 +35,19 @@ let
     if setting ? settings then
       # Nested plugin config (recursive)
       mkPlugin _name setting
-    else if setting.type == "types.enum" then
-      mkOption (
-        {
-          type = types.enum setting.enumValues;
-        }
-        // lib.optionalAttrs (setting ? default) { default = resolveDefault setting.default; }
-        // lib.optionalAttrs (setting ? description) { description = setting.description; }
-        // lib.optionalAttrs (setting ? example) { example = setting.example; }
-      )
     else
-      mkOption (
-        {
-          type = typeMap.${setting.type} or types.str;
-        }
-        // lib.optionalAttrs (setting ? default) { default = resolveDefault setting.default; }
-        // lib.optionalAttrs (setting ? description) { description = setting.description; }
-        // lib.optionalAttrs (setting ? example) { example = setting.example; }
-      );
+      let
+        commonAttrs =
+          lib.optionalAttrs (setting ? default) { default = resolveDefault setting.default; }
+          // lib.optionalAttrs (setting ? description) { description = setting.description; }
+          // lib.optionalAttrs (setting ? example) { example = setting.example; };
+        typeAttr =
+          if setting.type == "types.enum" then
+            { type = types.enum setting.enumValues; }
+          else
+            { type = typeMap.${setting.type} or types.str; };
+      in
+      mkOption (typeAttr // commonAttrs);
 
   mkPlugin =
     _name: plugin:

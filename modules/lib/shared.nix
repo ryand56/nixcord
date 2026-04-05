@@ -1,9 +1,10 @@
 { lib }:
 
 let
-  # mergeAttrsList :: [attrset] -> attrset
+  # deepMergeAttrsList :: [attrset] -> attrset
   # Deep-merge a list of attribute sets (left to right).
-  mergeAttrsList = list: builtins.foldl' lib.recursiveUpdate { } list;
+  # Named to distinguish from lib.mergeAttrsList which does shallow merge.
+  deepMergeAttrsList = list: builtins.foldl' lib.recursiveUpdate { } list;
 
   # applyPostPatch :: { cfg, pkg } -> derivation
   # Patch a Vencord/Equicord derivation to include user plugins.
@@ -61,54 +62,42 @@ let
           builtins.attrNames pluginNameMigrations
         );
 
-      collectEnabledEquicordOnlyPlugins =
-        configAttrs:
+      # Attrset masks for O(1) lookups instead of O(n) builtins.elem on lists.
+      sharedMask = lib.genAttrs (builtins.attrNames sharedPlugins) (_: null);
+      vencordMask = lib.genAttrs (builtins.attrNames vencordOnlyPlugins) (_: null);
+      equicordMask = lib.genAttrs (builtins.attrNames equicordOnlyPlugins) (_: null);
+
+      # collectEnabledExclusivePlugins :: attrset -> attrset -> attrset -> [string]
+      # Returns names of enabled plugins that belong exclusively to `targetSet`
+      # (i.e. not in shared or `otherSet`).
+      collectEnabledExclusivePlugins =
+        targetSet: otherMask: configAttrs:
         let
           plugins = configAttrs.plugins or { };
-          sharedNames = builtins.attrNames sharedPlugins;
-          vencordNames = builtins.attrNames vencordOnlyPlugins;
-          equicordNames = builtins.attrNames equicordOnlyPlugins;
-          allowedEquicordOnly = lib.filter (
-            name: !(builtins.elem name sharedNames) && !(builtins.elem name vencordNames)
-          ) equicordNames;
         in
         builtins.attrNames (
           lib.filterAttrs (
-            name: value: builtins.elem name allowedEquicordOnly && isPluginEnabled value
+            name: value:
+            targetSet ? ${name} && !(sharedMask ? ${name}) && !(otherMask ? ${name}) && isPluginEnabled value
           ) plugins
         );
 
-      collectEnabledVencordOnlyPlugins =
-        configAttrs:
-        let
-          plugins = configAttrs.plugins or { };
-          sharedNames = builtins.attrNames sharedPlugins;
-          vencordNames = builtins.attrNames vencordOnlyPlugins;
-          equicordNames = builtins.attrNames equicordOnlyPlugins;
-          allowedVencordOnly = lib.filter (
-            name: !(builtins.elem name sharedNames) && !(builtins.elem name equicordNames)
-          ) vencordNames;
-        in
-        builtins.attrNames (
-          lib.filterAttrs (
-            name: value: builtins.elem name allowedVencordOnly && isPluginEnabled value
-          ) plugins
-        );
+      collectEnabledEquicordOnlyPlugins = collectEnabledExclusivePlugins equicordMask vencordMask;
+      collectEnabledVencordOnlyPlugins = collectEnabledExclusivePlugins vencordMask equicordMask;
 
       filterPluginsFor =
         client: configAttrs:
         let
-          allowedNames =
-            builtins.attrNames sharedPlugins
-            ++ (
+          mask =
+            sharedMask
+            // (
               if client == "vencord" then
-                builtins.attrNames vencordOnlyPlugins
+                vencordMask
               else if client == "equicord" then
-                builtins.attrNames equicordOnlyPlugins
+                equicordMask
               else
-                [ ]
+                { }
             );
-          mask = lib.genAttrs allowedNames (_: null);
           plugins = configAttrs.plugins or { };
         in
         configAttrs // { plugins = builtins.intersectAttrs mask plugins; };
@@ -133,7 +122,7 @@ let
         let
           filteredBaseConfig = filterPluginsForClient baseConfig;
         in
-        mergeAttrsList [
+        deepMergeAttrsList [
           filteredBaseConfig
           extraConfig
           clientConfig
@@ -374,10 +363,62 @@ let
     else
       pkgs.writeText "nixcord-theme-${name}.css" value;
 
+  # branchDirName :: string -> string
+  # Maps a Discord branch name to its config directory name.
+  branchDirName = {
+    stable = "discord";
+    ptb = "discordptb";
+    canary = "discordcanary";
+    development = "discorddevelopment";
+  };
+
+  # mkConfigDirs :: { cfg, basePath } -> attrset
+  # Computes all configDir defaults for a given base path.
+  mkConfigDirs =
+    { cfg, basePath }:
+    {
+      discord.configDir = lib.mkDefault "${basePath}/${branchDirName.${cfg.discord.branch} or "discord"}";
+      configDir = lib.mkDefault "${basePath}/${
+        if cfg.discord.equicord.enable then "Equicord" else "Vencord"
+      }";
+      vesktop.configDir = lib.mkDefault "${basePath}/vesktop";
+      equibop.configDir = lib.mkDefault "${basePath}/equibop";
+      dorion.configDir = lib.mkDefault "${basePath}/dorion";
+    };
+
+  # mkAllFullConfigs :: { cfg, pluginKit } -> { vencord, equicord, vesktop, equibop }
+  # Assembles full merged configs for all clients.
+  mkAllFullConfigs =
+    { cfg, pluginKit }:
+    let
+      inherit (pluginKit) filterPluginsFor mkFullConfig;
+    in
+    {
+      vencordFullConfig = mkFullConfig {
+        baseConfig = cfg.config;
+        extraConfig = cfg.extraConfig;
+        clientConfig = cfg.vencordConfig;
+      };
+      equicordFullConfig = mkFullConfig {
+        baseConfig = cfg.config;
+        extraConfig = cfg.extraConfig;
+        clientConfig = cfg.equicordConfig;
+      };
+      vesktopFullConfig = filterPluginsFor "vencord" (deepMergeAttrsList [
+        cfg.config
+        cfg.extraConfig
+        cfg.vesktopConfig
+      ]);
+      equibopFullConfig = filterPluginsFor "equicord" (deepMergeAttrsList [
+        cfg.config
+        cfg.extraConfig
+        cfg.equibopConfig
+      ]);
+    };
 in
 {
   inherit
-    mergeAttrsList
+    deepMergeAttrsList
     applyPostPatch
     mkIsQuickCssUsed
     mkPluginKit
@@ -387,5 +428,7 @@ in
     mkAssertions
     mkSettingsFiles
     mkThemeFile
+    mkConfigDirs
+    mkAllFullConfigs
     ;
 }

@@ -5,13 +5,9 @@
   ...
 }:
 let
-  inherit (lib)
-    mkIf
-    mkMerge
-    ;
+  inherit (lib) mkIf mkMerge;
 
   inherit (pkgs.callPackage ../lib/shared.nix { inherit lib; })
-    mergeAttrsList
     applyPostPatch
     mkIsQuickCssUsed
     mkPluginKit
@@ -19,8 +15,9 @@ let
     mkSettingsFiles
     mkDorionConfigAttrs
     mkThemeFile
+    mkConfigDirs
+    mkAllFullConfigs
     ;
-
 in
 {
   imports = [
@@ -40,34 +37,12 @@ in
 
       pluginKit = mkPluginKit { inherit cfg; };
 
-      inherit (pluginKit)
-        filterPluginsFor
-        mkFullConfig
+      inherit (mkAllFullConfigs { inherit cfg pluginKit; })
+        vencordFullConfig
+        equicordFullConfig
+        vesktopFullConfig
+        equibopFullConfig
         ;
-
-      vencordFullConfig = mkFullConfig {
-        baseConfig = cfg.config;
-        extraConfig = cfg.extraConfig;
-        clientConfig = cfg.vencordConfig;
-      };
-
-      equicordFullConfig = mkFullConfig {
-        baseConfig = cfg.config;
-        extraConfig = cfg.extraConfig;
-        clientConfig = cfg.equicordConfig;
-      };
-
-      vesktopFullConfig = filterPluginsFor "vencord" (mergeAttrsList [
-        cfg.config
-        cfg.extraConfig
-        cfg.vesktopConfig
-      ]);
-
-      equibopFullConfig = filterPluginsFor "equicord" (mergeAttrsList [
-        cfg.config
-        cfg.extraConfig
-        cfg.equibopConfig
-      ]);
 
       quickCssFile = pkgs.writeText "nixcord-quickcss.css" cfg.quickCss;
 
@@ -165,44 +140,24 @@ in
     in
     mkMerge ([
       {
-        programs.nixcord.homeDirectory = "/home/${cfg.user}";
-        programs.nixcord.xdgConfigHome = "${"/home/${cfg.user}"}/.config";
-
-        programs.nixcord.discord.configDir = lib.mkDefault (
-          let
-            basePath = cfg.xdgConfigHome;
-            branchDirName =
-              {
-                stable = "discord";
-                ptb = "discordptb";
-                canary = "discordcanary";
-                development = "discorddevelopment";
-              }
-              .${cfg.discord.branch} or "discord";
-          in
-          "${basePath}/${branchDirName}"
-        );
-        programs.nixcord.configDir = lib.mkDefault (
-          let
-            basePath = cfg.xdgConfigHome;
-            dirName = if cfg.discord.equicord.enable then "Equicord" else "Vencord";
-          in
-          "${basePath}/${dirName}"
-        );
-        programs.nixcord.vesktop.configDir = lib.mkDefault "${cfg.xdgConfigHome}/vesktop";
-        programs.nixcord.equibop.configDir = lib.mkDefault "${cfg.xdgConfigHome}/equibop";
-        programs.nixcord.dorion.configDir = lib.mkDefault "${cfg.xdgConfigHome}/dorion";
-
-        programs.nixcord.finalPackage = mkFinalPackages {
+        programs.nixcord = {
+          homeDirectory = "/home/${cfg.user}";
+          xdgConfigHome = "${"/home/${cfg.user}"}/.config";
+          finalPackage = mkFinalPackages {
+            inherit cfg;
+            vencord = applyPostPatch {
+              inherit cfg;
+              pkg = cfg.discord.vencord.package;
+            };
+            equicord = applyPostPatch {
+              inherit cfg;
+              pkg = cfg.discord.equicord.package;
+            };
+          };
+        }
+        // mkConfigDirs {
           inherit cfg;
-          vencord = applyPostPatch {
-            inherit cfg;
-            pkg = cfg.discord.vencord.package;
-          };
-          equicord = applyPostPatch {
-            inherit cfg;
-            pkg = cfg.discord.equicord.package;
-          };
+          basePath = cfg.xdgConfigHome;
         };
 
         environment.systemPackages = mkMerge [

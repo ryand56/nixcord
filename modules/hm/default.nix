@@ -11,11 +11,12 @@ let
     ;
 
   inherit (pkgs.callPackage ../lib/shared.nix { inherit lib; })
-    mergeAttrsList
     applyPostPatch
     mkIsQuickCssUsed
     mkPluginKit
     mkDorionConfigAttrs
+    mkConfigDirs
+    mkAllFullConfigs
     ;
 
 in
@@ -39,9 +40,11 @@ in
 
       pluginKit = mkPluginKit { inherit cfg; };
 
-      inherit (pluginKit)
-        filterPluginsFor
-        mkFullConfig
+      inherit (mkAllFullConfigs { inherit cfg pluginKit; })
+        vencordFullConfig
+        equicordFullConfig
+        vesktopFullConfig
+        equibopFullConfig
         ;
 
       activationScripts = import ../lib/activation.nix {
@@ -70,53 +73,14 @@ in
       {
         programs.nixcord = {
           user = lib.mkDefault config.home.username;
-          discord.configDir = lib.mkDefault (
-            let
-              basePath =
-                if pkgs.stdenvNoCC.isLinux then
-                  config.xdg.configHome
-                else
-                  "${config.home.homeDirectory}/Library/Application Support";
-              branchDirName =
-                {
-                  stable = "discord";
-                  ptb = "discordptb";
-                  canary = "discordcanary";
-                  development = "discorddevelopment";
-                }
-                .${cfg.discord.branch} or "discord";
-            in
-            "${basePath}/${branchDirName}"
-          );
-          configDir = lib.mkDefault (
-            let
-              basePath =
-                if pkgs.stdenvNoCC.isLinux then
-                  config.xdg.configHome
-                else
-                  "${config.home.homeDirectory}/Library/Application Support";
-              dirName = if cfg.discord.equicord.enable then "Equicord" else "Vencord";
-            in
-            "${basePath}/${dirName}"
-          );
-          vesktop.configDir = lib.mkDefault (
+        }
+        // mkConfigDirs {
+          inherit cfg;
+          basePath =
             if pkgs.stdenvNoCC.isLinux then
-              "${config.xdg.configHome}/vesktop"
+              config.xdg.configHome
             else
-              "${config.home.homeDirectory}/Library/Application Support/vesktop"
-          );
-          equibop.configDir = lib.mkDefault (
-            if pkgs.stdenvNoCC.isLinux then
-              "${config.xdg.configHome}/equibop"
-            else
-              "${config.home.homeDirectory}/Library/Application Support/equibop"
-          );
-          dorion.configDir = lib.mkDefault (
-            if pkgs.stdenvNoCC.isLinux then
-              "${config.xdg.configHome}/dorion"
-            else
-              "${config.home.homeDirectory}/Library/Application Support/dorion"
-          );
+              "${config.home.homeDirectory}/Library/Application Support";
         };
       }
       {
@@ -142,34 +106,16 @@ in
         (mkIf (isQuickCssUsed cfg.vencordConfig || isQuickCssUsed cfg.equicordConfig) {
           home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
         })
-        (mkIf cfg.discord.vencord.enable (
-          let
-            fullConfig = mkFullConfig {
-              baseConfig = cfg.config;
-              extraConfig = cfg.extraConfig;
-              clientConfig = cfg.vencordConfig;
-            };
-          in
-          {
-            home.file."${cfg.configDir}/settings/settings.json".text = builtins.toJSON (
-              mkVencordCfg fullConfig
-            );
-          }
-        ))
-        (mkIf cfg.discord.equicord.enable (
-          let
-            fullConfig = mkFullConfig {
-              baseConfig = cfg.config;
-              extraConfig = cfg.extraConfig;
-              clientConfig = cfg.equicordConfig;
-            };
-          in
-          {
-            home.file."${cfg.configDir}/settings/settings.json".text = builtins.toJSON (
-              mkVencordCfg fullConfig
-            );
-          }
-        ))
+        (mkIf cfg.discord.vencord.enable {
+          home.file."${cfg.configDir}/settings/settings.json".text = builtins.toJSON (
+            mkVencordCfg vencordFullConfig
+          );
+        })
+        (mkIf cfg.discord.equicord.enable {
+          home.file."${cfg.configDir}/settings/settings.json".text = builtins.toJSON (
+            mkVencordCfg equicordFullConfig
+          );
+        })
         (mkIf (cfg.discord.settings != { }) {
           home.file."${cfg.discord.configDir}/settings.json".text = builtins.toJSON (
             mkVencordCfg cfg.discord.settings
@@ -182,13 +128,7 @@ in
         })
         {
           home.file."${cfg.vesktop.configDir}/settings/settings.json".text = builtins.toJSON (
-            mkVencordCfg (
-              filterPluginsFor "vencord" (mergeAttrsList [
-                cfg.config
-                cfg.extraConfig
-                cfg.vesktopConfig
-              ])
-            )
+            mkVencordCfg vesktopFullConfig
           );
         }
         (mkIf (cfg.vesktop.settings != { }) {
@@ -216,13 +156,7 @@ in
         })
         {
           home.file."${cfg.equibop.configDir}/settings/settings.json".text = builtins.toJSON (
-            mkVencordCfg (
-              filterPluginsFor "equicord" (mergeAttrsList [
-                cfg.config
-                cfg.extraConfig
-                cfg.equibopConfig
-              ])
-            )
+            mkVencordCfg equibopFullConfig
           );
         }
         (mkIf (cfg.equibop.settings != { }) {
