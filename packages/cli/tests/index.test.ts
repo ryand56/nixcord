@@ -5,7 +5,7 @@ import fse from 'fs-extra';
 import type { ParsedPluginsResult, PluginConfig } from '@nixcord/shared';
 import { ParsedPluginsResultSchema } from '@nixcord/shared';
 import { parsePlugins } from '@nixcord/parser';
-import { generateNixModule } from '@nixcord/nix-generator';
+import { generatePluginModule } from '@nixcord/nix-generator';
 import { validateParsedResults } from '../src/runner/index.js';
 
 const cliMocks = vi.hoisted(() => ({
@@ -162,14 +162,15 @@ describe('CLI File Operations', () => {
         },
       };
 
-      const genericOutput = generateNixModule(plugins, 'shared');
-      const sharedPath = join(pluginsDir, 'shared.nix');
+      const genericOutput = generatePluginModule(plugins, 'shared');
+      const sharedPath = join(pluginsDir, 'shared.json');
       await fse.writeFile(sharedPath, genericOutput);
 
       expect(await fse.pathExists(sharedPath)).toBe(true);
       const content = await fse.readFile(sharedPath, 'utf-8');
       expect(content).toContain('testPlugin');
-      expect(content).toContain('mkEnableOption');
+      const parsed = JSON.parse(content);
+      expect(parsed.testPlugin).toBeDefined();
     } finally {
       await fse.remove(tempDir);
     }
@@ -222,25 +223,25 @@ describe('CLI File Operations', () => {
         },
       };
 
-      const genericOutput = generateNixModule(genericPlugins, 'shared');
-      const vencordOutput = generateNixModule(vencordPlugins, 'vencord');
-      const equicordOutput = generateNixModule(equicordPlugins, 'equicord');
+      const genericOutput = generatePluginModule(genericPlugins, 'shared');
+      const vencordOutput = generatePluginModule(vencordPlugins, 'vencord');
+      const equicordOutput = generatePluginModule(equicordPlugins, 'equicord');
 
-      await fse.writeFile(join(pluginsDir, 'shared.nix'), genericOutput);
-      await fse.writeFile(join(pluginsDir, 'vencord.nix'), vencordOutput);
-      await fse.writeFile(join(pluginsDir, 'equicord.nix'), equicordOutput);
+      await fse.writeFile(join(pluginsDir, 'shared.json'), genericOutput);
+      await fse.writeFile(join(pluginsDir, 'vencord.json'), vencordOutput);
+      await fse.writeFile(join(pluginsDir, 'equicord.json'), equicordOutput);
 
-      expect(await fse.pathExists(join(pluginsDir, 'shared.nix'))).toBe(true);
-      expect(await fse.pathExists(join(pluginsDir, 'vencord.nix'))).toBe(true);
-      expect(await fse.pathExists(join(pluginsDir, 'equicord.nix'))).toBe(true);
+      expect(await fse.pathExists(join(pluginsDir, 'shared.json'))).toBe(true);
+      expect(await fse.pathExists(join(pluginsDir, 'vencord.json'))).toBe(true);
+      expect(await fse.pathExists(join(pluginsDir, 'equicord.json'))).toBe(true);
 
-      const sharedContent = await fse.readFile(join(pluginsDir, 'shared.nix'), 'utf-8');
+      const sharedContent = await fse.readFile(join(pluginsDir, 'shared.json'), 'utf-8');
       expect(sharedContent).toContain('sharedPlugin');
 
-      const vencordContent = await fse.readFile(join(pluginsDir, 'vencord.nix'), 'utf-8');
+      const vencordContent = await fse.readFile(join(pluginsDir, 'vencord.json'), 'utf-8');
       expect(vencordContent).toContain('vencordPlugin');
 
-      const equicordContent = await fse.readFile(join(pluginsDir, 'equicord.nix'), 'utf-8');
+      const equicordContent = await fse.readFile(join(pluginsDir, 'equicord.json'), 'utf-8');
       expect(equicordContent).toContain('equicordPlugin');
     } finally {
       await fse.remove(tempDir);

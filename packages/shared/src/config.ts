@@ -14,6 +14,7 @@ const CliConfigSchema = z.object({
     vencord: z.string().min(1),
     equicord: z.string().min(1),
     parseRules: z.string().min(1),
+    deprecated: z.string().min(1),
     migrations: z.string().min(1),
   }),
   symbols: z.object({
@@ -30,10 +31,11 @@ export const CLI_CONFIG = {
   },
   filenames: {
     packageJson: 'package.json',
-    shared: 'shared.nix',
-    vencord: 'vencord.nix',
-    equicord: 'equicord.nix',
-    parseRules: 'parse-rules.nix',
+    shared: 'shared.json',
+    vencord: 'vencord.json',
+    equicord: 'equicord.json',
+    parseRules: 'parse-rules.json',
+    deprecated: 'deprecated.json',
     migrations: 'migrations.nix',
   },
   symbols: {

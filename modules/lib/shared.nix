@@ -27,10 +27,19 @@ let
   mkPluginKit =
     { cfg }:
     let
-      sharedPlugins = import ../plugins/shared.nix { inherit lib; };
-      vencordOnlyPlugins = import ../plugins/vencord.nix { inherit lib; };
-      equicordOnlyPlugins = import ../plugins/equicord.nix { inherit lib; };
-      deprecated = import ../plugins/deprecated.nix;
+      sharedPlugins = import ../plugins/mkPluginOptions.nix {
+        inherit lib;
+        file = ../plugins/shared.json;
+      };
+      vencordOnlyPlugins = import ../plugins/mkPluginOptions.nix {
+        inherit lib;
+        file = ../plugins/vencord.json;
+      };
+      equicordOnlyPlugins = import ../plugins/mkPluginOptions.nix {
+        inherit lib;
+        file = ../plugins/equicord.json;
+      };
+      deprecated = builtins.fromJSON (builtins.readFile ../plugins/deprecated.json);
       pluginNameMigrations = lib.mapAttrs (_: v: v.to) (deprecated.renames or { });
 
       isPluginEnabled = pluginConfig: pluginConfig.enable or false;

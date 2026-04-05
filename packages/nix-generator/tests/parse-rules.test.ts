@@ -27,16 +27,23 @@ describe('generateParseRulesModule()', () => {
     },
   } as const;
 
+  test('generates valid JSON', () => {
+    const output = generateParseRulesModule(shared, vencordOnly, equicordOnly);
+    expect(() => JSON.parse(output)).not.toThrow();
+  });
+
   test('includes auto-detected lowercase plugin names', () => {
     const output = generateParseRulesModule(shared, vencordOnly, equicordOnly);
-    expect(output).toContain('iLoveSpam');
-    expect(output).toContain('petpet');
-    expect(output).not.toContain('showConnections');
+    const parsed = JSON.parse(output);
+    expect(parsed.lowerPluginTitles).toContain('iLoveSpam');
+    expect(parsed.lowerPluginTitles).toContain('petpet');
+    expect(parsed.lowerPluginTitles).not.toContain('showConnections');
   });
 
   test('always includes static upper-name entries', () => {
     const output = generateParseRulesModule({}, {}, {});
-    expect(output).toContain('webhook');
-    expect(output).toContain('owner');
+    const parsed = JSON.parse(output);
+    expect(parsed.upperNames).toContain('webhook');
+    expect(parsed.upperNames).toContain('owner');
   });
 });

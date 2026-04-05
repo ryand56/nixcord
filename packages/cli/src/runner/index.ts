@@ -10,7 +10,7 @@ import { CLI_CONFIG } from '@nixcord/shared';
 import { parsePlugins, categorizePlugins, extractMigrations } from '@nixcord/parser';
 import type { ParsePluginsOptions } from '@nixcord/parser';
 import {
-  generateNixModule,
+  generatePluginModule,
   generateParseRulesModule,
   generateMigrationsModule,
   updateDeprecatedPlugins,
@@ -130,13 +130,13 @@ const writeOutputs = async ({
   await fse.ensureDir(pluginsDir);
 
   const sharedPath = resolve(pluginsDir, CLI_CONFIG.filenames.shared);
-  await fse.writeFile(sharedPath, generateNixModule(generic, 'shared'));
+  await fse.writeFile(sharedPath, generatePluginModule(generic, 'shared'));
 
   const vencordFilePath = resolve(pluginsDir, CLI_CONFIG.filenames.vencord);
-  await fse.writeFile(vencordFilePath, generateNixModule(vencordOnly, 'vencord'));
+  await fse.writeFile(vencordFilePath, generatePluginModule(vencordOnly, 'vencord'));
 
   const equicordFilePath = resolve(pluginsDir, CLI_CONFIG.filenames.equicord);
-  await fse.writeFile(equicordFilePath, generateNixModule(equicordOnly, 'equicord'));
+  await fse.writeFile(equicordFilePath, generatePluginModule(equicordOnly, 'equicord'));
 
   const parseRulesFilePath = resolve(pluginsDir, CLI_CONFIG.filenames.parseRules);
   await fse.writeFile(
@@ -241,7 +241,7 @@ export const runGeneratePluginOptions = async (
       outputPath: parsedParams.outputPath,
     });
 
-    // Extract migrations and update deprecated.nix + migrations.nix
+    // Extract migrations and update deprecated.json + migrations.nix
     try {
       const pluginsDir = getPluginsDir(parsedParams.outputPath);
 

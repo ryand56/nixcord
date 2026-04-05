@@ -1,17 +1,8 @@
 import { join } from 'pathe';
 import fse from 'fs-extra';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import type { Logger, SettingRename, DeprecatedData, DeprecatedRenameEntry } from '@nixcord/shared';
-import {
-  AUTO_GENERATED_HEADER,
-  sortedEntries,
-  RENAME_EXPIRY_DAYS,
-  REMOVAL_EXPIRY_DAYS,
-} from '@nixcord/shared';
+import { sortedEntries, RENAME_EXPIRY_DAYS, REMOVAL_EXPIRY_DAYS } from '@nixcord/shared';
 import type { PluginMigrationInfo } from '@nixcord/git-analyzer';
-
-const execAsync = promisify(exec);
 
 /** Plugin names must be valid Nix identifiers (no dots or other special chars). */
 function isValidPluginName(name: string): boolean {
@@ -27,14 +18,13 @@ function isExpired(dateStr: string, expiryDays: number): boolean {
 }
 
 /**
- * Read and parse deprecated.nix using `nix eval --json`.
- * This is authoritative — no custom Nix parser needed.
+ * Read and parse deprecated.json.
  */
-async function readDeprecatedNix(filePath: string): Promise<DeprecatedData> {
+async function readDeprecatedJson(filePath: string): Promise<DeprecatedData> {
   const empty: DeprecatedData = { renames: {}, removals: {}, settingRenames: {} };
   try {
-    const evalResult = await execAsync(`nix eval --json --file "${filePath}"`);
-    const parsed = JSON.parse(evalResult.stdout) as {
+    const raw = await fse.readFile(filePath, 'utf-8');
+    const parsed = JSON.parse(raw) as {
       renames?: Record<string, unknown>;
       removals?: Record<string, unknown>;
       settingRenames?: Record<string, Record<string, string>>;
@@ -65,45 +55,40 @@ async function readDeprecatedNix(filePath: string): Promise<DeprecatedData> {
   }
 }
 
-export function generateDeprecatedNix(data: DeprecatedData): string {
-  const lines: string[] = [...AUTO_GENERATED_HEADER.split('\n'), '', '{'];
+export function generateDeprecatedJson(data: DeprecatedData): string {
+  const output: {
+    renames: Record<string, { to: string; date?: string }>;
+    removals: Record<string, { date: string }>;
+    settingRenames: Record<string, Record<string, string>>;
+  } = {
+    renames: {},
+    removals: {},
+    settingRenames: {},
+  };
 
-  // Renames
-  lines.push('  renames = {');
-  const permanentRenames = sortedEntries(data.renames).filter(([, v]) => !v.date);
-  const datedRenames = sortedEntries(data.renames).filter(([, v]) => v.date);
-
-  for (const [name, entry] of permanentRenames) {
-    lines.push(`    ${name} = { to = "${entry.to}"; };`);
+  // Renames: permanent first, then dated (sorted)
+  for (const [name, entry] of sortedEntries(data.renames).filter(([, v]) => !v.date)) {
+    output.renames[name] = { to: entry.to };
   }
-  for (const [name, entry] of datedRenames) {
-    lines.push(`    ${name} = { to = "${entry.to}"; date = "${entry.date}"; };`);
+  for (const [name, entry] of sortedEntries(data.renames).filter(([, v]) => v.date)) {
+    output.renames[name] = { to: entry.to, date: entry.date! };
   }
-  lines.push('  };');
 
-  // Removals
-  lines.push('  removals = {');
+  // Removals (sorted)
   for (const [name, entry] of sortedEntries(data.removals)) {
-    lines.push(`    ${name} = { date = "${entry.date}"; };`);
+    output.removals[name] = { date: entry.date };
   }
-  lines.push('  };');
 
-  // Setting renames
-  lines.push('  settingRenames = {');
+  // Setting renames (sorted)
   for (const [pluginName, settings] of sortedEntries(data.settingRenames)) {
-    const settingPairs = sortedEntries(settings)
-      .map(([old, newName]) => `${old} = "${newName}";`)
-      .join(' ');
-    lines.push(`    ${pluginName} = { ${settingPairs} };`);
+    output.settingRenames[pluginName] = Object.fromEntries(sortedEntries(settings));
   }
-  lines.push('  };');
 
-  lines.push('}');
-  return lines.join('\n') + '\n';
+  return JSON.stringify(output, null, 2);
 }
 
 /**
- * Remove circular rename pairs (A→B and B→A both present).
+ * Remove circular rename pairs (A -> B and B -> A both present).
  * These arise from ping-pong renames in git history and cancel each other out.
  */
 function removeCircularRenames(renames: Record<string, DeprecatedRenameEntry>): void {
@@ -130,9 +115,9 @@ export async function updateDeprecatedPlugins(
   activePluginNames?: Set<string>,
   normalizePluginName?: (name: string) => string
 ): Promise<DeprecatedData> {
-  const deprecatedPath = join(pluginsDir, 'deprecated.nix');
+  const deprecatedPath = join(pluginsDir, 'deprecated.json');
   const existing: DeprecatedData = (await fse.pathExists(deprecatedPath))
-    ? await readDeprecatedNix(deprecatedPath)
+    ? await readDeprecatedJson(deprecatedPath)
     : { renames: {}, removals: {}, settingRenames: {} };
 
   // Merge new renames (skip dot-named plugins, don't overwrite existing entries)
@@ -156,7 +141,7 @@ export async function updateDeprecatedPlugins(
   // Remove circular rename pairs (ping-pong renames that cancel each other out)
   removeCircularRenames(existing.renames);
 
-  // Remove permanent (dateless) renames — they predate the date system and are well past expiry
+  // Remove permanent (dateless) renames - they predate the date system and are well past expiry
   for (const [name, entry] of Object.entries(existing.renames)) {
     if (!entry.date) {
       delete existing.renames[name];
@@ -218,13 +203,13 @@ export async function updateDeprecatedPlugins(
     existing.settingRenames = deduped;
   }
 
-  const nixCode = generateDeprecatedNix(existing);
-  await fse.writeFile(deprecatedPath, nixCode);
+  const json = generateDeprecatedJson(existing);
+  await fse.writeFile(deprecatedPath, json);
 
   if (verbose) {
     const renameCount = Object.keys(existing.renames).length;
     const deletionCount = Object.keys(existing.removals).length;
-    logger.info(`Updated deprecated.nix: ${renameCount} renames, ${deletionCount} removals`);
+    logger.info(`Updated deprecated.json: ${renameCount} renames, ${deletionCount} removals`);
   }
 
   return existing;

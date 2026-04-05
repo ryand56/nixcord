@@ -161,7 +161,7 @@ export const extractPluginRenames = async (
       }
     }
 
-    // Deduplicate: keep the most recent rename per old→new pair
+    // Deduplicate: keep the most recent rename per old -> new pair
     const seen = new Map<string, PluginRename>();
     for (const rename of renames) {
       const key = `${rename.oldName}->${rename.newName}`;

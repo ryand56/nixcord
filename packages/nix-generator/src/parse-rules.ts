@@ -1,8 +1,6 @@
 import type { ReadonlyDeep, PluginConfig } from '@nixcord/shared';
-import { AUTO_GENERATED_HEADER, isNestedConfig } from '@nixcord/shared';
-import { NixGenerator } from './generator-base.js';
-
-const gen = new NixGenerator();
+import { isNestedConfig } from '@nixcord/shared';
+import { toNixIdentifier } from './identifier.js';
 
 const baseUpperNames = [
   'usrbg',
@@ -48,13 +46,13 @@ function collectSettingRenames(
 
   const collectFromConfig = (parentNixName: string, config: ReadonlyDeep<PluginConfig>): void => {
     for (const setting of Object.values(config.settings)) {
-      const nixName = gen.identifier(setting.name);
+      const nixName = toNixIdentifier(setting.name);
       if (nixName !== setting.name) {
         renames[parentNixName] ??= {};
         renames[parentNixName][nixName] = setting.name;
       }
       if (isNestedConfig(setting)) {
-        const nestedNixName = gen.identifier(setting.name);
+        const nestedNixName = toNixIdentifier(setting.name);
         collectFromConfig(nestedNixName, setting as ReadonlyDeep<PluginConfig>);
       }
     }
@@ -62,7 +60,7 @@ function collectSettingRenames(
 
   for (const collection of collections) {
     for (const [pluginSlug, config] of Object.entries(collection)) {
-      collectFromConfig(gen.identifier(pluginSlug), config);
+      collectFromConfig(toNixIdentifier(pluginSlug), config);
     }
   }
 
@@ -77,11 +75,13 @@ export function generateParseRulesModule(
   const lowerPluginTitles = collectLowerPluginTitles(shared, vencordOnly, equicordOnly);
   const settingRenames = collectSettingRenames(shared, vencordOnly, equicordOnly);
 
-  const output = gen.attrSet({
-    lowerPluginTitles,
-    settingRenames,
-    upperNames: [...baseUpperNames],
-  });
-
-  return [...AUTO_GENERATED_HEADER.split('\n'), '', output].join('\n');
+  return JSON.stringify(
+    {
+      lowerPluginTitles,
+      settingRenames,
+      upperNames: [...baseUpperNames],
+    },
+    null,
+    2
+  );
 }

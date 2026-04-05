@@ -1,5 +1,4 @@
 import type { ReadonlyDeep, PluginConfig, PluginSetting } from '@nixcord/shared';
-import { type NixAttrSet, NixGenerator, type NixRaw, type NixValue } from './generator-base.js';
 import {
   isBoolean,
   isNumber,
@@ -8,24 +7,29 @@ import {
   isArray,
   isObject,
   isNestedConfig,
-  AUTO_GENERATED_HEADER,
   INTEGER_STRING_PATTERN,
   NIX_ENUM_TYPE,
   NIX_TYPE_FLOAT,
   NIX_TYPE_INT,
 } from '@nixcord/shared';
-
-const gen = new NixGenerator();
-
-const ENABLE_SETTING_NAME = 'enable';
-const NIX_ENABLE_OPTION_FUNCTION = 'mkEnableOption';
-const NIX_OPTION_FUNCTION = 'mkOption';
-const OPTION_CONFIG_INDENT_LEVEL = 2;
-const MODULE_INDENT_LEVEL = 0;
-const NIX_MODULE_HEADER = '{ lib, ... }:';
-const NIX_MODULE_INHERIT = '  inherit (lib) types mkEnableOption mkOption;';
+import { toNixIdentifier } from './identifier.js';
 
 export type PluginCategory = 'shared' | 'vencord' | 'equicord';
+
+/** JSON representation of a single plugin setting for the Nix-side builder. */
+export interface PluginSettingJson {
+  type: string;
+  default?: unknown;
+  description?: string;
+  enumValues?: (string | number | boolean)[];
+  example?: string;
+}
+
+/** JSON representation of a plugin for the Nix-side builder. */
+export interface PluginJson {
+  description: string;
+  settings: Record<string, PluginSettingJson | PluginJson>;
+}
 
 const categoryLabel = (category: PluginCategory): string => {
   switch (category) {
@@ -58,136 +62,108 @@ const buildEnumMappingDescription = (
   return mappings.length === 0 ? undefined : mappings.join(', ');
 };
 
-const buildNixOptionConfig = (setting: Readonly<PluginSetting>): NixAttrSet => {
-  const config: NixAttrSet = {};
+const resolveDefault = (setting: Readonly<PluginSetting>): unknown | undefined => {
+  if (setting.default === undefined) return undefined;
+  if (setting.default === null) return null;
 
-  const typeConfig = setting.type?.includes('enum')
-    ? gen.raw(
-        `${NIX_ENUM_TYPE} [ ${(setting.enumValues ?? []).map((v) => (isString(v) ? gen.string(v) : String(v))).join(' ')} ]`
-      )
-    : gen.raw(setting.type);
+  const type = setting.type;
+  const val = setting.default;
 
-  config.type = typeConfig;
+  // Float integers need to stay as floats (e.g. 1 -> 1.0)
+  if (isNumber(val) && type === NIX_TYPE_FLOAT && Number.isInteger(val))
+    return { __nixRaw: val.toFixed(1) };
 
-  if (setting.default !== undefined) {
-    if (setting.default === null) {
-      config.default = null;
-    }
-    if (setting.default !== null) {
-      const defaultResult = (() => {
-        const type = setting.type;
-        const val = setting.default;
-        if (isNumber(val) && type === NIX_TYPE_FLOAT && Number.isInteger(val))
-          return gen.raw(val.toFixed(1)) as Exclude<NixValue, null>;
-        if (type === NIX_TYPE_INT && isString(val) && INTEGER_STRING_PATTERN.test(val))
-          return gen.raw(val) as Exclude<NixValue, null>;
-        if (
-          isString(val) ||
-          isNumber(val) ||
-          isBoolean(val) ||
-          isArray(val) ||
-          (isObject(val) && !isNull(val))
-        )
-          return val as Exclude<NixValue, null>;
-        return undefined;
-      })();
+  // String integers used as int defaults (e.g. BigInt IDs)
+  if (type === NIX_TYPE_INT && isString(val) && INTEGER_STRING_PATTERN.test(val))
+    return { __nixRaw: val };
 
-      if (defaultResult !== undefined) config.default = defaultResult;
-    }
+  if (
+    isString(val) ||
+    isNumber(val) ||
+    isBoolean(val) ||
+    isNull(val) ||
+    isArray(val) ||
+    (isObject(val) && !isNull(val))
+  )
+    return val;
+
+  return undefined;
+};
+
+const buildSettingDescription = (setting: Readonly<PluginSetting>): string | undefined => {
+  if (!setting.description) return undefined;
+
+  const isIntegerEnum = setting.enumValues?.every(isNumber) && setting.type === NIX_ENUM_TYPE;
+  if (!isIntegerEnum || !setting.enumValues) return setting.description;
+
+  const mapping = buildEnumMappingDescription(setting.enumValues, setting.enumLabels);
+  return mapping !== undefined
+    ? `${setting.description}\n\nValues: ${mapping}`
+    : setting.description;
+};
+
+export const generateSettingJson = (
+  setting: Readonly<PluginSetting>,
+  _category?: PluginCategory
+): PluginSettingJson => {
+  const json: PluginSettingJson = { type: setting.type };
+
+  if (setting.type?.includes('enum') && setting.enumValues) {
+    json.enumValues = [...setting.enumValues];
   }
 
-  if (setting.description) {
-    const isIntegerEnum = setting.enumValues?.every(isNumber) && setting.type === NIX_ENUM_TYPE;
-    const finalDesc =
-      isIntegerEnum && setting.enumValues
-        ? (() => {
-            const mapping = buildEnumMappingDescription(setting.enumValues, setting.enumLabels);
-            return mapping !== undefined
-              ? `${setting.description}\n\nValues: ${mapping}`
-              : setting.description;
-          })()
-        : setting.description;
-    config.description = gen.raw(gen.string(finalDesc, true));
-  }
+  const resolvedDefault = resolveDefault(setting);
+  if (resolvedDefault !== undefined) json.default = resolvedDefault;
+
+  const description = buildSettingDescription(setting);
+  if (description) json.description = description;
 
   if (setting.example && !setting.description?.includes(setting.example)) {
-    config.example = setting.example;
+    json.example = setting.example;
   }
 
-  return config;
+  return json;
 };
 
-export const generateNixSetting = (
-  setting: Readonly<PluginSetting>,
-  category?: PluginCategory
-): NixRaw => {
-  if (setting.name === ENABLE_SETTING_NAME) {
-    const desc = category
-      ? (setting.description ?? '') + categoryLabel(category)
-      : (setting.description ?? '');
-    return gen.raw(`${NIX_ENABLE_OPTION_FUNCTION} ${desc ? gen.string(desc, true) : '""'}`);
-  }
-  return gen.raw(
-    `${NIX_OPTION_FUNCTION} ${gen.attrSet(buildNixOptionConfig(setting), OPTION_CONFIG_INDENT_LEVEL)}`
-  );
-};
-
-export const generateNixPlugin = (
+export const generatePluginJson = (
   _pluginName: string,
   config: Readonly<PluginConfig>,
   category?: PluginCategory
-): NixAttrSet => {
-  const baseAttrSet = Object.entries(config.settings).reduce((acc, [, setting]) => {
-    acc[gen.identifier(setting.name)] = isNestedConfig(setting)
-      ? generateNixPlugin(setting.name, setting as PluginConfig, category)
-      : generateNixSetting(setting as PluginSetting, category);
-    return acc;
-  }, {} as NixAttrSet);
+): PluginJson => {
+  const settings: Record<string, PluginSettingJson | PluginJson> = {};
 
-  if (Object.hasOwn(config.settings, ENABLE_SETTING_NAME)) return baseAttrSet;
+  for (const [, setting] of Object.entries(config.settings)) {
+    const nixName = toNixIdentifier(setting.name);
+    if (setting.name === 'enable') continue; // enable is always auto-generated by Nix side
+    if (isNestedConfig(setting)) {
+      settings[nixName] = generatePluginJson(setting.name, setting as PluginConfig, category);
+    } else {
+      settings[nixName] = generateSettingJson(setting as PluginSetting, category);
+    }
+  }
 
   const description = category
     ? (config.description ?? '') + categoryLabel(category)
     : (config.description ?? '');
-  return {
-    enable: gen.raw(
-      `${NIX_ENABLE_OPTION_FUNCTION} ${description ? gen.string(description, true) : '""'}`
-    ),
-    ...baseAttrSet,
-  };
+
+  return { description, settings };
 };
 
-export const generateNixModule = (
+export const generatePluginModule = (
   plugins: ReadonlyDeep<Record<string, PluginConfig>>,
   category?: PluginCategory
 ): string => {
-  const lines = [
-    ...AUTO_GENERATED_HEADER.split('\n'),
-    '',
-    NIX_MODULE_HEADER,
-    'let',
-    NIX_MODULE_INHERIT,
-    'in',
-  ];
+  const output: Record<string, PluginJson> = {};
 
-  const pluginEntries = Object.keys(plugins)
-    .map((pluginName) =>
-      plugins[pluginName]
-        ? ([
-            gen.identifier(pluginName),
-            generateNixPlugin(pluginName, plugins[pluginName], category),
-          ] as const)
-        : undefined
-    )
-    .filter((entry): entry is readonly [string, NixAttrSet] => entry !== undefined);
-
-  const moduleContent = gen.attrSet(
-    pluginEntries.reduce((acc, [nixName, pluginAttr]) => {
-      acc[nixName] = pluginAttr;
-      return acc;
-    }, {} as NixAttrSet),
-    MODULE_INDENT_LEVEL
+  const sortedKeys = Object.keys(plugins).sort((a, b) =>
+    toNixIdentifier(a).localeCompare(toNixIdentifier(b))
   );
 
-  return [...lines, moduleContent].join('\n');
+  for (const pluginName of sortedKeys) {
+    const config = plugins[pluginName];
+    if (!config) continue;
+    output[toNixIdentifier(pluginName)] = generatePluginJson(pluginName, config, category);
+  }
+
+  return JSON.stringify(output, null, 2);
 };

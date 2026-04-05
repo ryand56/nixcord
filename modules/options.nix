@@ -485,9 +485,26 @@ in
     frameless = mkEnableOption "Make client frameless";
     transparent = mkEnableOption "Enable client transparency";
     disableMinSize = mkEnableOption "Disable minimum window size for client";
-    plugins = lib.recursiveUpdate (lib.recursiveUpdate (import ./plugins/shared.nix { inherit lib; }) (
-      import ./plugins/vencord.nix { inherit lib; }
-    )) (import ./plugins/equicord.nix { inherit lib; });
+    plugins =
+      lib.recursiveUpdate
+        (lib.recursiveUpdate
+          (import ./plugins/mkPluginOptions.nix {
+            inherit lib;
+            file = ./plugins/shared.json;
+          })
+          (
+            import ./plugins/mkPluginOptions.nix {
+              inherit lib;
+              file = ./plugins/vencord.json;
+            }
+          )
+        )
+        (
+          import ./plugins/mkPluginOptions.nix {
+            inherit lib;
+            file = ./plugins/equicord.json;
+          }
+        );
   };
   vesktopConfig = mkOption {
     type = types.attrs;

@@ -9,7 +9,7 @@ const LEADING_UNDERSCORE_PREFIX = '_';
 
 /**
  * Sanitize and convert a name to a valid Nix identifier using camelCase.
- * Pure string→string function — no class instantiation needed.
+ * Pure string -> string function - no class instantiation needed.
  */
 export function toNixIdentifier(name: string): string {
   const originalStartsWithUnderscore = name.startsWith('_');

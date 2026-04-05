@@ -1,9 +1,8 @@
-import type { ReadonlyDeep, PluginConfig, PluginSetting, DeprecatedData } from '@nixcord/shared';
+import type { ReadonlyDeep, PluginConfig, DeprecatedData } from '@nixcord/shared';
 import { AUTO_GENERATED_HEADER, isNestedConfig, sortedEntries } from '@nixcord/shared';
-import { NixGenerator } from './generator-base.js';
+import { toNixIdentifier } from './identifier.js';
 
 const BASE_PATH = '["programs" "nixcord" "config" "plugins"';
-const gen = new NixGenerator();
 
 /**
  * Collect all leaf setting names from a plugin config (flattened).
@@ -33,8 +32,8 @@ function mkRenamedLine(oldPlugin: string, newPlugin: string, settingPath: string
   const parts = settingPath.split('.');
   const oldParts = parts.map((p) => `"${p}"`).join(' ');
   const newParts = parts.map((p) => `"${p}"`).join(' ');
-  const oldId = gen.identifier(oldPlugin);
-  const newId = gen.identifier(newPlugin);
+  const oldId = toNixIdentifier(oldPlugin);
+  const newId = toNixIdentifier(newPlugin);
   return `    (lib.modules.mkRenamedOptionModule (base ++ ["${oldId}" ${oldParts}]) (base ++ ["${newId}" ${newParts}]))`;
 }
 
@@ -42,7 +41,7 @@ function mkRenamedLine(oldPlugin: string, newPlugin: string, settingPath: string
  * Generate a removal shim module for a deleted plugin.
  */
 function mkRemovalShim(pluginName: string): string {
-  const nixName = gen.identifier(pluginName);
+  const nixName = toNixIdentifier(pluginName);
   return `    ({ config, lib, ... }:
     {
       options.programs.nixcord.config.plugins.${nixName} = lib.mkOption {
@@ -62,14 +61,14 @@ export function generateMigrationsModule(
   pluginSources?: ReadonlyDeep<Record<string, PluginConfig>>[]
 ): string {
   // Build lookup of active plugin nix identifiers to skip conflicting migrations
-  const activeNixNames = new Set(Object.keys(allPlugins).map((k) => gen.identifier(k)));
+  const activeNixNames = new Set(Object.keys(allPlugins).map((k) => toNixIdentifier(k)));
 
   // Pre-filter setting rename entries, deduplicating by Nix identifier
   // Multiple source names (e.g. "platformIndicators" and "PlatformIndicators")
   // can map to the same Nix identifier, so we merge their settings.
   const settingRenamesByNixName = new Map<string, Record<string, string>>();
   for (const [pluginName, settings] of sortedEntries(deprecated.settingRenames ?? {})) {
-    const nixName = gen.identifier(pluginName);
+    const nixName = toNixIdentifier(pluginName);
     if (!activeNixNames.has(nixName)) continue;
     const existing = settingRenamesByNixName.get(nixName) ?? {};
     Object.assign(existing, settings);
@@ -79,8 +78,8 @@ export function generateMigrationsModule(
 
   // Pre-filter rename entries to know if we need the `let base` binding
   const renameEntries = sortedEntries(deprecated.renames).filter(([oldName, entry]) => {
-    const oldNixName = gen.identifier(oldName);
-    const newNixName = gen.identifier(entry.to);
+    const oldNixName = toNixIdentifier(oldName);
+    const newNixName = toNixIdentifier(entry.to);
     return !activeNixNames.has(oldNixName) && activeNixNames.has(newNixName);
   });
 
@@ -106,7 +105,7 @@ export function generateMigrationsModule(
     lines.push(`    # ${oldName} -> ${newName}`);
 
     if (!targetPlugin) {
-      // Target plugin not found in parsed data — just forward enable
+      // Target plugin not found in parsed data - just forward enable
       lines.push(mkRenamedLine(oldName, newName, 'enable'));
     } else {
       const settingNames = collectSettingNames(targetPlugin);
@@ -124,7 +123,7 @@ export function generateMigrationsModule(
   const sources = pluginSources ?? [allPlugins];
   for (const source of sources) {
     for (const [name, config] of Object.entries(source)) {
-      const nixName = gen.identifier(name);
+      const nixName = toNixIdentifier(name);
       const existing = allSettingsByNixName.get(nixName) ?? new Set<string>();
       for (const s of collectSettingNames(config)) {
         existing.add(s);
@@ -160,7 +159,7 @@ export function generateMigrationsModule(
   for (const [pluginName] of removalEntries) {
     // Skip removal shims for plugins that still have active definitions
     // (e.g. deleted from one repo but still present in another)
-    if (activeNixNames.has(gen.identifier(pluginName))) continue;
+    if (activeNixNames.has(toNixIdentifier(pluginName))) continue;
 
     lines.push(`    # Removed: ${pluginName}`);
     lines.push(mkRemovalShim(pluginName));

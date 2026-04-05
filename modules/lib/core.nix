@@ -1,4 +1,11 @@
-{ lib, parseRules, libva, stdenv, electron_40, ... }:
+{
+  lib,
+  parseRules,
+  libva,
+  stdenv,
+  electron_40,
+  ...
+}:
 let
   inherit (lib)
     attrsets
@@ -11,7 +18,7 @@ let
     nameValuePair
     ;
 
-  defaultParseRules = import ../plugins/parse-rules.nix;
+  defaultParseRules = builtins.fromJSON (builtins.readFile ../plugins/parse-rules.json);
 
   mergeLists = base: extra: lists.unique (base ++ extra);
 
@@ -117,15 +124,18 @@ let
           (cfg.equibop.package.override {
             electron = electron_40;
             withMiddleClickScroll = cfg.equibop.autoscroll.enable;
-          }).overrideAttrs (old: {
-            postFixup = (old.postFixup or "") + ''
-              wrapProgram $out/bin/equibop \
-                --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [
-                  libva
-                  stdenv.cc.cc.lib
-                ]}"
-            '';
-          })
+          }).overrideAttrs
+            (old: {
+              postFixup = (old.postFixup or "") + ''
+                wrapProgram $out/bin/equibop \
+                  --prefix LD_LIBRARY_PATH : "${
+                    lib.makeLibraryPath [
+                      libva
+                      stdenv.cc.cc.lib
+                    ]
+                  }"
+              '';
+            })
         else
           null;
 

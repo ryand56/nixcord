@@ -13,7 +13,7 @@ const __dirname = dirname(__filename);
 const mocks = vi.hoisted(() => ({
   parsePlugins: vi.fn(),
   categorizePlugins: vi.fn(),
-  generateNixModule: vi.fn((plugins: Record<string, unknown>, label: string) => {
+  generatePluginModule: vi.fn((plugins: Record<string, unknown>, label: string) => {
     return `${label}:${Object.keys(plugins).join(',')}`;
   }),
   generateParseRulesModule: vi.fn(() => 'rules'),
@@ -26,7 +26,7 @@ vi.mock('@nixcord/parser', () => ({
 }));
 
 vi.mock('@nixcord/nix-generator', () => ({
-  generateNixModule: mocks.generateNixModule,
+  generatePluginModule: mocks.generatePluginModule,
   generateParseRulesModule: mocks.generateParseRulesModule,
 }));
 

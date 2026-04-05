@@ -1,66 +1,23 @@
 import { describe, test, expect } from 'vitest';
-import { generateNixSetting, generateNixPlugin, generateNixModule } from '../src/generator.js';
-import type { NixAttrSet } from '../src/generator-base.js';
+import {
+  generateSettingJson,
+  generatePluginJson,
+  generatePluginModule,
+} from '../src/generator.js';
 import type { ReadonlyDeep, PluginSetting, PluginConfig } from '@nixcord/shared';
 
-describe('generateNixSetting()', () => {
-  test('enable setting -> mkEnableOption', () => {
-    const setting: PluginSetting = {
-      name: 'enable',
-      type: 'types.bool',
-      description: 'Enable the plugin',
-      default: true,
-    };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('mkEnableOption');
-    expect(result.value).toContain('Enable the plugin');
-  });
-
-  test('enable setting with category label -> includes category in description', () => {
-    const setting: PluginSetting = {
-      name: 'enable',
-      type: 'types.bool',
-      description: 'Enable the plugin',
-      default: true,
-    };
-    const result = generateNixSetting(setting, 'shared');
-    expect(result.value).toContain('mkEnableOption');
-    expect(result.value).toContain('Enable the plugin');
-    expect(result.value).toContain('(Shared between Vencord and Equicord)');
-  });
-
-  test('enable setting with vencord category -> includes vencord label', () => {
-    const setting: PluginSetting = {
-      name: 'enable',
-      type: 'types.bool',
-      description: 'Enable the plugin',
-      default: true,
-    };
-    const result = generateNixSetting(setting, 'vencord');
-    expect(result.value).toContain('(Vencord-only)');
-  });
-
-  test('enable setting with equicord category -> includes equicord label', () => {
-    const setting: PluginSetting = {
-      name: 'enable',
-      type: 'types.bool',
-      description: 'Enable the plugin',
-      default: true,
-    };
-    const result = generateNixSetting(setting, 'equicord');
-    expect(result.value).toContain('(Equicord-only)');
-  });
-
-  test('regular setting -> mkOption', () => {
+describe('generateSettingJson()', () => {
+  test('regular setting -> includes type', () => {
     const setting: PluginSetting = {
       name: 'message',
       type: 'types.str',
       description: 'Message to display',
       default: 'Hello',
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('mkOption');
-    expect(result.value).not.toContain('mkEnableOption');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.str');
+    expect(result.default).toBe('Hello');
+    expect(result.description).toBe('Message to display');
   });
 
   test('boolean type with default', () => {
@@ -70,9 +27,9 @@ describe('generateNixSetting()', () => {
       description: 'Enable feature',
       default: true,
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.bool');
-    expect(result.value).toContain('default = true');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.bool');
+    expect(result.default).toBe(true);
   });
 
   test('string type with default', () => {
@@ -82,9 +39,9 @@ describe('generateNixSetting()', () => {
       description: 'Message',
       default: 'Hello World',
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.str');
-    expect(result.value).toContain('default = "Hello World"');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.str');
+    expect(result.default).toBe('Hello World');
   });
 
   test('integer type with default', () => {
@@ -94,9 +51,9 @@ describe('generateNixSetting()', () => {
       description: 'Count',
       default: 42,
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.int');
-    expect(result.value).toContain('default = 42');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.int');
+    expect(result.default).toBe(42);
   });
 
   test('float type with default', () => {
@@ -106,37 +63,33 @@ describe('generateNixSetting()', () => {
       description: 'Ratio',
       default: 3.14,
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.float');
-    expect(result.value).toContain('default = 3.14');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.float');
+    expect(result.default).toBe(3.14);
   });
 
-  test('float type with integer default emits 1.0 style literal', () => {
+  test('float type with integer default emits __nixRaw', () => {
     const setting: PluginSetting = {
       name: 'pitch',
       type: 'types.float',
       description: 'Pitch',
       default: 1,
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.float');
-    expect(result.value).toContain('default = 1.0');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.float');
+    expect(result.default).toEqual({ __nixRaw: '1.0' });
   });
 
-  test('int type with BigInt-like default string emits raw integer', () => {
+  test('int type with BigInt-like default string emits __nixRaw', () => {
     const setting: PluginSetting = {
       name: 'emojiId',
       type: 'types.int',
       description: 'Emoji ID',
-      // The extractor converts BigInt literals to numeric strings (Nix doesn't have BigInt)
-      // The generator should emit these as raw unquoted integers, not quoted strings
       default: '1026532993923293184',
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.int');
-    // Verify the default is emitted as a raw integer, not a quoted string
-    expect(result.value).toContain('default = 1026532993923293184');
-    expect(result.value).not.toContain('"1026532993923293184"');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.int');
+    expect(result.default).toEqual({ __nixRaw: '1026532993923293184' });
   });
 
   test('enum type with enumValues', () => {
@@ -146,10 +99,9 @@ describe('generateNixSetting()', () => {
       description: 'Choose option',
       enumValues: ['option1', 'option2'],
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.enum');
-    expect(result.value).toContain('"option1"');
-    expect(result.value).toContain('"option2"');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.enum');
+    expect(result.enumValues).toEqual(['option1', 'option2']);
   });
 
   test('enum type with enumLabels generates Values: description', () => {
@@ -164,10 +116,9 @@ describe('generateNixSetting()', () => {
         2: 'Option Two',
       },
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.enum');
-    expect(result.value).toContain('Values: 0 = Option Zero, 1 = Option One, 2 = Option Two');
-    expect(result.value).not.toContain('[object Object]');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.enum');
+    expect(result.description).toContain('Values: 0 = Option Zero, 1 = Option One, 2 = Option Two');
   });
 
   test('enum type with non-string labels are filtered out', () => {
@@ -178,15 +129,14 @@ describe('generateNixSetting()', () => {
       enumValues: [0, 1, 2],
       enumLabels: {
         0: 'Option Zero',
-        1: {} as unknown as string, // Non-string label should be ignored
+        1: {} as unknown as string,
         2: 'Option Two',
       },
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.enum');
-    expect(result.value).toContain('Values: 0 = Option Zero, 2 = Option Two');
-    expect(result.value).not.toContain('[object Object]');
-    expect(result.value).not.toContain('1 =');
+    const result = generateSettingJson(setting);
+    expect(result.description).toContain('Values: 0 = Option Zero, 2 = Option Two');
+    expect(result.description).not.toContain('[object Object]');
+    expect(result.description).not.toContain('1 =');
   });
 
   test('enum type without enumValues', () => {
@@ -195,11 +145,9 @@ describe('generateNixSetting()', () => {
       type: 'types.enum',
       description: 'Choose option',
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.enum');
-    // Even without enum values, we emit the enum type with an empty list
-    // This ensures the setting appears in the generated Nix, even if incomplete
-    expect(result.value).toContain('types.enum [');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.enum');
+    expect(result.enumValues).toBeUndefined();
   });
 
   test('setting with description', () => {
@@ -208,9 +156,8 @@ describe('generateNixSetting()', () => {
       type: 'types.str',
       description: 'A description\nwith multiple lines',
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('description');
-    expect(result.value).toContain('A description');
+    const result = generateSettingJson(setting);
+    expect(result.description).toBe('A description\nwith multiple lines');
   });
 
   test('setting without description', () => {
@@ -218,8 +165,8 @@ describe('generateNixSetting()', () => {
       name: 'message',
       type: 'types.str',
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).not.toContain('description');
+    const result = generateSettingJson(setting);
+    expect(result.description).toBeUndefined();
   });
 
   test('setting with example', () => {
@@ -229,9 +176,8 @@ describe('generateNixSetting()', () => {
       description: 'Message',
       example: 'example-value',
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('example');
-    expect(result.value).toContain('example-value');
+    const result = generateSettingJson(setting);
+    expect(result.example).toBe('example-value');
   });
 
   test('setting without default', () => {
@@ -240,35 +186,20 @@ describe('generateNixSetting()', () => {
       type: 'types.str',
       description: 'Message',
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).not.toContain('default');
+    const result = generateSettingJson(setting);
+    expect(result.default).toBeUndefined();
   });
 
-  test('nullOr types.str with null default -> includes default = null', () => {
+  test('nullOr types.str with null default', () => {
     const setting: PluginSetting = {
       name: 'serverUrl',
       type: 'types.nullOr types.str',
       description: 'Server URL',
       default: null,
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.nullOr types.str');
-    expect(result.value).toContain('default = null');
-  });
-
-  test('nullOr types.str with null default -> includes default = null (regression test)', () => {
-    // Regression test: nullable string types must have explicit null defaults
-    // The default-value-resolution module sets null defaults for nullable types,
-    // but we test with null explicitly here to ensure the generator handles it correctly
-    const setting: PluginSetting = {
-      name: 'apiKey',
-      type: 'types.nullOr types.str',
-      description: 'API key',
-      default: null,
-    };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('types.nullOr types.str');
-    expect(result.value).toContain('default = null');
+    const result = generateSettingJson(setting);
+    expect(result.type).toBe('types.nullOr types.str');
+    expect(result.default).toBeNull();
   });
 
   test('nested default values (arrays)', () => {
@@ -278,9 +209,8 @@ describe('generateNixSetting()', () => {
       description: 'Items',
       default: ['item1', 'item2'],
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('default');
-    expect(result.value).toContain('[');
+    const result = generateSettingJson(setting);
+    expect(result.default).toEqual(['item1', 'item2']);
   });
 
   test('nested default values (objects)', () => {
@@ -290,14 +220,13 @@ describe('generateNixSetting()', () => {
       description: 'Configuration',
       default: { key: 'value' },
     };
-    const result = generateNixSetting(setting);
-    expect(result.value).toContain('default');
-    expect(result.value).toContain('{');
+    const result = generateSettingJson(setting);
+    expect(result.default).toEqual({ key: 'value' });
   });
 });
 
-describe('generateNixPlugin()', () => {
-  test('plugin with explicit enable setting', () => {
+describe('generatePluginJson()', () => {
+  test('plugin with explicit enable setting (skipped in settings, auto-generated by Nix)', () => {
     const config: PluginConfig = {
       name: 'TestPlugin',
       description: 'Test plugin',
@@ -316,12 +245,14 @@ describe('generateNixPlugin()', () => {
         },
       },
     };
-    const result = generateNixPlugin('TestPlugin', config);
-    expect(result.enable).toBeDefined();
-    expect(result.message).toBeDefined();
+    const result = generatePluginJson('TestPlugin', config);
+    // enable is handled by Nix side, not in settings
+    expect(result.settings.enable).toBeUndefined();
+    expect(result.settings.message).toBeDefined();
+    expect(result.description).toBe('Test plugin');
   });
 
-  test('plugin without explicit enable (auto-generates)', () => {
+  test('plugin without explicit enable has description for Nix auto-enable', () => {
     const config: PluginConfig = {
       name: 'TestPlugin',
       description: 'Test plugin',
@@ -334,75 +265,40 @@ describe('generateNixPlugin()', () => {
         },
       },
     };
-    const result = generateNixPlugin('TestPlugin', config);
-    expect(result.enable).toBeDefined();
-    const enableValue = result.enable;
-    if (typeof enableValue === 'object' && enableValue !== null && 'value' in enableValue) {
-      expect((enableValue as { value: string }).value).toContain('mkEnableOption');
-      expect((enableValue as { value: string }).value).toContain('Test plugin');
-    }
+    const result = generatePluginJson('TestPlugin', config);
+    expect(result.description).toBe('Test plugin');
+    expect(result.settings.message).toBeDefined();
   });
 
-  test('plugin with description', () => {
-    const config: PluginConfig = {
-      name: 'TestPlugin',
-      description: 'A test plugin',
-      settings: {},
-    };
-    const result = generateNixPlugin('TestPlugin', config);
-    const enableValue = result.enable;
-    if (typeof enableValue === 'object' && enableValue !== null && 'value' in enableValue) {
-      expect((enableValue as { value: string }).value).toContain('A test plugin');
-    }
-  });
-
-  test('plugin without description', () => {
-    const config: PluginConfig = {
-      name: 'TestPlugin',
-      settings: {},
-    };
-    const result = generateNixPlugin('TestPlugin', config);
-    const enableValue = result.enable;
-    if (typeof enableValue === 'object' && enableValue !== null && 'value' in enableValue) {
-      expect((enableValue as { value: string }).value).toContain('""');
-    }
-  });
-
-  test('plugin with category label -> includes category in auto-generated enable', () => {
+  test('plugin with category label -> includes category in description', () => {
     const config: PluginConfig = {
       name: 'TestPlugin',
       description: 'Test plugin',
       settings: {},
     };
-    const result = generateNixPlugin('TestPlugin', config, 'shared');
-    const enableValue = result.enable;
-    if (typeof enableValue === 'object' && enableValue !== null && 'value' in enableValue) {
-      expect((enableValue as { value: string }).value).toContain('Test plugin');
-      expect((enableValue as { value: string }).value).toContain(
-        '(Shared between Vencord and Equicord)'
-      );
-    }
+    const result = generatePluginJson('TestPlugin', config, 'shared');
+    expect(result.description).toContain('Test plugin');
+    expect(result.description).toContain('(Shared between Vencord and Equicord)');
   });
 
-  test('plugin with explicit enable and category -> includes category in enable description', () => {
+  test('plugin with vencord category -> includes vencord label', () => {
     const config: PluginConfig = {
       name: 'TestPlugin',
       description: 'Test plugin',
-      settings: {
-        enable: {
-          name: 'enable',
-          type: 'types.bool',
-          description: 'Enable plugin',
-          default: true,
-        },
-      },
+      settings: {},
     };
-    const result = generateNixPlugin('TestPlugin', config, 'vencord');
-    const enableValue = result.enable;
-    if (typeof enableValue === 'object' && enableValue !== null && 'value' in enableValue) {
-      expect((enableValue as { value: string }).value).toContain('Enable plugin');
-      expect((enableValue as { value: string }).value).toContain('(Vencord-only)');
-    }
+    const result = generatePluginJson('TestPlugin', config, 'vencord');
+    expect(result.description).toContain('(Vencord-only)');
+  });
+
+  test('plugin with equicord category -> includes equicord label', () => {
+    const config: PluginConfig = {
+      name: 'TestPlugin',
+      description: 'Test plugin',
+      settings: {},
+    };
+    const result = generatePluginJson('TestPlugin', config, 'equicord');
+    expect(result.description).toContain('(Equicord-only)');
   });
 
   test('plugin with nested settings', () => {
@@ -422,10 +318,10 @@ describe('generateNixPlugin()', () => {
         },
       },
     };
-    const result = generateNixPlugin('TestPlugin', config);
-    expect(result.config).toBeDefined();
-    const configValue = result.config as NixAttrSet;
-    expect(configValue.nested).toBeDefined();
+    const result = generatePluginJson('TestPlugin', config);
+    expect(result.settings.config).toBeDefined();
+    const nestedConfig = result.settings.config as { settings: Record<string, unknown> };
+    expect(nestedConfig.settings.nested).toBeDefined();
   });
 
   test('plugin with simple settings only', () => {
@@ -444,9 +340,9 @@ describe('generateNixPlugin()', () => {
         },
       },
     };
-    const result = generateNixPlugin('TestPlugin', config);
-    expect(result.setting1).toBeDefined();
-    expect(result.setting2).toBeDefined();
+    const result = generatePluginJson('TestPlugin', config);
+    expect(result.settings.setting1).toBeDefined();
+    expect(result.settings.setting2).toBeDefined();
   });
 
   test('plugin with empty settings', () => {
@@ -455,50 +351,22 @@ describe('generateNixPlugin()', () => {
       description: 'Test plugin',
       settings: {},
     };
-    const result = generateNixPlugin('TestPlugin', config);
-    // Should still have enable
-    expect(result.enable).toBeDefined();
+    const result = generatePluginJson('TestPlugin', config);
+    expect(result.description).toBe('Test plugin');
+    expect(Object.keys(result.settings)).toHaveLength(0);
   });
 });
 
-describe('generateNixModule()', () => {
-  test('generates correct module structure', () => {
+describe('generatePluginModule()', () => {
+  test('generates valid JSON', () => {
     const plugins: ReadonlyDeep<Record<string, PluginConfig>> = {
       PluginA: {
         name: 'PluginA',
         settings: {},
       },
     };
-    const result = generateNixModule(plugins);
-    expect(result).toContain('{ lib, ... }:');
-    expect(result).toContain('let');
-    expect(result).toContain('in');
-  });
-
-  test('includes inherit statement', () => {
-    const plugins: ReadonlyDeep<Record<string, PluginConfig>> = {
-      PluginA: {
-        name: 'PluginA',
-        settings: {},
-      },
-    };
-    const result = generateNixModule(plugins);
-    expect(result).toContain('inherit (lib)');
-    expect(result).toContain('types');
-    expect(result).toContain('mkEnableOption');
-    expect(result).toContain('mkOption');
-  });
-
-  test('includes let block', () => {
-    const plugins: ReadonlyDeep<Record<string, PluginConfig>> = {};
-    const result = generateNixModule(plugins);
-    expect(result).toContain('let');
-  });
-
-  test('includes in statement', () => {
-    const plugins: ReadonlyDeep<Record<string, PluginConfig>> = {};
-    const result = generateNixModule(plugins);
-    expect(result).toContain('in');
+    const result = generatePluginModule(plugins);
+    expect(() => JSON.parse(result)).not.toThrow();
   });
 
   test('sorts plugins alphabetically', () => {
@@ -516,21 +384,16 @@ describe('generateNixModule()', () => {
         settings: {},
       },
     };
-    const result = generateNixModule(plugins);
-    const alphaPos = result.indexOf('alphaPlugin');
-    const betaPos = result.indexOf('betaPlugin');
-    const zuluPos = result.indexOf('zuluPlugin');
-    expect(alphaPos).toBeGreaterThan(-1);
-    expect(betaPos).toBeGreaterThan(-1);
-    expect(zuluPos).toBeGreaterThan(-1);
-    expect(alphaPos).toBeLessThan(betaPos);
-    expect(betaPos).toBeLessThan(zuluPos);
+    const result = generatePluginModule(plugins);
+    const parsed = JSON.parse(result);
+    const keys = Object.keys(parsed);
+    expect(keys).toEqual(['alphaPlugin', 'betaPlugin', 'zuluPlugin']);
   });
 
   test('handles empty plugins record', () => {
     const plugins: ReadonlyDeep<Record<string, PluginConfig>> = {};
-    const result = generateNixModule(plugins);
-    expect(result).toContain('{ }');
+    const result = generatePluginModule(plugins);
+    expect(JSON.parse(result)).toEqual({});
   });
 
   test('handles single plugin', () => {
@@ -541,8 +404,10 @@ describe('generateNixModule()', () => {
         settings: {},
       },
     };
-    const result = generateNixModule(plugins);
-    expect(result).toContain('singlePlugin');
+    const result = generatePluginModule(plugins);
+    const parsed = JSON.parse(result);
+    expect(parsed.singlePlugin).toBeDefined();
+    expect(parsed.singlePlugin.description).toBe('A single plugin');
   });
 
   test('handles multiple plugins', () => {
@@ -560,10 +425,11 @@ describe('generateNixModule()', () => {
         settings: {},
       },
     };
-    const result = generateNixModule(plugins);
-    expect(result).toContain('plugin1');
-    expect(result).toContain('plugin2');
-    expect(result).toContain('plugin3');
+    const result = generatePluginModule(plugins);
+    const parsed = JSON.parse(result);
+    expect(parsed.plugin1).toBeDefined();
+    expect(parsed.plugin2).toBeDefined();
+    expect(parsed.plugin3).toBeDefined();
   });
 
   test('uses identifier conversion for plugin names', () => {
@@ -573,8 +439,8 @@ describe('generateNixModule()', () => {
         settings: {},
       },
     };
-    const result = generateNixModule(plugins);
-    // Should convert to camelCase
-    expect(result).toContain('testPlugin');
+    const result = generatePluginModule(plugins);
+    const parsed = JSON.parse(result);
+    expect(parsed.testPlugin).toBeDefined();
   });
 });
