@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": ["vite.config.shared.ts"],
   "duplicates": {
     "ignore": ["**/tests/**", "**/*.test.ts"]
   }

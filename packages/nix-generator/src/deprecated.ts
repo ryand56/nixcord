@@ -2,12 +2,7 @@ import { join } from 'pathe';
 import fse from 'fs-extra';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import type {
-  Logger,
-  SettingRename,
-  DeprecatedData,
-  DeprecatedRenameEntry,
-} from '@nixcord/shared';
+import type { Logger, SettingRename, DeprecatedData, DeprecatedRenameEntry } from '@nixcord/shared';
 import {
   AUTO_GENERATED_HEADER,
   sortedEntries,

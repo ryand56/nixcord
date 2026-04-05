@@ -20,8 +20,7 @@ export function toNixIdentifier(name: string): string {
     .replace(LEADING_TRAILING_UNDERSCORES_PATTERN, '')
     .replace(MULTIPLE_UNDERSCORES_PATTERN, '_');
 
-  const needsPrefix =
-    sanitized.length === 0 || !VALID_IDENTIFIER_START_PATTERN.test(sanitized);
+  const needsPrefix = sanitized.length === 0 || !VALID_IDENTIFIER_START_PATTERN.test(sanitized);
 
   const hasAcronym = /[A-Z]{2}/.test(sanitized);
 
@@ -39,11 +38,7 @@ export function toNixIdentifier(name: string): string {
     VALID_IDENTIFIER_START_PATTERN.test(sanitized)
   )
     return '_' + sanitized;
-  if (
-    needsPrefix ||
-    sanitized.length === 0 ||
-    !VALID_IDENTIFIER_START_PATTERN.test(sanitized)
-  )
+  if (needsPrefix || sanitized.length === 0 || !VALID_IDENTIFIER_START_PATTERN.test(sanitized))
     sanitized = LEADING_UNDERSCORE_PREFIX + sanitized;
 
   return sanitized;

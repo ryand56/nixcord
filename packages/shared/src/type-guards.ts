@@ -18,7 +18,5 @@ export const filterNullish = <T extends Record<string, unknown>>(obj: T): T =>
 export const sortedEntries = <T>(obj: Record<string, T>): [string, T][] =>
   Object.entries(obj).sort(([a], [b]) => a.localeCompare(b));
 
-export const isNestedConfig = (
-  setting: object
-): setting is { settings: Record<string, unknown> } =>
+export const isNestedConfig = (setting: object): setting is { settings: Record<string, unknown> } =>
   'settings' in setting && !!(setting as { settings?: unknown }).settings;
