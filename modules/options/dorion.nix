@@ -12,7 +12,12 @@ in
     };
     package = mkOption {
       type = types.package;
-      default = pkgs.callPackage ../../pkgs/dorion.nix { };
+      default = pkgs.callPackage "${pkgs.fetchFromGitHub {
+        owner = "FlameFlag";
+        repo = "nixpkgs";
+        rev = "687fe3c6346172edb78fa0116860c4af1109b5fc";
+        hash = "sha256-D4rM3zHNe94aZW0w7jC5TP+A1OFdcW9DbXzNdrerpg4=";
+      }}/pkgs/by-name/do/dorion/package.nix" { };
       description = "The Dorion package to use.";
     };
     configDir = mkOption {
