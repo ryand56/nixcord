@@ -50,7 +50,9 @@ describe('default value structural helpers', () => {
       const RAW = [{ id: 1 }, { id: 2 }];
       const option = { default: RAW };
     `);
-    expect(hasObjectArrayDefault(fromIdentifierResult.literal, fromIdentifierResult.checker)).toBe(true);
+    expect(hasObjectArrayDefault(fromIdentifierResult.literal, fromIdentifierResult.checker)).toBe(
+      true
+    );
 
     const notObjectsResult = getOptionLiteral(`
       const NUMS = [1, 2, 3];

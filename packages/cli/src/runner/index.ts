@@ -2,8 +2,7 @@ import { dirname, join, normalize, resolve } from 'pathe';
 import fse from 'fs-extra';
 
 import { z } from 'zod';
-import { fromZodError } from 'zod-validation-error';
-import { type Result, Ok, Err } from '@nixcord/shared';
+import { type Result, Ok, Err, parseOrThrow } from '@nixcord/shared';
 import { oraPromise } from 'ora';
 import type { Simplify } from 'type-fest';
 
@@ -80,18 +79,9 @@ export const validateParsedResults = (
   vencordResult: ParsedPluginsResult,
   equicordResult?: ParsedPluginsResult
 ): void => {
-  const vencordValidation = ParsedPluginsResultSchema.safeParse(vencordResult);
-  if (!vencordValidation.success) {
-    const zodError = fromZodError(vencordValidation.error);
-    throw new GeneratePluginOptionsError(zodError.message);
-  }
-
+  parseOrThrow(ParsedPluginsResultSchema, vencordResult, GeneratePluginOptionsError);
   if (equicordResult) {
-    const equicordValidation = ParsedPluginsResultSchema.safeParse(equicordResult);
-    if (!equicordValidation.success) {
-      const zodError = fromZodError(equicordValidation.error);
-      throw new GeneratePluginOptionsError(zodError.message);
-    }
+    parseOrThrow(ParsedPluginsResultSchema, equicordResult, GeneratePluginOptionsError);
   }
 };
 
@@ -260,9 +250,14 @@ export const runGeneratePluginOptions = async (
       const pluginsDir = getPluginsDir(parsedParams.outputPath);
 
       // Run migration extraction on both repos
-      const vencordMigrations = await extractMigrations(resolvedVencordPath, [parsedParams.vencordPluginsDir]);
+      const vencordMigrations = await extractMigrations(resolvedVencordPath, [
+        parsedParams.vencordPluginsDir,
+      ]);
       const equicordMigrations = resolvedEquicordPath
-        ? await extractMigrations(resolvedEquicordPath, [parsedParams.vencordPluginsDir, parsedParams.equicordPluginsDir])
+        ? await extractMigrations(resolvedEquicordPath, [
+            parsedParams.vencordPluginsDir,
+            parsedParams.equicordPluginsDir,
+          ])
         : { renames: [], deletions: [] };
 
       // Combine migrations from both repos
@@ -278,7 +273,11 @@ export const runGeneratePluginOptions = async (
       ];
 
       // Combine all parsed plugins for the migrations generator
-      const allPlugins = { ...categorized.generic, ...categorized.vencordOnly, ...categorized.equicordOnly };
+      const allPlugins = {
+        ...categorized.generic,
+        ...categorized.vencordOnly,
+        ...categorized.equicordOnly,
+      };
 
       // Build set of active plugin names to filter false-positive removals
       const activePluginNames = new Set(Object.keys(allPlugins));

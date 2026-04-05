@@ -15,3 +15,26 @@ export const flatMap = <T, E, U>(r: Result<T, E>, fn: (v: T) => Result<U, E>): R
 export const unwrapOr = <T, E>(r: Result<T, E>, fallback: T): T => (r.ok ? r.value : fallback);
 export const unwrapOrUndefined = <T, E>(r: Result<T, E>): T | undefined =>
   r.ok ? r.value : undefined;
+
+export const fromNullable = <T, E>(
+  value: T | null | undefined,
+  onNullish: () => E
+): Result<T, E> => (value != null ? Ok(value) : Err(onNullish()));
+
+export const mapError = <T, E, F>(r: Result<T, E>, fn: (e: E) => F): Result<T, F> =>
+  r.ok ? r : Err(fn(r.error));
+
+export const collect = <T, E>(results: Result<T, E>[]): Result<T[], E> => {
+  const values: T[] = [];
+  for (const r of results) {
+    if (!r.ok) return r;
+    values.push(r.value);
+  }
+  return Ok(values);
+};
+
+export const fromPredicate = <T, E>(
+  value: T,
+  predicate: (v: T) => boolean,
+  onFalse: (v: T) => E
+): Result<T, E> => (predicate(value) ? Ok(value) : Err(onFalse(value)));

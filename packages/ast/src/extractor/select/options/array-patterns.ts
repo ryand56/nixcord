@@ -7,7 +7,7 @@ import type {
   Identifier,
 } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
-import { type Result, Ok, Err } from '@nixcord/shared';
+import { type Result, Ok, Err, fromNullable } from '@nixcord/shared';
 
 import {
   evaluate,
@@ -47,19 +47,18 @@ const extractValueAndLabel = (
   obj: ObjectLiteralExpression,
   checker: TypeChecker
 ): Result<{ value: string | number | boolean; label?: string }, EvaluationError> => {
-  const valueProp = getPropertyAssignment(obj, VALUE_PROPERTY);
+  const valueProp = fromNullable(getPropertyAssignment(obj, VALUE_PROPERTY), () =>
+    createEvaluationError(`Missing '${VALUE_PROPERTY}' property in option object`, obj)
+  );
+  if (!valueProp.ok) return valueProp;
 
-  if (!valueProp) {
-    return Err(createEvaluationError(`Missing '${VALUE_PROPERTY}' property in option object`, obj));
-  }
+  const valueInit = fromNullable(valueProp.value.getInitializer(), () =>
+    createEvaluationError(`'${VALUE_PROPERTY}' property has no initializer`, valueProp.value)
+  );
+  if (!valueInit.ok) return valueInit;
 
-  const valueInit = valueProp.getInitializer();
-  if (!valueInit) {
-    return Err(createEvaluationError(`'${VALUE_PROPERTY}' property has no initializer`, valueProp));
-  }
-
-  const valueResult = evaluate(valueInit, checker);
-  if (!valueResult.ok) return Err(valueResult.error);
+  const valueResult = evaluate(valueInit.value, checker);
+  if (!valueResult.ok) return valueResult;
 
   const labelProp = getPropertyAssignment(obj, LABEL_PROPERTY);
   const label = labelProp
@@ -100,22 +99,17 @@ const extractFromSpreadElement = (
 
   if (expr.getKind() === SyntaxKind.Identifier) {
     const identifier = expr.asKindOrThrow(SyntaxKind.Identifier);
-    const init = resolveSymbolInit(identifier, checker);
+    const init = fromNullable(resolveSymbolInit(identifier, checker), () =>
+      createEvaluationError(`Cannot resolve spread element: ${identifier.getText()}`, spread)
+    );
+    if (!init.ok) return init;
 
-    if (!init) {
-      return Err(
-        createEvaluationError(`Cannot resolve spread element: ${identifier.getText()}`, spread)
-      );
-    }
+    const spreadArray = fromNullable(init.value.asKind(SyntaxKind.ArrayLiteralExpression), () =>
+      createEvaluationError('Spread element does not resolve to an array literal', spread)
+    );
+    if (!spreadArray.ok) return spreadArray;
 
-    const spreadArray = init.asKind(SyntaxKind.ArrayLiteralExpression);
-    if (!spreadArray) {
-      return Err(
-        createEvaluationError('Spread element does not resolve to an array literal', spread)
-      );
-    }
-
-    return Ok(extractValuesFromArrayLiteral(spreadArray, checker));
+    return Ok(extractValuesFromArrayLiteral(spreadArray.value, checker));
   }
 
   if (expr.getKind() === SyntaxKind.CallExpression) {

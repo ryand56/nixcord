@@ -91,9 +91,8 @@ export class NixGenerator {
     );
     const rawKeys = Object.keys(filteredAttrs).sort();
     const enableIdx = rawKeys.indexOf('enable');
-    const sortedKeys = enableIdx !== -1
-      ? ['enable', ...rawKeys.filter((_, i) => i !== enableIdx)]
-      : rawKeys;
+    const sortedKeys =
+      enableIdx !== -1 ? ['enable', ...rawKeys.filter((_, i) => i !== enableIdx)] : rawKeys;
 
     if (sortedKeys.length === 0) return NIX_EMPTY_ATTR_SET;
 
@@ -103,8 +102,9 @@ export class NixGenerator {
       NIX_ATTR_SET_OPEN,
       ...sortedKeys
         .filter((key) => filteredAttrs[key] !== undefined)
-        .map((key) =>
-          `${propIndent}${this.identifier(key)}${NIX_ASSIGNMENT}${this.value(filteredAttrs[key] as NixValue, level + 1)}${NIX_STATEMENT_TERMINATOR}`
+        .map(
+          (key) =>
+            `${propIndent}${this.identifier(key)}${NIX_ASSIGNMENT}${this.value(filteredAttrs[key] as NixValue, level + 1)}${NIX_STATEMENT_TERMINATOR}`
         ),
       `${indent}${NIX_ATTR_SET_CLOSE}`,
     ].join(NIX_LIST_SEPARATOR);

@@ -14,3 +14,11 @@ export const isPrimitive = (x: unknown): x is string | number | boolean =>
 
 export const filterNullish = <T extends Record<string, unknown>>(obj: T): T =>
   Object.fromEntries(Object.entries(obj).filter(([, v]) => v != null)) as T;
+
+export const sortedEntries = <T>(obj: Record<string, T>): [string, T][] =>
+  Object.entries(obj).sort(([a], [b]) => a.localeCompare(b));
+
+export const isNestedConfig = (
+  setting: object
+): setting is { settings: Record<string, unknown> } =>
+  'settings' in setting && !!(setting as { settings?: unknown }).settings;

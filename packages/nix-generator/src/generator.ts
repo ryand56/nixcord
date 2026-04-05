@@ -8,6 +8,7 @@ import {
   isNull,
   isArray,
   isObject,
+  isNestedConfig,
   AUTO_GENERATED_HEADER,
 } from '@nixcord/shared';
 import { INTEGER_STRING_PATTERN, NIX_ENUM_TYPE, NIX_TYPE_FLOAT, NIX_TYPE_INT } from '@nixcord/ast';
@@ -135,10 +136,9 @@ export const generateNixPlugin = (
   category?: PluginCategory
 ): NixAttrSet => {
   const baseAttrSet = Object.entries(config.settings).reduce((acc, [, setting]) => {
-    acc[gen.identifier(setting.name)] =
-      'settings' in setting
-        ? generateNixPlugin(setting.name, setting as PluginConfig, category)
-        : generateNixSetting(setting as PluginSetting, category);
+    acc[gen.identifier(setting.name)] = isNestedConfig(setting)
+      ? generateNixPlugin(setting.name, setting as PluginConfig, category)
+      : generateNixSetting(setting as PluginSetting, category);
     return acc;
   }, {} as NixAttrSet);
 

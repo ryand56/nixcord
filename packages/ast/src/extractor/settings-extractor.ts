@@ -158,11 +158,7 @@ export function extractSettingsFromPropertyIterable(
           hidden: props.hidden,
           options: extractedOptions,
         };
-        const typeResult = tsTypeToNixType(
-          rawSetting,
-          program,
-          checker
-        );
+        const typeResult = tsTypeToNixType(rawSetting, program, checker);
         const defaultResolution = resolveDefaultValue(
           valueObj,
           typeResult.nixType,

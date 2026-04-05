@@ -1,17 +1,11 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { PluginConfig, PluginSetting } from '@nixcord/shared';
-import { AUTO_GENERATED_HEADER } from '@nixcord/shared';
+import { AUTO_GENERATED_HEADER, isNestedConfig, sortedEntries } from '@nixcord/shared';
 import type { DeprecatedData } from '@nixcord/parser';
 import { NixGenerator } from './generator-base.js';
 
 const BASE_PATH = '["programs" "nixcord" "config" "plugins"';
 const gen = new NixGenerator();
-
-function isNestedConfig(
-  setting: ReadonlyDeep<PluginSetting | PluginConfig>
-): setting is ReadonlyDeep<PluginConfig> {
-  return 'settings' in setting && !!setting.settings;
-}
 
 /**
  * Collect all leaf setting names from a plugin config (flattened).
@@ -76,9 +70,7 @@ export function generateMigrationsModule(
   // Multiple source names (e.g. "platformIndicators" and "PlatformIndicators")
   // can map to the same Nix identifier, so we merge their settings.
   const settingRenamesByNixName = new Map<string, Record<string, string>>();
-  for (const [pluginName, settings] of Object.entries(deprecated.settingRenames ?? {}).sort(
-    ([a], [b]) => a.localeCompare(b)
-  )) {
+  for (const [pluginName, settings] of sortedEntries(deprecated.settingRenames ?? {})) {
     const nixName = gen.identifier(pluginName);
     if (!activeNixNames.has(nixName)) continue;
     const existing = settingRenamesByNixName.get(nixName) ?? {};
@@ -88,13 +80,11 @@ export function generateMigrationsModule(
   const settingRenameEntries = Array.from(settingRenamesByNixName.entries());
 
   // Pre-filter rename entries to know if we need the `let base` binding
-  const renameEntries = Object.entries(deprecated.renames)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .filter(([oldName, entry]) => {
-      const oldNixName = gen.identifier(oldName);
-      const newNixName = gen.identifier(entry.to);
-      return !activeNixNames.has(oldNixName) && activeNixNames.has(newNixName);
-    });
+  const renameEntries = sortedEntries(deprecated.renames).filter(([oldName, entry]) => {
+    const oldNixName = gen.identifier(oldName);
+    const newNixName = gen.identifier(entry.to);
+    return !activeNixNames.has(oldNixName) && activeNixNames.has(newNixName);
+  });
 
   const hasSettingRenames = settingRenameEntries.length > 0;
   const hasRenames = renameEntries.length > 0;
@@ -167,7 +157,7 @@ export function generateMigrationsModule(
   }
 
   // Generate removal shims
-  const removalEntries = Object.entries(deprecated.removals).sort(([a], [b]) => a.localeCompare(b));
+  const removalEntries = sortedEntries(deprecated.removals);
 
   for (const [pluginName] of removalEntries) {
     // Skip removal shims for plugins that still have active definitions

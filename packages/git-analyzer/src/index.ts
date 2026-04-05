@@ -47,10 +47,9 @@ const getRecentCommits = async (
   repoPath: string,
   days: number = DAYS_TO_CHECK
 ): Promise<Array<{ hash: string; date: string }>> => {
-  const logResult = await execAsync(
-    `git log --since="${days} days ago" --pretty=format:"%H|%cI"`,
-    { cwd: repoPath }
-  );
+  const logResult = await execAsync(`git log --since="${days} days ago" --pretty=format:"%H|%cI"`, {
+    cwd: repoPath,
+  });
   if (!logResult.stdout.trim()) return [];
 
   return logResult.stdout

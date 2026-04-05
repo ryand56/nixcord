@@ -1,6 +1,6 @@
 import type { TypeChecker, Node, ObjectLiteralExpression } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
-import { Err } from '@nixcord/shared';
+import { Err, fromNullable } from '@nixcord/shared';
 
 import {
   evaluate,
@@ -68,17 +68,18 @@ function extractFromObjectMethod(
         })()
       : undefined;
 
-  if (!objLiteral || objLiteral.getKind() !== SyntaxKind.ObjectLiteralExpression) {
-    return Err(
+  const resolved = fromNullable(
+    objLiteral?.getKind() === SyntaxKind.ObjectLiteralExpression ? objLiteral : undefined,
+    () =>
       createExtractionError(
         ExtractionErrorKind.UnresolvableSymbol,
         `Cannot resolve identifier ${firstArg.asKindOrThrow(SyntaxKind.Identifier).getText()} to object literal`,
         firstArg
       )
-    );
-  }
+  );
+  if (!resolved.ok) return resolved;
 
-  const obj = objLiteral.asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
+  const obj = resolved.value.asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
   const values = extractor(obj, checker);
   return createSelectOptionsResult(values);
 }

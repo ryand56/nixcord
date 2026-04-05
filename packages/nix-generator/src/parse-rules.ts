@@ -1,6 +1,6 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { PluginConfig } from '@nixcord/shared';
-import { AUTO_GENERATED_HEADER } from '@nixcord/shared';
+import { AUTO_GENERATED_HEADER, isNestedConfig } from '@nixcord/shared';
 import { NixGenerator } from './generator-base.js';
 
 const gen = new NixGenerator();
@@ -47,17 +47,14 @@ function collectSettingRenames(
 ): Record<string, Record<string, string>> {
   const renames: Record<string, Record<string, string>> = {};
 
-  const collectFromConfig = (
-    parentNixName: string,
-    config: ReadonlyDeep<PluginConfig>
-  ): void => {
+  const collectFromConfig = (parentNixName: string, config: ReadonlyDeep<PluginConfig>): void => {
     for (const setting of Object.values(config.settings)) {
       const nixName = gen.identifier(setting.name);
       if (nixName !== setting.name) {
         renames[parentNixName] ??= {};
         renames[parentNixName][nixName] = setting.name;
       }
-      if ('settings' in setting) {
+      if (isNestedConfig(setting)) {
         const nestedNixName = gen.identifier(setting.name);
         collectFromConfig(nestedNixName, setting as ReadonlyDeep<PluginConfig>);
       }

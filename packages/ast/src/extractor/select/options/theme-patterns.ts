@@ -6,7 +6,7 @@ import type {
   AsExpression,
 } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
-import { Err } from '@nixcord/shared';
+import { Err, fromNullable } from '@nixcord/shared';
 
 import type { SelectOptionsResult } from '../../types.js';
 import {
@@ -39,20 +39,18 @@ const extractThemeKeys = (arg0: Node, checker: TypeChecker): SelectOptionsResult
     return createSelectOptionsResult(evaluated);
   }
 
-  const objNode = resolveIdentifierInitializerNode(arg0, checker);
-  const obj = objNode?.asKind(SyntaxKind.ObjectLiteralExpression);
-
-  if (!obj) {
-    return Err(
+  const obj = fromNullable(
+    resolveIdentifierInitializerNode(arg0, checker)?.asKind(SyntaxKind.ObjectLiteralExpression),
+    () =>
       createExtractionError(
         ExtractionErrorKind.UnresolvableSymbol,
         'Cannot resolve object literal',
         arg0
       )
-    );
-  }
+  );
+  if (!obj.ok) return obj;
 
-  const keys = Array.from(iteratePropertyAssignments(obj))
+  const keys = Array.from(iteratePropertyAssignments(obj.value))
     .map((p) => getPropertyName(p) ?? '')
     .filter((k) => k !== '');
 

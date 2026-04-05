@@ -1,22 +1,6 @@
-import { defineConfig } from 'vite';
+import { createViteConfig } from '../../vite.config.shared.js';
 
-export default defineConfig({
-  build: {
-    lib: {
-      entry: 'src/index.ts',
-      formats: ['es'],
-      fileName: 'index',
-    },
-    outDir: 'dist',
-    emptyOutDir: true,
-    minify: false,
-    sourcemap: true,
-    rolldownOptions: {
-      external: [/^node:/, 'consola', 'type-fest', 'zod'],
-    },
-  },
-  test: {
-    globals: true,
-    include: ['tests/**/*.test.ts'],
-  },
+export default createViteConfig({
+  mode: 'lib',
+  external: [/^node:/, 'consola', 'type-fest', 'zod', 'zod-validation-error'],
 });

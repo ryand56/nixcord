@@ -3,7 +3,7 @@ import fse from 'fs-extra';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import type { Logger } from '@nixcord/shared';
-import { AUTO_GENERATED_HEADER } from '@nixcord/shared';
+import { AUTO_GENERATED_HEADER, sortedEntries } from '@nixcord/shared';
 import type { PluginMigrationInfo } from '@nixcord/git-analyzer';
 import type { SettingRename } from '@nixcord/shared';
 
@@ -96,12 +96,8 @@ function generateDeprecatedNix(data: DeprecatedData): string {
 
   // Renames
   lines.push('  renames = {');
-  const permanentRenames = Object.entries(data.renames)
-    .filter(([, v]) => !v.date)
-    .sort(([a], [b]) => a.localeCompare(b));
-  const datedRenames = Object.entries(data.renames)
-    .filter(([, v]) => v.date)
-    .sort(([a], [b]) => a.localeCompare(b));
+  const permanentRenames = sortedEntries(data.renames).filter(([, v]) => !v.date);
+  const datedRenames = sortedEntries(data.renames).filter(([, v]) => v.date);
 
   for (const [name, entry] of permanentRenames) {
     lines.push(`    ${name} = { to = "${entry.to}"; };`);
@@ -113,20 +109,15 @@ function generateDeprecatedNix(data: DeprecatedData): string {
 
   // Removals
   lines.push('  removals = {');
-  const sortedRemovals = Object.entries(data.removals).sort(([a], [b]) => a.localeCompare(b));
-  for (const [name, entry] of sortedRemovals) {
+  for (const [name, entry] of sortedEntries(data.removals)) {
     lines.push(`    ${name} = { date = "${entry.date}"; };`);
   }
   lines.push('  };');
 
   // Setting renames
   lines.push('  settingRenames = {');
-  const sortedSettingRenames = Object.entries(data.settingRenames).sort(([a], [b]) =>
-    a.localeCompare(b)
-  );
-  for (const [pluginName, settings] of sortedSettingRenames) {
-    const settingPairs = Object.entries(settings)
-      .sort(([a], [b]) => a.localeCompare(b))
+  for (const [pluginName, settings] of sortedEntries(data.settingRenames)) {
+    const settingPairs = sortedEntries(settings)
       .map(([old, newName]) => `${old} = "${newName}";`)
       .join(' ');
     lines.push(`    ${pluginName} = { ${settingPairs} };`);

@@ -105,7 +105,9 @@ export const resolveArrowBody = (node: Node, checker?: TypeChecker): Node | unde
     }
     const declArrow = symbolResult.valueDecl.asKind(SyntaxKind.ArrowFunction);
     if (declArrow) return unwrapNode(declArrow.getBody());
-    const initArrow = getInitializerFromDecl(symbolResult.valueDecl)?.asKind(SyntaxKind.ArrowFunction);
+    const initArrow = getInitializerFromDecl(symbolResult.valueDecl)?.asKind(
+      SyntaxKind.ArrowFunction
+    );
     if (initArrow) return unwrapNode(initArrow.getBody());
   }
   return undefined;
@@ -120,7 +122,9 @@ export const resolveToObjectLiteral = (
     resolved = resolveNode(node, checker);
     if (!resolved) {
       const symbolResult = resolveSymbol(node, checker);
-      resolved = getInitializerFromDecl(symbolResult.valueDecl) ?? resolveIdentifierWithFallback(node, checker);
+      resolved =
+        getInitializerFromDecl(symbolResult.valueDecl) ??
+        resolveIdentifierWithFallback(node, checker);
     }
   }
   if (!resolved) return undefined;
