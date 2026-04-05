@@ -12,15 +12,13 @@ in
     enable = mkOption {
       type = types.bool;
       default = true;
-      description = ''
-        Whether to enable discord
-        Disable to only install Vesktop
-      '';
+      description = "Whether to enable Discord. Disable to only install Vesktop.";
+      example = false;
     };
     installPackage = mkOption {
       type = types.bool;
       default = true;
-      description = "Whether to add `cfg.finalPackage.discord` to `home.packages`.";
+      description = "Whether to install the final Discord package.";
     };
     package = mkOption {
       type = types.package;
@@ -29,9 +27,7 @@ in
           pkgs.stdenvNoCC.isLinux && builtins.fromJSON (lib.versions.major lib.version) < 25
         ) { libgbm = pkgs.mesa; }
       );
-      description = ''
-        The Discord package to use
-      '';
+      description = "The Discord package to use.";
     };
     branch = mkOption {
       type = types.enum [
@@ -41,30 +37,29 @@ in
         "development"
       ];
       default = "stable";
-      description = "The Discord branch to use";
+      description = "The Discord branch to use.";
+      example = "canary";
     };
     configDir = mkOption {
       type = types.path;
-      description = "Config path for Discord";
+      description = "Config directory for Discord.";
     };
     vencord = {
       enable = mkOption {
         type = types.bool;
         default = true;
-        description = "Enable Vencord (for non-vesktop)";
+        description = "Whether to enable Vencord for Discord (non-Vesktop).";
       };
       package = mkOption {
         type = types.package;
         default = nixcordPkgs.vencord or (pkgs.callPackage ../../pkgs/vencord.nix { unstable = false; });
         defaultText = lib.literalExpression "pkgs.callPackage ../../pkgs/vencord.nix { unstable = false; }";
-        description = ''
-          The Vencord package to use
-        '';
+        description = "The Vencord package to use.";
       };
       unstable = mkOption {
         type = types.bool;
         default = false;
-        description = "Enable unstable Vencord build from repository's master branch";
+        description = "Whether to use the unstable Vencord build from the master branch.";
       };
     };
     equicord = {
@@ -72,23 +67,22 @@ in
       package = mkOption {
         type = types.package;
         default = nixcordPkgs.equicord or (pkgs.callPackage ../../pkgs/equicord.nix { });
-        description = ''
-          The Equicord package to use
-        '';
+        description = "The Equicord package to use.";
       };
     };
     openASAR.enable = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable OpenASAR (for non-vesktop)";
+      description = "Whether to enable OpenASAR for Discord (non-Vesktop).";
     };
-    autoscroll.enable = mkEnableOption "middle-click autoscrolling";
+    autoscroll.enable = mkEnableOption "middle-click autoscrolling for Discord";
     settings = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        Settings to be placed in discordConfigDir/settings.json
-      '';
+      description = "Settings to be placed in Discord's settings.json.";
+      example = {
+        SKIP_HOST_UPDATE = true;
+      };
     };
   };
 }

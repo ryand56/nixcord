@@ -4,44 +4,36 @@ let
 in
 {
   options.programs.nixcord.vesktop = {
-    enable = mkEnableOption ''
-      Whether to enable Vesktop
-    '';
+    enable = mkEnableOption "Vesktop";
     installPackage = mkOption {
       type = types.bool;
       default = true;
-      description = "Whether to add `cfg.finalPackage.vesktop` to `home.packages`.";
+      description = "Whether to install the final Vesktop package.";
     };
     package = mkOption {
       type = types.package;
       default = pkgs.vesktop;
-      description = ''
-        The Vesktop package to use
-      '';
+      description = "The Vesktop package to use.";
     };
     useSystemVencord = mkOption {
       type = types.bool;
       default = true;
-      description = "Use system Vencord package";
+      description = "Whether to use the system Vencord package instead of the bundled one.";
     };
     configDir = mkOption {
       type = types.path;
-      description = "Config path for Vesktop";
+      description = "Config directory for Vesktop.";
     };
     settings = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        Settings to be placed in vesktop.configDir/settings.json
-      '';
+      description = "Settings to be placed in Vesktop's settings.json.";
     };
     state = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        Settings to be placed in vesktop.configDir/state.json
-      '';
+      description = "State to be placed in Vesktop's state.json.";
     };
-    autoscroll.enable = mkEnableOption "middle-click autoscrolling";
+    autoscroll.enable = mkEnableOption "middle-click autoscrolling for Vesktop";
   };
 }

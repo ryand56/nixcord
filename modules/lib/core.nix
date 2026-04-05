@@ -20,6 +20,7 @@ let
 
   defaultParseRules = builtins.fromJSON (builtins.readFile ../plugins/parse-rules.json);
 
+  # mergeLists :: [a] -> [a] -> [a]
   mergeLists = base: extra: lists.unique (base ++ extra);
 
   upperNames = mergeLists defaultParseRules.upperNames parseRules.upperNames;
@@ -69,6 +70,9 @@ let
     showOwnTimezone = "Show Own Timezone";
   };
 
+  # normalizeName :: string -> string -> value -> string
+  # Converts a Nix option name to its JSON-side equivalent using
+  # specialRenames, settingRenames, upperNames, and lowerPluginTitles.
   normalizeName =
     context: name: value:
     if specialRenames ? ${name} then
@@ -84,6 +88,8 @@ let
     else
       name;
 
+  # mkVencordCfgInner :: string -> attrset -> attrset
+  # Recursively transforms Nix option names to their JSON counterparts.
   mkVencordCfgInner =
     context: cfg:
     mapAttrs' (
@@ -96,6 +102,8 @@ let
 
   mkVencordCfg = mkVencordCfgInner "";
 
+  # mkFinalPackages :: { cfg, vencord, equicord } -> { discord, vesktop, equibop, dorion }
+  # Builds the final patched packages for each client.
   mkFinalPackages =
     {
       cfg,

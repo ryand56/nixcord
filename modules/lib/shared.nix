@@ -1,8 +1,12 @@
 { lib }:
 
 let
+  # mergeAttrsList :: [attrset] -> attrset
+  # Deep-merge a list of attribute sets (left to right).
   mergeAttrsList = list: builtins.foldl' lib.recursiveUpdate { } list;
 
+  # applyPostPatch :: { cfg, pkg } -> derivation
+  # Patch a Vencord/Equicord derivation to include user plugins.
   applyPostPatch =
     { cfg, pkg }:
     pkg.overrideAttrs (o: {
@@ -20,10 +24,14 @@ let
       '';
     });
 
+  # mkIsQuickCssUsed :: { cfg } -> attrset -> bool
+  # Returns whether quick CSS should be written for a given client config.
   mkIsQuickCssUsed =
     { cfg }:
     appConfig: (cfg.config.useQuickCss || (appConfig.useQuickCss or false)) && cfg.quickCss != "";
 
+  # mkPluginKit :: { cfg } -> { filterPluginsFor, mkFullConfig, ... }
+  # Builds plugin filtering and config merging utilities for the given configuration.
   mkPluginKit =
     { cfg }:
     let
@@ -146,6 +154,8 @@ let
         ;
     };
 
+  # mkCopyCommands :: { lib, cfg, ...files } -> string
+  # Generates shell commands to copy all settings/theme files to their destinations.
   mkCopyCommands =
     {
       lib,
@@ -232,6 +242,8 @@ let
     lib.concatMapStringsSep "\n" lib.id (
       discordCopies ++ vesktopCopies ++ equibopCopies ++ dorionCopies
     );
+  # toSnakeCase :: string -> string
+  # Converts a camelCase string to snake_case.
   toSnakeCase =
     str:
     lib.pipe str [
@@ -243,6 +255,8 @@ let
       (builtins.replaceStrings [ "__" ] [ "_" ])
     ];
 
+  # mkDorionConfigAttrs :: { cfg } -> attrset
+  # Builds the Dorion config.json attribute set from module options.
   mkDorionConfigAttrs =
     { cfg }:
     let
@@ -256,6 +270,8 @@ let
     in
     dorionConfig // cfg.dorion.extraSettings;
 
+  # mkAssertions :: { cfg, collectEnabledEquicordOnlyPlugins, collectEnabledVencordOnlyPlugins } -> [assertion]
+  # Generates NixOS assertions for mutually-exclusive client and plugin constraints.
   mkAssertions =
     {
       cfg,
@@ -292,6 +308,8 @@ let
       }
     ];
 
+  # mkSettingsFiles :: { pkgs, cfg, mkVencordCfg, ...configs } -> { *File :: path | null }
+  # Creates derivations for all client settings/state JSON files.
   mkSettingsFiles =
     {
       pkgs,
@@ -346,6 +364,8 @@ let
           null;
     };
 
+  # mkThemeFile :: { pkgs } -> string -> (path | string) -> path
+  # Resolves a theme value to a store path (either a direct path or a writeText derivation).
   mkThemeFile =
     { pkgs }:
     name: value:

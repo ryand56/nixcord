@@ -4,39 +4,37 @@ let
 in
 {
   options.programs.nixcord.dorion = {
-    enable = mkEnableOption ''
-      Whether to enable Dorion
-    '';
+    enable = mkEnableOption "Dorion";
     installPackage = mkOption {
       type = types.bool;
       default = true;
-      description = "Whether to add `cfg.finalPackage.dorion` to `home.packages`.";
+      description = "Whether to install the final Dorion package.";
     };
     package = mkOption {
       type = types.package;
       default = pkgs.callPackage ../../pkgs/dorion.nix { };
-      description = ''
-        The Dorion package to use
-      '';
+      description = "The Dorion package to use.";
     };
     configDir = mkOption {
       type = types.path;
-      description = "Config path for Dorion";
+      description = "Config directory for Dorion.";
     };
     theme = mkOption {
       type = types.str;
       default = "none";
-      description = "Theme to use in Dorion";
+      description = "Theme to use in Dorion.";
+      example = "ClearVision";
     };
     themes = mkOption {
       type = types.listOf types.str;
       default = [ "none" ];
-      description = "List of available themes";
+      description = "List of available themes.";
     };
     zoom = mkOption {
       type = types.str;
       default = "1.0";
-      description = "Zoom level for the client";
+      description = "Zoom level for the client.";
+      example = "1.25";
     };
     blur = mkOption {
       type = types.enum [
@@ -45,97 +43,50 @@ in
         "acrylic"
       ];
       default = "none";
-      description = "Window blur effect type";
+      description = "Window blur effect type.";
     };
     blurCss = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable CSS blur effects";
+      description = "Whether to enable CSS blur effects.";
     };
-    useNativeTitlebar = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Use native window titlebar";
-    };
-    startMaximized = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Start Dorion maximized";
-    };
-    disableHardwareAccel = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Disable hardware acceleration";
-    };
-    sysTray = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable system tray integration";
-    };
+    useNativeTitlebar = mkEnableOption "native window titlebar";
+    startMaximized = mkEnableOption "starting Dorion maximized";
+    disableHardwareAccel = mkEnableOption "disabling hardware acceleration";
+    sysTray = mkEnableOption "system tray integration";
     trayIconEnabled = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable tray icon";
+      description = "Whether to show the tray icon.";
     };
-    openOnStartup = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Open Dorion on system startup";
-    };
-    startupMinimized = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Start minimized to tray";
-    };
-    multiInstance = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Allow multiple Dorion instances";
-    };
-    pushToTalk = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable push-to-talk";
-    };
+    openOnStartup = mkEnableOption "opening Dorion on system startup";
+    startupMinimized = mkEnableOption "starting minimized to tray";
+    multiInstance = mkEnableOption "multiple Dorion instances";
+    pushToTalk = mkEnableOption "push-to-talk";
     pushToTalkKeys = mkOption {
       type = types.listOf types.str;
       default = [ "RControl" ];
-      description = "Keys for push-to-talk activation";
+      description = "Keys for push-to-talk activation.";
+      example = [ "RControl" "F1" ];
     };
     updateNotify = mkOption {
       type = types.bool;
       default = true;
-      description = "Show update notifications";
+      description = "Whether to show update notifications.";
     };
-    desktopNotifications = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable desktop notifications";
-    };
+    desktopNotifications = mkEnableOption "desktop notifications";
     unreadBadge = mkOption {
       type = types.bool;
       default = true;
-      description = "Show unread message badge";
+      description = "Whether to show the unread message badge.";
     };
-    win7StyleNotifications = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Use Windows 7 style notifications";
-    };
-    cacheCss = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Cache CSS for faster loading";
-    };
-    autoClearCache = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Automatically clear cache on startup";
-    };
+    win7StyleNotifications = mkEnableOption "Windows 7 style notifications";
+    cacheCss = mkEnableOption "CSS caching for faster loading";
+    autoClearCache = mkEnableOption "automatic cache clearing on startup";
     clientType = mkOption {
       type = types.str;
       default = "default";
-      description = "Discord client type to emulate";
+      description = "Discord client type to emulate.";
     };
     clientMods = mkOption {
       type = types.listOf types.str;
@@ -143,70 +94,60 @@ in
         "Shelter"
         "Vencord"
       ];
-      description = "Client modifications to enable";
+      description = "Client modifications to enable.";
     };
     clientPlugins = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable client plugins";
+      description = "Whether to enable client plugins.";
     };
     profile = mkOption {
       type = types.str;
       default = "default";
-      description = "Profile name to use";
+      description = "Profile name to use.";
     };
-    streamerModeDetection = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable streamer mode detection";
-    };
-    rpcServer = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable RPC server";
-    };
+    streamerModeDetection = mkEnableOption "streamer mode detection";
+    rpcServer = mkEnableOption "RPC server";
     rpcProcessScanner = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable RPC process scanner";
+      description = "Whether to enable the RPC process scanner.";
     };
     rpcIpcConnector = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable RPC IPC connector";
+      description = "Whether to enable the RPC IPC connector.";
     };
     rpcWebsocketConnector = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable RPC WebSocket connector";
+      description = "Whether to enable the RPC WebSocket connector.";
     };
     rpcSecondaryEvents = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable RPC secondary events";
+      description = "Whether to enable RPC secondary events.";
     };
     proxyUri = mkOption {
       type = types.str;
       default = "";
-      description = "Proxy URI to use for connections";
+      description = "Proxy URI to use for connections.";
+      example = "socks5://127.0.0.1:1080";
     };
     keybinds = mkOption {
       type = types.attrs;
       default = { };
-      description = "Custom keybind mappings";
+      description = "Custom keybind mappings.";
     };
     keybindsEnabled = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable custom keybinds";
+      description = "Whether to enable custom keybinds.";
     };
     extraSettings = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        Additional settings to merge into config.json.
-        These will override any conflicting auto-generated settings.
-      '';
+      description = "Additional settings to merge into config.json. These override any conflicting auto-generated settings.";
     };
   };
 }

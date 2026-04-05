@@ -7,17 +7,17 @@ in
     quickCss = mkOption {
       type = types.str;
       default = "";
-      description = "Vencord quick CSS";
+      description = "Quick CSS to inject into the client.";
     };
     config = {
-      notifyAboutUpdates = mkEnableOption "Notify when updates are available";
-      autoUpdate = mkEnableOption "Automaticall update Vencord";
-      autoUpdateNotification = mkEnableOption "Notify user about auto updates";
-      useQuickCss = mkEnableOption "Enable quick CSS file";
+      notifyAboutUpdates = mkEnableOption "update notifications";
+      autoUpdate = mkEnableOption "automatic Vencord updates";
+      autoUpdateNotification = mkEnableOption "auto-update notifications";
+      useQuickCss = mkEnableOption "the quick CSS file";
       themeLinks = mkOption {
         type = types.listOf types.str;
         default = [ ];
-        description = "A list of links to online vencord themes";
+        description = "A list of URLs to online Vencord themes.";
         example = [ "https://raw.githubusercontent.com/rose-pine/discord/main/rose-pine.theme.css" ];
       };
       themes = mkOption {
@@ -29,19 +29,20 @@ in
         );
         default = { };
         description = ''
-          Themes to add, they can be enabled by settings
-          `programs.nixcord.config.enabledThemes` to `[ "THEME_NAME.css" ]`
+          Themes to add. Enable them by setting
+          `programs.nixcord.config.enabledThemes` to `[ "THEME_NAME.css" ]`.
         '';
       };
       enabledThemes = mkOption {
         type = types.listOf types.str;
         default = [ ];
-        description = "A list of themes to enable from themes directory";
+        description = "A list of themes to enable from the themes directory.";
+        example = [ "my-theme.css" ];
       };
-      enableReactDevtools = mkEnableOption "Enable React developer tools";
-      frameless = mkEnableOption "Make client frameless";
-      transparent = mkEnableOption "Enable client transparency";
-      disableMinSize = mkEnableOption "Disable minimum window size for client";
+      enableReactDevtools = mkEnableOption "React developer tools";
+      frameless = mkEnableOption "frameless client window";
+      transparent = mkEnableOption "client transparency";
+      disableMinSize = mkEnableOption "disabling the minimum window size";
       plugins =
         lib.recursiveUpdate
           (lib.recursiveUpdate

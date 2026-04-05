@@ -4,13 +4,11 @@ let
 in
 {
   options.programs.nixcord.equibop = {
-    enable = mkEnableOption ''
-      Whether to enable Equibop
-    '';
+    enable = mkEnableOption "Equibop";
     installPackage = mkOption {
       type = types.bool;
       default = true;
-      description = "Whether to add `cfg.finalPackage.equibop` to `home.packages`.";
+      description = "Whether to install the final Equibop package.";
     };
     package = mkOption {
       type = types.nullOr types.package;
@@ -21,33 +19,27 @@ in
           pkgs.equibop
         else
           null;
-      description = ''
-        The Equibop package to use
-      '';
+      description = "The Equibop package to use.";
     };
     useSystemEquicord = mkOption {
       type = types.bool;
       default = true;
-      description = "Use system Equicord package instead of the bundled one";
+      description = "Whether to use the system Equicord package instead of the bundled one.";
     };
     configDir = mkOption {
       type = types.path;
-      description = "Config path for Equibop";
+      description = "Config directory for Equibop.";
     };
     settings = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        Settings to be placed in equibop.configDir/settings.json
-      '';
+      description = "Settings to be placed in Equibop's settings.json.";
     };
     state = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        Settings to be placed in equibop.configDir/state.json
-      '';
+      description = "State to be placed in Equibop's state.json.";
     };
-    autoscroll.enable = mkEnableOption "middle-click autoscrolling";
+    autoscroll.enable = mkEnableOption "middle-click autoscrolling for Equibop";
   };
 }

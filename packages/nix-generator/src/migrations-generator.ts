@@ -38,21 +38,12 @@ function mkRenamedLine(oldPlugin: string, newPlugin: string, settingPath: string
 }
 
 /**
- * Generate a removal shim module for a deleted plugin.
+ * Generate a removal shim module for a deleted plugin,
+ * using the shared mkRemovedPluginModule helper.
  */
 function mkRemovalShim(pluginName: string): string {
   const nixName = toNixIdentifier(pluginName);
-  return `    ({ config, lib, ... }:
-    {
-      options.programs.nixcord.config.plugins.${nixName} = lib.mkOption {
-        type = lib.types.anything;
-        default = {};
-        visible = false;
-        description = "REMOVED: Plugin '${pluginName}' was removed upstream.";
-      };
-      config.warnings = lib.optional (config.programs.nixcord.config.plugins.${nixName}.enable or false)
-        "Plugin '${pluginName}' has been removed upstream. Please remove it from your nixcord configuration. This shim will be removed soon.";
-    })`;
+  return `    (mkRemovedPluginModule "${nixName}")`;
 }
 
 export function generateMigrationsModule(
@@ -86,13 +77,28 @@ export function generateMigrationsModule(
   const hasSettingRenames = settingRenameEntries.length > 0;
   const hasRenames = renameEntries.length > 0;
 
+  // Pre-compute whether we have removals so we can emit the helper binding
+  const removalEntries = sortedEntries(deprecated.removals).filter(
+    ([pluginName]) => !activeNixNames.has(toNixIdentifier(pluginName))
+  );
+  const hasRemovals = removalEntries.length > 0;
+  const needsLetBlock = hasRenames || hasSettingRenames || hasRemovals;
+
   const lines: string[] = [...AUTO_GENERATED_HEADER.split('\n'), ''];
 
-  if (!hasRenames && !hasSettingRenames) {
+  if (!needsLetBlock) {
     lines.push('');
   }
-  if (hasRenames || hasSettingRenames) {
-    lines.push('{ lib, ... }:', 'let', `  base = ${BASE_PATH}];`, 'in');
+  if (needsLetBlock) {
+    lines.push('{ lib, ... }:');
+    lines.push('let');
+    if (hasRenames || hasSettingRenames) {
+      lines.push(`  base = ${BASE_PATH}];`);
+    }
+    if (hasRemovals) {
+      lines.push('  mkRemovedPluginModule = import ../lib/mkRemovedPluginModule.nix { inherit lib; };');
+    }
+    lines.push('in');
   }
 
   lines.push('{', '  imports = [');
@@ -153,14 +159,8 @@ export function generateMigrationsModule(
     lines.push('');
   }
 
-  // Generate removal shims
-  const removalEntries = sortedEntries(deprecated.removals);
-
+  // Generate removal shims using the shared mkRemovedPluginModule helper
   for (const [pluginName] of removalEntries) {
-    // Skip removal shims for plugins that still have active definitions
-    // (e.g. deleted from one repo but still present in another)
-    if (activeNixNames.has(toNixIdentifier(pluginName))) continue;
-
     lines.push(`    # Removed: ${pluginName}`);
     lines.push(mkRemovalShim(pluginName));
     lines.push('');

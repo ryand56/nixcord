@@ -7,42 +7,27 @@ in
     vesktopConfig = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        additional config to be added to programs.nixcord.config
-        for vesktop only
-      '';
+      description = "Additional config merged into `programs.nixcord.config` for Vesktop only.";
     };
     equibopConfig = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        additional config to be added to programs.nixcord.config
-        for equibop only
-      '';
+      description = "Additional config merged into `programs.nixcord.config` for Equibop only.";
     };
     vencordConfig = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        additional config to be added to programs.nixcord.config
-        for vencord only
-      '';
+      description = "Additional config merged into `programs.nixcord.config` for Vencord (Discord) only.";
     };
     equicordConfig = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        additional config to be added to programs.nixcord.config
-        for equicord only
-      '';
+      description = "Additional config merged into `programs.nixcord.config` for Equicord (Discord) only.";
     };
     extraConfig = mkOption {
       type = types.attrs;
       default = { };
-      description = ''
-        additional config to be added to programs.nixcord.config
-        for both vencord and vesktop
-      '';
+      description = "Additional config merged into `programs.nixcord.config` for all clients.";
     };
     userPlugins =
       let
@@ -62,7 +47,7 @@ in
       in
       mkOption {
         type = types.attrsOf (types.coercedTo (types.strMatching regex) coerce types.dop);
-        description = "User plugin to fetch and install. Note that any json required must be enabled in extraConfig";
+        description = "User plugins to fetch and install. Any required JSON config must be enabled in `extraConfig`.";
         default = { };
         example = {
           someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";
@@ -71,12 +56,12 @@ in
     parseRules = {
       upperNames = mkOption {
         type = types.listOf types.str;
-        description = "option names to become UPPER_SNAKE_CASE";
+        description = "Option names that should be converted to UPPER_SNAKE_CASE in generated JSON.";
         default = [ ];
       };
       lowerPluginTitles = mkOption {
         type = types.listOf types.str;
-        description = "plugins with lowercase names in json";
+        description = "Plugin names that should remain lowercase in generated JSON.";
         default = [ ];
         example = [ "petpet" ];
       };
