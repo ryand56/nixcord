@@ -1,0 +1,19 @@
+{
+  "renames": {},
+  "removals": {},
+  "settingRenames": {
+    "fontLoader": {
+      "applyOnClodeBlocks": "applyOnCodeBlocks"
+    },
+    "globalBadges": {
+      "showRa1ncord": "showRaincord"
+    },
+    "noBlockedMessages": {
+      "applyToIgnoredUsers": "alsoHideIgnoredUsers",
+      "ignoreMessages": "disableNotifications"
+    },
+    "platformIndicators": {
+      "badges": "profiles"
+    }
+  }
+}

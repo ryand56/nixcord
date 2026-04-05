@@ -1,0 +1,106 @@
+{
+  "lowerPluginTitles": [
+    "oneko"
+  ],
+  "settingRenames": {
+    "hideChatButtons": {
+      "color": "Color",
+      "open": "Open"
+    },
+    "messageLoggerEnhanced": {
+      "showLogsButton": "ShowLogsButton",
+      "showWhereMessageIsFrom": "ShowWhereMessageIsFrom"
+    },
+    "randomVoice": {
+      "userAmountOperation": "UserAmountOperation",
+      "userAmount": "UserAmount",
+      "servers": "Servers"
+    },
+    "richPresence": {
+      "absEnabled": "abs_enabled",
+      "tosuEnabled": "tosu_enabled",
+      "sfmEnabled": "sfm_enabled",
+      "jfEnabled": "jf_enabled",
+      "lbEnabled": "lb_enabled",
+      "grEnabled": "gr_enabled",
+      "absServerUrl": "abs_serverUrl",
+      "absUsername": "abs_username",
+      "absPassword": "abs_password",
+      "sfmUsername": "sfm_username",
+      "sfmShareUsername": "sfm_shareUsername",
+      "sfmShareSong": "sfm_shareSong",
+      "sfmHideWithSpotify": "sfm_hideWithSpotify",
+      "sfmHideWithExternalRpc": "sfm_hideWithExternalRPC",
+      "sfmStatusName": "sfm_statusName",
+      "sfmNameFormat": "sfm_nameFormat",
+      "sfmUseListeningStatus": "sfm_useListeningStatus",
+      "sfmMissingArt": "sfm_missingArt",
+      "sfmShowLogo": "sfm_showLogo",
+      "sfmAlwaysHideArt": "sfm_alwaysHideArt",
+      "jfServerUrl": "jf_serverUrl",
+      "jfApiKey": "jf_apiKey",
+      "jfUserId": "jf_userId",
+      "jfNameDisplay": "jf_nameDisplay",
+      "jfCustomName": "jf_customName",
+      "jfCoverType": "jf_coverType",
+      "jfEpisodeFormat": "jf_episodeFormat",
+      "jfShowEpisodeName": "jf_showEpisodeName",
+      "jfOverrideType": "jf_overrideType",
+      "jfShowPausedState": "jf_showPausedState",
+      "jfPrivacyMode": "jf_privacyMode",
+      "lbUsername": "lb_username",
+      "lbMbContact": "lb_mbContact",
+      "lbShareUsername": "lb_shareUsername",
+      "lbShareSong": "lb_shareSong",
+      "lbHideWithSpotify": "lb_hideWithSpotify",
+      "lbHideWithActivity": "lb_hideWithActivity",
+      "lbUseTimeBar": "lb_useTimeBar",
+      "lbStatusName": "lb_statusName",
+      "lbNameFormat": "lb_nameFormat",
+      "lbUseListeningStatus": "lb_useListeningStatus",
+      "lbMissingArt": "lb_missingArt",
+      "lbUseLogo": "lb_useLogo",
+      "grRefreshInterval": "gr_refreshInterval"
+    },
+    "sekaiStickers": {
+      "autoCloseModal": "AutoCloseModal"
+    },
+    "showBadgesInChat": {
+      "equicordDonorPosition": "EquicordDonorPosition",
+      "equicordContributorPosition": "EquicordContributorPosition",
+      "vencordDonorPosition": "VencordDonorPosition",
+      "vencordContributorPosition": "VencordContributorPosition",
+      "discordProfilePosition": "DiscordProfilePosition",
+      "discordNitroPosition": "DiscordNitroPosition"
+    },
+    "statusPresets": {
+      "statusPresets": "StatusPresets"
+    },
+    "timezones": {
+      "showOwnTimezone": "\"Show Own Timezone\"",
+      "_24hTime": "\"24h Time\""
+    },
+    "platformIndicators": {
+      "consoleIcon": "ConsoleIcon"
+    }
+  },
+  "upperNames": [
+    "usrbg",
+    "webhook",
+    "owner",
+    "administrator",
+    "moderatorStaff",
+    "moderator",
+    "voiceModerator",
+    "chatModerator",
+    "skipHostUpdate",
+    "dangerousEnableDevtoolsOnlyEnableIfYouKnowWhatYoureDoing",
+    "minWidth",
+    "minHeight",
+    "isMaximized",
+    "isMinimized",
+    "windowBounds",
+    "openOnStartup",
+    "minimizeToTray"
+  ]
+}

@@ -9,7 +9,7 @@
   nix,
 }:
 let
-  nodeModulesHashDarwin = "sha256-iRDjSgJNrQGhmThU1b0VnS3ZS3ssBMxAYnF9cuax7+g=";
+  nodeModulesHashDarwin = "sha256-JkZrtNQmy452ieDfDMHIWBCeLZS7Lrs6wh21v8H43bY=";
   nodeModulesHashLinux = "sha256-CpKWMgGkk3W64mZ7EFWfaW0A3kPEaT2jcn62+iJYQPM=";
   nodeModulesHash = if stdenvNoCC.hostPlatform.isDarwin then nodeModulesHashDarwin else nodeModulesHashLinux;
 in
@@ -30,6 +30,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       || baseName == "tsconfig.base.json"
       || baseName == "vitest.workspace.ts"
       || baseName == "vitest.projects.ts"
+      || relPath == "vite.config.shared.ts"
       || relPath == "modules"
       || relPath == "modules/plugins"
       || relPath == "modules/plugins/deprecated.nix"

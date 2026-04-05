@@ -1,0 +1,578 @@
+{
+  "alwaysExpandRoles": {
+    "description": "Always expands the role list in profile popouts (Vencord-only)",
+    "settings": {}
+  },
+  "alwaysTrust": {
+    "description": "Removes the annoying untrusted domain and suspicious file popup (Vencord-only)",
+    "settings": {
+      "domain": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Remove the untrusted domain popup when opening links (restart required)"
+      },
+      "file": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Remove the 'Potentially Dangerous Download' popup when opening links (restart required)"
+      }
+    }
+  },
+  "anonymiseFileNames": {
+    "description": "Anonymise uploaded file names (Vencord-only)",
+    "settings": {
+      "anonymiseByDefault": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Whether to anonymise file names by default"
+      },
+      "method": {
+        "type": "types.enum",
+        "enumValues": [
+          0,
+          1,
+          2
+        ],
+        "default": 0,
+        "description": "Anonymising method\n\nValues: 0 = Random Characters, 1 = Consistent, 2 = Timestamp"
+      },
+      "randomisedLength": {
+        "type": "types.int",
+        "default": 7,
+        "description": "Random characters length"
+      },
+      "consistent": {
+        "type": "types.str",
+        "default": "image",
+        "description": "Consistent filename"
+      }
+    }
+  },
+  "AutoDNDWhilePlaying": {
+    "description": "Automatically updates your online status (online, idle, dnd) when launching games (Vencord-only)",
+    "settings": {
+      "statusToSet": {
+        "type": "types.enum",
+        "enumValues": [
+          "online",
+          "idle",
+          "dnd",
+          "invisible"
+        ],
+        "default": "dnd",
+        "description": "Status to set while playing a game"
+      }
+    }
+  },
+  "betterFolders": {
+    "description": "Shows server folders on dedicated sidebar and adds folder related improvements (Vencord-only)",
+    "settings": {
+      "sidebar": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Display servers from folder on dedicated sidebar (restart required)"
+      },
+      "sidebarAnim": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Animate opening the folder sidebar"
+      },
+      "closeAllFolders": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Close all folders when selecting a server not in a folder"
+      },
+      "closeAllHomeButton": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Close all folders when clicking on the home button (restart required)"
+      },
+      "closeOthers": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Close other folders when opening a folder"
+      },
+      "forceOpen": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Force a folder to open when switching to a server of that folder"
+      },
+      "keepIcons": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Keep showing guild icons in the primary guild bar folder when it's open in the BetterFolders sidebar (restart required)"
+      },
+      "showFolderIcon": {
+        "type": "types.enum",
+        "enumValues": [
+          0,
+          1,
+          2
+        ],
+        "default": 1,
+        "description": "Show the folder icon above the folder guilds in the BetterFolders sidebar (restart required)\n\nValues: 0 = Never, 1 = Always, 2 = When more than one folder is expanded"
+      }
+    }
+  },
+  "betterGifPicker": {
+    "description": "Makes the gif picker open the favourite category by default (Vencord-only)",
+    "settings": {}
+  },
+  "BlurNSFW": {
+    "description": "Blur attachments in NSFW channels until hovered (Vencord-only)",
+    "settings": {
+      "blurAmount": {
+        "type": "types.int",
+        "default": 10,
+        "description": "Blur Amount (in pixels)"
+      }
+    }
+  },
+  "callTimer": {
+    "description": "Adds a timer to vcs (Vencord-only)",
+    "settings": {
+      "format": {
+        "type": "types.enum",
+        "enumValues": [
+          "stopwatch",
+          "human"
+        ],
+        "default": "stopwatch",
+        "description": "The timer format. This can be any valid moment.js format"
+      }
+    }
+  },
+  "devCompanion": {
+    "description": "Dev Companion Plugin (Vencord-only)",
+    "settings": {
+      "notifyOnAutoConnect": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Whether to notify when Dev Companion has automatically connected."
+      }
+    }
+  },
+  "experiments": {
+    "description": "Enable Access to Experiments & other dev-only features in Discord! (Vencord-only)",
+    "settings": {
+      "toolbarDevMenu": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Change the Help (?) toolbar button (top right in chat) to Discord's developer menu (restart required)"
+      }
+    }
+  },
+  "favoriteEmojiFirst": {
+    "description": "Puts your favorite emoji first in the emoji autocomplete. (Vencord-only)",
+    "settings": {}
+  },
+  "messageClickActions": {
+    "description": "Hold Backspace and click to delete, double click to edit/reply (Vencord-only)",
+    "settings": {
+      "enableDeleteOnClick": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Enable delete on click while holding backspace"
+      },
+      "enableDoubleClickToEdit": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Enable double click to edit"
+      },
+      "enableDoubleClickToReply": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Enable double click to reply"
+      },
+      "requireModifier": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Only do double click actions when shift/ctrl is held"
+      }
+    }
+  },
+  "messageLogger": {
+    "description": "Temporarily logs deleted and edited messages. (Vencord-only)",
+    "settings": {
+      "deleteStyle": {
+        "type": "types.enum",
+        "enumValues": [
+          "text",
+          "overlay"
+        ],
+        "default": "text",
+        "description": "The style of deleted messages"
+      },
+      "logDeletes": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Whether to log deleted messages"
+      },
+      "collapseDeleted": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Whether to collapse deleted messages, similar to blocked messages (restart required)"
+      },
+      "logEdits": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Whether to log edited messages"
+      },
+      "inlineEdits": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Whether to display edit history as part of message content"
+      },
+      "ignoreBots": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Whether to ignore messages by bots"
+      },
+      "ignoreSelf": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Whether to ignore messages by yourself"
+      },
+      "ignoreUsers": {
+        "type": "types.str",
+        "default": "",
+        "description": "Comma-separated list of user IDs to ignore"
+      },
+      "ignoreChannels": {
+        "type": "types.str",
+        "default": "",
+        "description": "Comma-separated list of channel IDs to ignore"
+      },
+      "ignoreGuilds": {
+        "type": "types.str",
+        "default": "",
+        "description": "Comma-separated list of guild IDs to ignore"
+      }
+    }
+  },
+  "moreQuickReactions": {
+    "description": "Increases the number of reactions available in the Quick React hover menu (Vencord-only)",
+    "settings": {
+      "reactionCount": {
+        "type": "types.int",
+        "default": 5,
+        "description": "Number of reactions (0-42)"
+      }
+    }
+  },
+  "newGuildSettings": {
+    "description": "Automatically mute new servers and change various other settings upon joining (Vencord-only)",
+    "settings": {
+      "guild": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Mute Guild automatically"
+      },
+      "messages": {
+        "type": "types.enum",
+        "enumValues": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "default": 3,
+        "description": "Server Notification Settings\n\nValues: 0 = All messages, 1 = Only @mentions, 2 = Nothing, 3 = Server default"
+      },
+      "everyone": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Suppress @everyone and @here"
+      },
+      "role": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Suppress All Role @mentions"
+      },
+      "highlights": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Suppress Highlights automatically"
+      },
+      "events": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Mute New Events automatically"
+      },
+      "showAllChannels": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Show all channels automatically"
+      }
+    }
+  },
+  "noBlockedMessages": {
+    "description": "Hides all blocked/ignored messages from chat completely (Vencord-only)",
+    "settings": {
+      "ignoreMessages": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Completely ignores incoming messages from blocked and ignored (if enabled) users (restart required)"
+      },
+      "applyToIgnoredUsers": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Additionally apply to 'ignored' users"
+      }
+    }
+  },
+  "oneko": {
+    "description": "cat follow mouse (real) (Vencord-only)",
+    "settings": {}
+  },
+  "OnePingPerDM": {
+    "description": "If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping. Read the messages to reset the limit (Vencord-only)",
+    "settings": {
+      "channelToAffect": {
+        "type": "types.enum",
+        "enumValues": [
+          "both_dms",
+          "user_dm",
+          "group_dm"
+        ],
+        "default": "both_dms",
+        "description": "Select the type of DM for the plugin to affect"
+      },
+      "allowMentions": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Receive audio pings for @mentions"
+      },
+      "allowEveryone": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Receive audio pings for @everyone and @here in group DMs"
+      }
+    }
+  },
+  "platformIndicators": {
+    "description": "Adds platform indicators (Desktop, Mobile, Web...) to users (Vencord-only)",
+    "settings": {
+      "colorMobileIndicator": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Whether to make the mobile indicator match the color of the user status. (restart required)"
+      }
+    }
+  },
+  "ReviewDB": {
+    "description": "Review other users (Adds a new settings to profiles) (Vencord-only)",
+    "settings": {
+      "notifyReviews": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Notify about new reviews on startup"
+      },
+      "showWarning": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Display warning to be respectful at the top of the reviews list"
+      },
+      "hideTimestamps": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Hide timestamps on reviews"
+      },
+      "hideBlockedUsers": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Hide reviews from blocked users"
+      }
+    }
+  },
+  "serverInfo": {
+    "description": "Allows you to view info about a server (Vencord-only)",
+    "settings": {}
+  },
+  "showHiddenChannels": {
+    "description": "Show channels that you do not have access to view. (Vencord-only)",
+    "settings": {
+      "hideUnreads": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Hide Unreads (restart required)"
+      },
+      "showMode": {
+        "type": "types.enum",
+        "enumValues": [
+          0,
+          1
+        ],
+        "default": 0,
+        "description": "The mode used to display hidden channels. (restart required)\n\nValues: 0 = Plain style with Lock Icon instead, 1 = Muted style with hidden eye icon on the right"
+      },
+      "defaultAllowedUsersAndRolesDropdownState": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Whether the allowed users and roles dropdown on hidden channels should be open by default"
+      }
+    }
+  },
+  "showMeYourName": {
+    "description": "Display usernames next to nicks, or no nicks at all (Vencord-only)",
+    "settings": {
+      "mode": {
+        "type": "types.enum",
+        "enumValues": [
+          "user-nick",
+          "nick-user",
+          "user"
+        ],
+        "default": "user-nick",
+        "description": "How to display usernames and nicks"
+      },
+      "friendNicknames": {
+        "type": "types.enum",
+        "enumValues": [
+          "dms",
+          "always",
+          "fallback"
+        ],
+        "default": "dms",
+        "description": "How to prioritise friend nicknames over server nicknames"
+      },
+      "displayNames": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Use display names in place of usernames"
+      },
+      "inReplies": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Also apply functionality to reply previews"
+      }
+    }
+  },
+  "silentTyping": {
+    "description": "Hide that you are typing (Vencord-only)",
+    "settings": {
+      "showIcon": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Show an icon for toggling the plugin (restart required)"
+      },
+      "contextMenu": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Add option to toggle the functionality in the chat input context menu"
+      },
+      "isEnabled": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Toggle functionality"
+      }
+    }
+  },
+  "sortFriendRequests": {
+    "description": "Sorts friend requests by date of receipt (Vencord-only)",
+    "settings": {
+      "showDates": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Show dates on friend requests (restart required)"
+      }
+    }
+  },
+  "spotifyControls": {
+    "description": "Adds a Spotify player above the account panel (Vencord-only)",
+    "settings": {
+      "hoverControls": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Show controls on hover"
+      },
+      "useSpotifyUris": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Open Spotify URIs instead of Spotify URLs. Will only work if you have Spotify installed and might not work on all platforms"
+      },
+      "previousButtonRestartsTrack": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Restart currently playing track when pressing the previous button if playtime is >3s"
+      }
+    }
+  },
+  "textReplace": {
+    "description": "Replace text in your messages. You can find pre-made rules in the #textreplace-rules channel in Vencord's Server (Vencord-only)",
+    "settings": {
+      "stringRules": {
+        "type": "types.listOf types.attrs",
+        "default": []
+      },
+      "regexRules": {
+        "type": "types.listOf types.attrs",
+        "default": []
+      }
+    }
+  },
+  "typingIndicator": {
+    "description": "Adds an indicator if someone is typing on a channel. (Vencord-only)",
+    "settings": {
+      "includeCurrentChannel": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Whether to show the typing indicator for the currently selected channel"
+      },
+      "includeMutedChannels": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Whether to show the typing indicator for muted channels."
+      },
+      "includeBlockedUsers": {
+        "type": "types.bool",
+        "default": false,
+        "description": "Whether to show the typing indicator for blocked users."
+      },
+      "indicatorMode": {
+        "type": "types.enum",
+        "enumValues": [
+          3,
+          1,
+          2
+        ],
+        "default": 3,
+        "description": "How should the indicator be displayed?\n\nValues: 3 = Avatars and animated dots, 1 = Animated dots, 2 = Avatars"
+      }
+    }
+  },
+  "typingTweaks": {
+    "description": "Show avatars and role colours in the typing indicator (Vencord-only)",
+    "settings": {
+      "showAvatars": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Show avatars in the typing indicator"
+      },
+      "showRoleColors": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Show role colors in the typing indicator"
+      },
+      "alternativeFormatting": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Show a more useful message when several users are typing"
+      }
+    }
+  },
+  "vencordToolbox": {
+    "description": "Adds a button to the titlebar that houses Vencord quick actions (Vencord-only)",
+    "settings": {
+      "showPluginMenu": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Show the plugins menu in the toolbox"
+      }
+    }
+  },
+  "whoReacted": {
+    "description": "Renders the avatars of users who reacted to a message (Vencord-only)",
+    "settings": {}
+  }
+}
