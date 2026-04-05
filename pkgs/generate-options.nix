@@ -17,28 +17,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   name = "nixcord-plugin-options";
   version = "generated";
 
-  src = lib.cleanSourceWith {
-    src = ../.;
-    filter =
-      path: type:
-      let
-        baseName = baseNameOf path;
-        relPath = lib.removePrefix (toString ../. + "/") (toString path);
-      in
-      baseName == "package.json"
-      || baseName == "bun.lock"
-      || baseName == "tsconfig.base.json"
-      || baseName == "vitest.workspace.ts"
-      || baseName == "vitest.projects.ts"
-      || relPath == "vite.config.shared.ts"
-      || relPath == "modules"
-      || relPath == "modules/plugins"
-      || relPath == "modules/plugins/deprecated.nix"
-      || relPath == "packages"
-      ||
-        lib.hasPrefix "packages/" relPath
-        && !(lib.hasInfix "node_modules" relPath)
-        && !(lib.hasInfix "/dist/" relPath);
+  src = lib.fileset.toSource {
+    root = ../.;
+    fileset = lib.fileset.unions [
+      ../package.json
+      ../bun.lock
+      ../tsconfig.base.json
+      ../vitest.workspace.ts
+      ../vitest.projects.ts
+      ../vite.config.shared.ts
+      ../modules/plugins/deprecated.nix
+      ../packages
+    ];
   };
 
   node_modules = stdenvNoCC.mkDerivation {
