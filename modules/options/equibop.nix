@@ -19,6 +19,7 @@ in
           pkgs.equibop
         else
           null;
+      defaultText = lib.literalExpression "pkgs.equibop or null";
       description = "The Equibop package to use.";
     };
     useSystemEquicord = mkOption {
@@ -31,12 +32,12 @@ in
       description = "Config directory for Equibop.";
     };
     settings = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "Settings to be placed in Equibop's settings.json.";
     };
     state = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "State to be placed in Equibop's state.json.";
     };

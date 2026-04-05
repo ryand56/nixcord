@@ -27,6 +27,7 @@ in
           pkgs.stdenvNoCC.isLinux && builtins.fromJSON (lib.versions.major lib.version) < 25
         ) { libgbm = pkgs.mesa; }
       );
+      defaultText = lib.literalExpression "pkgs.callPackage ../../pkgs/discord.nix { }";
       description = "The Discord package to use.";
     };
     branch = mkOption {
@@ -67,6 +68,7 @@ in
       package = mkOption {
         type = types.package;
         default = nixcordPkgs.equicord or (pkgs.callPackage ../../pkgs/equicord.nix { });
+        defaultText = lib.literalExpression "pkgs.callPackage ../../pkgs/equicord.nix { }";
         description = "The Equicord package to use.";
       };
     };
@@ -79,7 +81,7 @@ in
     settings = mkOption {
       type = types.attrs;
       default = { };
-      description = "Settings to be placed in Discord's settings.json.";
+      description = "Settings to be placed in Discord's settings.json. Set atomically; the entire attrset replaces any previous definition.";
       example = {
         SKIP_HOST_UPDATE = true;
       };

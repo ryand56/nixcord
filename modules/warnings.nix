@@ -3,13 +3,12 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
   cfg = config.programs.nixcord;
 
-  inherit (pkgs.callPackage ./lib/shared.nix { inherit lib; })
+  inherit (import ./lib/shared.nix { inherit lib; })
     mkPluginKit
     mkAssertions
     ;

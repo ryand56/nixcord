@@ -9,16 +9,6 @@ let
     mkIf
     mkMerge
     ;
-
-  inherit (pkgs.callPackage ../lib/shared.nix { inherit lib; })
-    applyPostPatch
-    mkIsQuickCssUsed
-    mkPluginKit
-    mkDorionConfigAttrs
-    mkConfigDirs
-    mkAllFullConfigs
-    ;
-
 in
 {
   imports = [
@@ -29,22 +19,19 @@ in
 
   config = mkIf config.programs.nixcord.enable (
     let
-      cfg = config.programs.nixcord;
-
-      parseRules = cfg.parseRules;
-
-      inherit (pkgs.callPackage ../lib/core.nix { inherit lib parseRules; })
+      inherit (import ../lib/mkCommonConfig.nix { inherit config lib pkgs; })
+        cfg
         mkVencordCfg
         mkFinalPackages
-        ;
-
-      pluginKit = mkPluginKit { inherit cfg; };
-
-      inherit (mkAllFullConfigs { inherit cfg pluginKit; })
         vencordFullConfig
         equicordFullConfig
         vesktopFullConfig
         equibopFullConfig
+        vencord
+        equicord
+        isQuickCssUsed
+        mkDorionConfigAttrs
+        mkConfigDirs
         ;
 
       activationScripts = import ../lib/activation.nix {
@@ -56,17 +43,6 @@ in
           ;
         wrapScript = script: lib.hm.dag.entryAfter [ "writeBoundary" ] script;
       };
-
-      vencord = applyPostPatch {
-        inherit cfg;
-        pkg = cfg.discord.vencord.package;
-      };
-      equicord = applyPostPatch {
-        inherit cfg;
-        pkg = cfg.discord.equicord.package;
-      };
-
-      isQuickCssUsed = mkIsQuickCssUsed { inherit cfg; };
 
     in
     mkMerge ([

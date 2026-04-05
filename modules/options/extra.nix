@@ -5,27 +5,27 @@ in
 {
   options.programs.nixcord = {
     vesktopConfig = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "Additional config merged into `programs.nixcord.config` for Vesktop only.";
     };
     equibopConfig = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "Additional config merged into `programs.nixcord.config` for Equibop only.";
     };
     vencordConfig = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "Additional config merged into `programs.nixcord.config` for Vencord (Discord) only.";
     };
     equicordConfig = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "Additional config merged into `programs.nixcord.config` for Equicord (Discord) only.";
     };
     extraConfig = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "Additional config merged into `programs.nixcord.config` for all clients.";
     };
@@ -46,7 +46,7 @@ in
           };
       in
       mkOption {
-        type = types.attrsOf (types.coercedTo (types.strMatching regex) coerce types.dop);
+        type = types.attrsOf (types.coercedTo (types.strMatching regex) coerce types.path);
         description = "User plugins to fetch and install. Any required JSON config must be enabled in `extraConfig`.";
         default = { };
         example = {

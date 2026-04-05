@@ -1,6 +1,6 @@
 # Builds NixOS module options from a plugin JSON schema.
 # Each plugin gets an `enable` option plus any declared settings.
-{ lib, file }:
+{ lib, file, ... }:
 let
   data = builtins.fromJSON (builtins.readFile file);
   inherit (lib)

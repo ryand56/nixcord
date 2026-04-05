@@ -12,12 +12,15 @@ in
     };
     package = mkOption {
       type = types.package;
-      default = pkgs.callPackage "${pkgs.fetchFromGitHub {
-        owner = "FlameFlag";
-        repo = "nixpkgs";
-        rev = "687fe3c6346172edb78fa0116860c4af1109b5fc";
-        hash = "sha256-D4rM3zHNe94aZW0w7jC5TP+A1OFdcW9DbXzNdrerpg4=";
-      }}/pkgs/by-name/do/dorion/package.nix" { };
+      default = pkgs.callPackage "${
+        pkgs.fetchFromGitHub {
+          owner = "FlameFlag";
+          repo = "nixpkgs";
+          rev = "687fe3c6346172edb78fa0116860c4af1109b5fc";
+          hash = "sha256-D4rM3zHNe94aZW0w7jC5TP+A1OFdcW9DbXzNdrerpg4=";
+        }
+      }/pkgs/by-name/do/dorion/package.nix" { };
+      defaultText = lib.literalMD "custom Dorion package from FlameFlag/nixpkgs";
       description = "The Dorion package to use.";
     };
     configDir = mkOption {
@@ -72,7 +75,10 @@ in
       type = types.listOf types.str;
       default = [ "RControl" ];
       description = "Keys for push-to-talk activation.";
-      example = [ "RControl" "F1" ];
+      example = [
+        "RControl"
+        "F1"
+      ];
     };
     updateNotify = mkOption {
       type = types.bool;
@@ -140,7 +146,7 @@ in
       example = "socks5://127.0.0.1:1080";
     };
     keybinds = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "Custom keybind mappings.";
     };

@@ -1,5 +1,4 @@
-{ lib }:
-
+{ lib, ... }:
 let
   # deepMergeAttrsList :: [attrset] -> attrset
   # Deep-merge a list of attribute sets (left to right).
@@ -36,18 +35,17 @@ let
   mkPluginKit =
     { cfg }:
     let
-      sharedPlugins = import ../plugins/mkPluginOptions.nix {
-        inherit lib;
-        file = ../plugins/shared.json;
-      };
-      vencordOnlyPlugins = import ../plugins/mkPluginOptions.nix {
-        inherit lib;
-        file = ../plugins/vencord.json;
-      };
-      equicordOnlyPlugins = import ../plugins/mkPluginOptions.nix {
-        inherit lib;
-        file = ../plugins/equicord.json;
-      };
+      # Read JSON directly for plugin name masks — no need to generate full option declarations.
+      sharedPluginNames = builtins.attrNames (
+        builtins.fromJSON (builtins.readFile ../plugins/shared.json)
+      );
+      vencordPluginNames = builtins.attrNames (
+        builtins.fromJSON (builtins.readFile ../plugins/vencord.json)
+      );
+      equicordPluginNames = builtins.attrNames (
+        builtins.fromJSON (builtins.readFile ../plugins/equicord.json)
+      );
+
       deprecated = builtins.fromJSON (builtins.readFile ../plugins/deprecated.json);
       pluginNameMigrations = lib.mapAttrs (_: v: v.to) (deprecated.renames or { });
 
@@ -63,9 +61,9 @@ let
         );
 
       # Attrset masks for O(1) lookups instead of O(n) builtins.elem on lists.
-      sharedMask = lib.genAttrs (builtins.attrNames sharedPlugins) (_: null);
-      vencordMask = lib.genAttrs (builtins.attrNames vencordOnlyPlugins) (_: null);
-      equicordMask = lib.genAttrs (builtins.attrNames equicordOnlyPlugins) (_: null);
+      sharedMask = lib.genAttrs sharedPluginNames (_: null);
+      vencordMask = lib.genAttrs vencordPluginNames (_: null);
+      equicordMask = lib.genAttrs equicordPluginNames (_: null);
 
       # collectEnabledExclusivePlugins :: attrset -> attrset -> attrset -> [string]
       # Returns names of enabled plugins that belong exclusively to `targetSet`
@@ -118,9 +116,11 @@ let
           baseConfig,
           extraConfig ? { },
           clientConfig ? { },
+          client ? null,
         }:
         let
-          filteredBaseConfig = filterPluginsForClient baseConfig;
+          filteredBaseConfig =
+            if client != null then filterPluginsFor client baseConfig else filterPluginsForClient baseConfig;
         in
         deepMergeAttrsList [
           filteredBaseConfig
@@ -130,9 +130,6 @@ let
     in
     {
       inherit
-        sharedPlugins
-        vencordOnlyPlugins
-        equicordOnlyPlugins
         pluginNameMigrations
         collectDeprecatedPlugins
         collectEnabledEquicordOnlyPlugins
@@ -201,11 +198,11 @@ let
         ++ lib.optionals (cfg.vesktop.enable && vesktopStateFile != null) [
           (mkCopy vesktopStateFile "${cfg.vesktop.configDir}/state.json")
         ]
-        ++ lib.optionals cfg.vesktop.enable [
-          lib.mapAttrsToList
-          (name: path: mkCopy path "${cfg.vesktop.configDir}/themes/${name}.css")
-          vesktopThemes
-        ]
+        ++ lib.optionals cfg.vesktop.enable (
+          lib.mapAttrsToList (
+            name: path: mkCopy path "${cfg.vesktop.configDir}/themes/${name}.css"
+          ) vesktopThemes
+        )
         ++ lib.optionals quickCssOnVesktop [
           (mkCopy quickCssFile "${cfg.vesktop.configDir}/settings/quickCss.css")
         ];
@@ -228,9 +225,7 @@ let
         (mkCopy dorionConfigFile "${cfg.dorion.configDir}/config.json")
       ];
     in
-    lib.concatMapStringsSep "\n" lib.id (
-      discordCopies ++ vesktopCopies ++ equibopCopies ++ dorionCopies
-    );
+    lib.concatStringsSep "\n" (discordCopies ++ vesktopCopies ++ equibopCopies ++ dorionCopies);
   # toSnakeCase :: string -> string
   # Converts a camelCase string to snake_case.
   toSnakeCase =
@@ -391,7 +386,7 @@ let
   mkAllFullConfigs =
     { cfg, pluginKit }:
     let
-      inherit (pluginKit) filterPluginsFor mkFullConfig;
+      inherit (pluginKit) mkFullConfig;
     in
     {
       vencordFullConfig = mkFullConfig {
@@ -404,16 +399,18 @@ let
         extraConfig = cfg.extraConfig;
         clientConfig = cfg.equicordConfig;
       };
-      vesktopFullConfig = filterPluginsFor "vencord" (deepMergeAttrsList [
-        cfg.config
-        cfg.extraConfig
-        cfg.vesktopConfig
-      ]);
-      equibopFullConfig = filterPluginsFor "equicord" (deepMergeAttrsList [
-        cfg.config
-        cfg.extraConfig
-        cfg.equibopConfig
-      ]);
+      vesktopFullConfig = mkFullConfig {
+        baseConfig = cfg.config;
+        extraConfig = cfg.extraConfig;
+        clientConfig = cfg.vesktopConfig;
+        client = "vencord";
+      };
+      equibopFullConfig = mkFullConfig {
+        baseConfig = cfg.config;
+        extraConfig = cfg.extraConfig;
+        clientConfig = cfg.equibopConfig;
+        client = "equicord";
+      };
     };
 in
 {

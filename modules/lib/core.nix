@@ -17,7 +17,9 @@ let
   mergeLists = base: extra: lists.unique (base ++ extra);
 
   upperNames = mergeLists defaultParseRules.upperNames parseRules.upperNames;
+  upperNamesMask = lib.genAttrs upperNames (_: null);
   lowerPluginTitles = mergeLists defaultParseRules.lowerPluginTitles parseRules.lowerPluginTitles;
+  lowerPluginTitlesMask = lib.genAttrs lowerPluginTitles (_: null);
   mergeSettingRenames = base: extra: lib.recursiveUpdate base extra;
   settingRenames = mergeSettingRenames (defaultParseRules.settingRenames or { }) (
     parseRules.settingRenames or { }
@@ -66,9 +68,9 @@ let
       specialRenames.${name}
     else if settingRenames ? ${context} && settingRenames.${context} ? ${name} then
       settingRenames.${context}.${name}
-    else if builtins.elem name upperNames then
+    else if upperNamesMask ? ${name} then
       unNixify name
-    else if builtins.elem name lowerPluginTitles then
+    else if lowerPluginTitlesMask ? ${name} then
       name
     else if builtins.isAttrs value && value ? enable && isLowerCamel name then
       toUpper name

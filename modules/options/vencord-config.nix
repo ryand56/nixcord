@@ -43,26 +43,20 @@ in
       frameless = mkEnableOption "frameless client window";
       transparent = mkEnableOption "client transparency";
       disableMinSize = mkEnableOption "disabling the minimum window size";
-      plugins =
-        lib.recursiveUpdate
-          (lib.recursiveUpdate
-            (import ../plugins/mkPluginOptions.nix {
-              inherit lib;
-              file = ../plugins/shared.json;
-            })
-            (
-              import ../plugins/mkPluginOptions.nix {
-                inherit lib;
-                file = ../plugins/vencord.json;
-              }
-            )
-          )
-          (
-            import ../plugins/mkPluginOptions.nix {
-              inherit lib;
-              file = ../plugins/equicord.json;
-            }
-          );
+      plugins = lib.foldl' lib.recursiveUpdate { } [
+        (import ../plugins/mkPluginOptions.nix {
+          inherit lib;
+          file = ../plugins/shared.json;
+        })
+        (import ../plugins/mkPluginOptions.nix {
+          inherit lib;
+          file = ../plugins/vencord.json;
+        })
+        (import ../plugins/mkPluginOptions.nix {
+          inherit lib;
+          file = ../plugins/equicord.json;
+        })
+      ];
     };
   };
 }

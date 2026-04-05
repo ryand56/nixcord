@@ -13,6 +13,7 @@ in
     package = mkOption {
       type = types.package;
       default = pkgs.vesktop;
+      defaultText = lib.literalExpression "pkgs.vesktop";
       description = "The Vesktop package to use.";
     };
     useSystemVencord = mkOption {
@@ -25,12 +26,12 @@ in
       description = "Config directory for Vesktop.";
     };
     settings = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "Settings to be placed in Vesktop's settings.json.";
     };
     state = mkOption {
-      type = types.attrs;
+      type = types.attrsOf types.anything;
       default = { };
       description = "State to be placed in Vesktop's state.json.";
     };

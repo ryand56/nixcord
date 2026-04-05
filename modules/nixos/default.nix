@@ -7,16 +7,8 @@
 let
   inherit (lib) mkIf mkMerge;
 
-  inherit (pkgs.callPackage ../lib/shared.nix { inherit lib; })
-    applyPostPatch
-    mkIsQuickCssUsed
-    mkPluginKit
+  inherit (import ../lib/shared.nix { inherit lib; })
     mkCopyCommands
-    mkSettingsFiles
-    mkDorionConfigAttrs
-    mkThemeFile
-    mkConfigDirs
-    mkAllFullConfigs
     ;
 in
 {
@@ -28,35 +20,20 @@ in
 
   config = mkIf config.programs.nixcord.enable (
     let
-      cfg = config.programs.nixcord;
-
-      parseRules = cfg.parseRules;
-      inherit (pkgs.callPackage ../lib/core.nix { inherit lib parseRules; }) mkVencordCfg mkFinalPackages;
-
-      isQuickCssUsed = mkIsQuickCssUsed { inherit cfg; };
-
-      pluginKit = mkPluginKit { inherit cfg; };
-
-      inherit (mkAllFullConfigs { inherit cfg pluginKit; })
-        vencordFullConfig
-        equicordFullConfig
-        vesktopFullConfig
-        equibopFullConfig
+      inherit (import ../lib/mkCommonConfig.nix { inherit config lib pkgs; })
+        cfg
+        mkVencordCfg
+        mkFinalPackages
+        vencord
+        equicord
+        isQuickCssUsed
+        mkConfigDirs
+        settingsFiles
+        vesktopThemes
+        dorionConfigFile
+        quickCssFile
         ;
 
-      quickCssFile = pkgs.writeText "nixcord-quickcss.css" cfg.quickCss;
-
-      settingsFiles = mkSettingsFiles {
-        inherit
-          pkgs
-          cfg
-          mkVencordCfg
-          vencordFullConfig
-          equicordFullConfig
-          vesktopFullConfig
-          equibopFullConfig
-          ;
-      };
       inherit (settingsFiles)
         vencordSettingsFile
         equicordSettingsFile
@@ -68,18 +45,6 @@ in
         equibopClientSettingsFile
         equibopStateFile
         ;
-
-      vesktopThemes = lib.mapAttrs (mkThemeFile { inherit pkgs; }) cfg.config.themes;
-
-      dorionConfigFile =
-        if cfg.dorion.enable then
-          pkgs.writeText "nixcord-dorion-config.json" (
-            builtins.toJSON (mkDorionConfigAttrs {
-              inherit cfg;
-            })
-          )
-        else
-          null;
 
       activationScripts = import ../lib/activation.nix {
         inherit
@@ -145,14 +110,7 @@ in
           xdgConfigHome = "${"/home/${cfg.user}"}/.config";
           finalPackage = mkFinalPackages {
             inherit cfg;
-            vencord = applyPostPatch {
-              inherit cfg;
-              pkg = cfg.discord.vencord.package;
-            };
-            equicord = applyPostPatch {
-              inherit cfg;
-              pkg = cfg.discord.equicord.package;
-            };
+            inherit vencord equicord;
           };
         }
         // mkConfigDirs {
