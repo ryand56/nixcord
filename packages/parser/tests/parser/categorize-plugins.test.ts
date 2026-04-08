@@ -115,6 +115,30 @@ describe('categorizePlugins()', () => {
     emptyCategorySizes.forEach((count) => expect(count).toBe(0));
   });
 
+  test('categorizes plugins that live only in Equicord src/plugins as equicord-only', () => {
+    const vencordResult: ParsedPluginsResult = {
+      vencordPlugins: {},
+      equicordPlugins: {},
+    };
+
+    const equicordResult: ParsedPluginsResult = {
+      vencordPlugins: {
+        CharacterCounter: {
+          name: 'CharacterCounter',
+          description: 'Adds a character counter',
+          settings: {},
+          directoryName: 'characterCounter',
+        },
+      },
+      equicordPlugins: {},
+    };
+
+    const result = categorizePlugins(vencordResult, equicordResult);
+    expect(result.equicordOnly.CharacterCounter).toBeDefined();
+    expect(result.generic.CharacterCounter).toBeUndefined();
+    expect(result.vencordOnly.CharacterCounter).toBeUndefined();
+  });
+
   test('uses equicord config for shared plugins', () => {
     const vencordResult: ParsedPluginsResult = {
       vencordPlugins: {

@@ -25,7 +25,9 @@ describe('generateMigrationsModule()', () => {
 
     const result = generateMigrationsModule(deprecated, allPlugins);
 
-    expect(result).toContain('mkRemovedPluginModule = import ../lib/mkRemovedPluginModule.nix { inherit lib; };');
+    expect(result).toContain(
+      'mkRemovedPluginModule = import ../lib/mkRemovedPluginModule.nix { inherit lib; };'
+    );
     expect(result).toContain('(mkRemovedPluginModule "absRPC")');
     expect(result).toContain('(mkRemovedPluginModule "betterArea")');
     // Should NOT contain inline module definitions

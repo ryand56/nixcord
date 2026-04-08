@@ -745,6 +745,16 @@
     "description": "Group your commonly visited channels in tabs, like a browser (Equicord-only)",
     "settings": {}
   },
+  "characterCounter": {
+    "description": "Adds a character counter to the chat input (Equicord-only)",
+    "settings": {
+      "colorEffects": {
+        "type": "types.bool",
+        "default": true,
+        "description": "Enable yellow/red colouring as you get closer to the character limit"
+      }
+    }
+  },
   "cleanChannelName": {
     "description": "remove all emoji and decor shit from channel names (Equicord-only)",
     "settings": {}

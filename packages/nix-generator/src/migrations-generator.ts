@@ -96,7 +96,9 @@ export function generateMigrationsModule(
       lines.push(`  base = ${BASE_PATH}];`);
     }
     if (hasRemovals) {
-      lines.push('  mkRemovedPluginModule = import ../lib/mkRemovedPluginModule.nix { inherit lib; };');
+      lines.push(
+        '  mkRemovedPluginModule = import ../lib/mkRemovedPluginModule.nix { inherit lib; };'
+      );
     }
     lines.push('in');
   }

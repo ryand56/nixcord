@@ -1,9 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import {
-  generateSettingJson,
-  generatePluginJson,
-  generatePluginModule,
-} from '../src/generator.js';
+import { generateSettingJson, generatePluginJson, generatePluginModule } from '../src/generator.js';
 import type { ReadonlyDeep, PluginSetting, PluginConfig } from '@nixcord/shared';
 
 describe('generateSettingJson()', () => {
