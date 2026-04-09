@@ -28,7 +28,7 @@ let
       stable = "0.0.132";
       ptb = "0.0.185";
       canary = "0.0.949";
-      development = "0.0.238";
+      development = "0.0.239";
     };
     darwin = {
       stable = "0.0.384";
@@ -43,7 +43,7 @@ let
       stable = "sha256-DDt/zr+9sfvyPYUMKCXqEsRvk7wZaxbw2eCWlwxcVec=";
       ptb = "sha256-jGB93uMqELQZMETWTIe76bhIQybHeSjvmDqtgY9Cr1c=";
       canary = "sha256-p5NG3zEpAT3hQzZY6s56f/UWpwHIV6E02zsYUXWJ0ds=";
-      development = "sha256-sulaLDBGy8/IGlnqLo/s8itni65BmZQQfjwvu+kVYSU=";
+      development = "sha256-USqxB4wKzKPClNGg0I2ec7YLtispISe1Tfmf7ajNHTU=";
     };
     x86_64-darwin = {
       stable = "sha256-vAp991ilLVviievPZHGFuyi/zMMpDoApjnNTGkXYbwo=";
