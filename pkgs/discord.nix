@@ -1,5 +1,6 @@
 {
   stdenvNoCC,
+  stdenv,
   fetchurl,
   lib,
   discord,
@@ -12,6 +13,13 @@
   gnugrep,
   nix,
   openasar ? null,
+  # Bootstrap launcher (Linux only)
+  patchelf,
+  # Krisp noise cancellation patching
+  python3,
+  runCommand,
+  unzip,
+  darwin ? null,
 
   # Options
   branch ? "stable",
@@ -21,6 +29,7 @@
   equicord ? null,
   withOpenASAR ? false,
   enableAutoscroll ? false,
+  withKrisp ? false,
 }:
 let
   versions = {
@@ -42,14 +51,31 @@ let
     x86_64-linux = {
       stable = "sha256-DDt/zr+9sfvyPYUMKCXqEsRvk7wZaxbw2eCWlwxcVec=";
       ptb = "sha256-jGB93uMqELQZMETWTIe76bhIQybHeSjvmDqtgY9Cr1c=";
-      canary = "sha256-AeGtlmD/ZQcUzETLSrODJXwRy45wRGlKh5V5w/rCAto=";
+      canary = "sha256-Wn2yKnQojFVjnpKZHJ+ioGFN1/AiFh5My6UF+DiD5B8=";
       development = "sha256-37Z3nK3RAQb7k0/Zshu/cFBn0CWYKil/9kMpuXTCJxk=";
     };
     x86_64-darwin = {
       stable = "sha256-vAp991ilLVviievPZHGFuyi/zMMpDoApjnNTGkXYbwo=";
-      ptb = "sha256-cixv9bdle7N3gMLG1pmYDRaaVBGZB4AsUZT8vwOJpCc=";
-      canary = "sha256-vVYz5paen/9IUSL/VY0VN+ATNPiU7HpAxQ52/SkyNB4=";
-      development = "sha256-dCRl0gpxFdnEa81sSymj8Te0+KmmI9uXsmCXSY1EeNw=";
+      ptb = "sha256-oM7ooPJ01qVhuRUuAqLCgoNWDYDbIKYhGKKHgIlt2XA=";
+      canary = "sha256-J09XJKlk9c8I8PYvMXQUQ47WKWpUdY0vJa5pnyN6Lmw=";
+      development = "sha256-/MN7DtlPVPAfwsCgQ+RnXzq8bnIwkxXiSP+OLG7lK+k=";
+    };
+  };
+
+  # Krisp noise-cancellation module hashes (per-version, per-platform)
+  # These are updated by the discord-update script alongside the main hashes.
+  krispHashes = {
+    x86_64-linux = {
+      stable = "sha256-u8hj8jdPL23mRvu5Ln7xYGup+/lGJU8YxFNhY+DtatU=";
+      ptb = "sha256-sdg0oJSUG7WjuT8bDY5WF+8nvP7kD9g0JbmZSTJj6UQ=";
+      canary = "sha256-R7OTEZxkKhoncUR2f9kRHwhwvUj1r0rY/og+J2jsQTA=";
+      development = "sha256-g2I5j0XosAWsKOIzSbm+KMOY1OaI5O11NmJYhcQpC0g=";
+    };
+    x86_64-darwin = {
+      stable = "sha256-vEIVjkhbz5YQq72jHsyYmFfob5P/rxGepSgUHjytksc=";
+      ptb = "sha256-bZPPE0g0dI/N1kORmiubThE6YjOEDUoyuRDPP9ZqT7E=";
+      canary = "sha256-hTH18qlmQUVHXZffCGBJ9NTpYyCUucM2hs3/rCc8sVY=";
+      development = "sha256-Q/lKz+JItVcCLI3NjcTvgRHjxo1u6QMo4WLH5W4y0G0=";
     };
   };
 
@@ -94,10 +120,53 @@ let
     aarch64-linux = throw "Discord does not provide official aarch64-linux builds.";
   };
 
+  # Krisp module zip sources (fetched from Discord's CDN alongside the main tarball)
+  krispSrcs = {
+    x86_64-linux = {
+      stable = fetchurl {
+        url = "https://stable.dl2.discordapp.net/apps/linux/${versions.linux.stable}/modules/discord_krisp-1.zip";
+        hash = krispHashes.x86_64-linux.stable;
+      };
+      ptb = fetchurl {
+        url = "https://ptb.dl2.discordapp.net/apps/linux/${versions.linux.ptb}/modules/discord_krisp-1.zip";
+        hash = krispHashes.x86_64-linux.ptb;
+      };
+      canary = fetchurl {
+        url = "https://canary.dl2.discordapp.net/apps/linux/${versions.linux.canary}/modules/discord_krisp-1.zip";
+        hash = krispHashes.x86_64-linux.canary;
+      };
+      development = fetchurl {
+        url = "https://development.dl2.discordapp.net/apps/linux/${versions.linux.development}/modules/discord_krisp-1.zip";
+        hash = krispHashes.x86_64-linux.development;
+      };
+    };
+    x86_64-darwin = {
+      stable = fetchurl {
+        url = "https://stable.dl2.discordapp.net/apps/osx/${versions.darwin.stable}/modules/discord_krisp-1.zip";
+        hash = krispHashes.x86_64-darwin.stable;
+      };
+      ptb = fetchurl {
+        url = "https://ptb.dl2.discordapp.net/apps/osx/${versions.darwin.ptb}/modules/discord_krisp-1.zip";
+        hash = krispHashes.x86_64-darwin.ptb;
+      };
+      canary = fetchurl {
+        url = "https://canary.dl2.discordapp.net/apps/osx/${versions.darwin.canary}/modules/discord_krisp-1.zip";
+        hash = krispHashes.x86_64-darwin.canary;
+      };
+      development = fetchurl {
+        url = "https://development.dl2.discordapp.net/apps/osx/${versions.darwin.development}/modules/discord_krisp-1.zip";
+        hash = krispHashes.x86_64-darwin.development;
+      };
+    };
+    aarch64-darwin = krispSrcs.x86_64-darwin;
+    aarch64-linux = throw "Discord does not provide official aarch64-linux builds.";
+  };
+
   currentPlatform = if stdenvNoCC.hostPlatform.isLinux then "linux" else "darwin";
   currentSystem = stdenvNoCC.hostPlatform.system;
   version = versions.${currentPlatform}.${branch};
   src = srcs.${currentSystem}.${branch};
+  krispSrc = if withKrisp then krispSrcs.${currentSystem}.${branch} else null;
 
   variantPackages = {
     stable = discord;
@@ -131,6 +200,143 @@ let
     else
       "\"$out/Applications/${binaryName}.app/Contents/Resources\"";
 
+  # Bootstrap launcher for Discord Development >= 0.0.235 on Linux.
+  # Starting with that version, the linux tarball only ships a small
+  # `updater_bootstrap` ELF that downloads the real app on first run.
+  # This script runs at launch time to perform the bootstrap if needed,
+  # then stages bundled native modules and execs the real binary.
+  bootstrapLauncher =
+    if stdenvNoCC.isLinux then
+      writeShellApplication {
+        name = binaryName;
+        runtimeInputs = [ patchelf ];
+        text = ''
+          host_dir=''${XDG_CONFIG_HOME:-$HOME/.config}/${lib.toLower binaryName}
+          app_dir=$host_dir/app-${version}
+          discord_host=$host_dir/${binaryName}
+
+          if [ ! -e "$discord_host" ]; then
+            self_dir=$(dirname "$(readlink -f "$0")")
+            mkdir -p "$host_dir"
+            echo "Bootstrapping ${binaryName} into $host_dir..." >&2
+
+            # The bootstrap streams progress as standalone integer percentages,
+            # repeating the same value many times. Dedupe consecutive values.
+            last=
+            "$self_dir/updater_bootstrap" "$host_dir" https://updates.discord.com/ ${branch} "$host_dir" 2>&1 \
+              | while IFS= read -r line; do
+                  case "$line" in
+                    ''''|*[!0-9]*)
+                      printf '%s\n' "$line" >&2
+                      ;;
+                    *)
+                      if [ "$line" != "$last" ]; then
+                        printf '  bootstrap progress: %s%%\n' "$line" >&2
+                        last=$line
+                      fi
+                      ;;
+                  esac
+                done
+
+            for bin in ${binaryName} chrome_crashpad_handler chrome-sandbox; do
+              [ -f "$app_dir/$bin" ] || continue
+              chmod +x "$app_dir/$bin"
+              patchelf --set-interpreter ${stdenv.cc.bintools.dynamicLinker} "$app_dir/$bin"
+            done
+            ln -sfn "$app_dir/${binaryName}" "$discord_host"
+          fi
+
+          # Stage bundled native modules where Discord expects them.
+          # Independent of the bootstrap check so older installs self-heal.
+          modules_dst=$host_dir/${version}/modules
+          if [ -d "$app_dir/modules" ] && [ ! -f "$modules_dst/installed.json" ]; then
+            mkdir -p "$modules_dst/pending"
+            entries=()
+            for verdir in "$app_dir"/modules/*/; do
+              base=$(basename "$verdir")
+              entries+=("\"''${base%-*}\": {\"installedVersion\": ''${base##*-}}")
+              for inner in "$verdir"*/; do
+                ln -sfn "$inner" "$modules_dst/$(basename "$inner")"
+              done
+            done
+            printf '{%s}\n' "$(IFS=,; echo "''${entries[*]}")" > "$modules_dst/installed.json"
+          fi
+
+          exec "$discord_host" "$@"
+        '';
+      }
+    else
+      null;
+
+  # Python scripts fetched directly from nixpkgs PR #506089
+  # (NixOS/nixpkgs@53d44f06faec425be8ab9986246d299f7d91a64f)
+  patchKrispPy = fetchurl {
+    url = "https://raw.githubusercontent.com/NixOS/nixpkgs/53d44f06faec425be8ab9986246d299f7d91a64f/pkgs/applications/networking/instant-messengers/discord/patch-krisp.py";
+    hash = "sha256-YVYrkh++kWlIbXfeoFmrS9PHz4CshQNs2lB3OGBLmS4=";
+  };
+
+  deployKrispPy = fetchurl {
+    url = "https://raw.githubusercontent.com/NixOS/nixpkgs/53d44f06faec425be8ab9986246d299f7d91a64f/pkgs/applications/networking/instant-messengers/discord/deploy-krisp.py";
+    hash = "sha256-yWjakVKH+wsFOXgEYsBfx4wBiXecODA481yi9PUSUuM=";
+  };
+
+  # Patched Krisp noise-cancellation module.
+  # On Linux: patch the ELF to bypass signature verification.
+  # On macOS: patch the Mach-O and re-sign with an ad-hoc signature.
+  patchedKrisp =
+    if withKrisp && krispSrc != null then
+      if stdenvNoCC.isLinux then
+        runCommand "discord-krisp-patched"
+          {
+            nativeBuildInputs = [
+              unzip
+              (python3.withPackages (ps: [ ps.lief ]))
+            ];
+          }
+          ''
+            mkdir -p "$out"
+            unzip ${krispSrc} -d "$out"
+            python3 ${patchKrispPy} "$out/discord_krisp.node"
+          ''
+      else
+        runCommand "discord-krisp-patched"
+          {
+            nativeBuildInputs = [
+              unzip
+              (python3.withPackages (ps: [ ps.lief ]))
+            ];
+          }
+          ''
+            mkdir -p "$out"
+            unzip ${krispSrc} -d "$out"
+            python3 ${patchKrispPy} "$out/discord_krisp.node"
+            source ${darwin.signingUtils}
+            sign "$out/discord_krisp.node"
+          ''
+    else
+      null;
+
+  # Runtime deployer: copies the patched Krisp module into Discord's config dir
+  # before Discord starts, using a SHA-256 marker to skip redundant redeploys.
+  deployKrisp =
+    if withKrisp && patchedKrisp != null then
+      runCommand "deploy-krisp.py"
+        {
+          pythonInterpreter = "${python3.interpreter}";
+          krispPath = "${patchedKrisp}";
+          discordVersion = version;
+          configDirName = lib.toLower binaryName;
+          meta.mainProgram = "deploy-krisp.py";
+        }
+        ''
+          mkdir -p "$out/bin"
+          cp ${deployKrispPy} "$out/bin/deploy-krisp.py"
+          substituteAllInPlace "$out/bin/deploy-krisp.py"
+          chmod +x "$out/bin/deploy-krisp.py"
+        ''
+    else
+      null;
+
   updateScript = writeShellApplication {
     name = "discord-update";
     runtimeInputs = [
@@ -140,6 +346,44 @@ let
       gnugrep
     ];
     text = ''
+      NIX_FILE="./pkgs/discord.nix"
+
+      # Resolve nixpkgs once up front
+      NIXPKGS_PATH=$(nix eval --impure --raw --expr "(builtins.getFlake (toString ./.)).inputs.nixpkgs.outPath" 2>/dev/null || echo "")
+      if [[ -z "$NIXPKGS_PATH" ]]; then
+        echo "Warning: could not resolve flake nixpkgs, falling back to <nixpkgs>"
+      fi
+
+      # Load all current state in one nix eval call.
+      # Nix outputs flat key=value lines we can source directly into an associative array.
+      load_current_state() {
+        local expr
+        if [[ -n "$NIXPKGS_PATH" ]]; then
+          expr='let pkgs = import '"$NIXPKGS_PATH"' {}; d = pkgs.callPackage ./pkgs/discord.nix {};'
+        else
+          expr='let pkgs = import <nixpkgs> {}; d = pkgs.callPackage ./pkgs/discord.nix {};'
+        fi
+        # shellcheck disable=SC2016
+        expr+=' flatten = prefix: attrs: builtins.concatLists (builtins.attrValues (builtins.mapAttrs (k: v: if builtins.isAttrs v then flatten (prefix + k + ".") v else [ "''${prefix}''${k}=''${v}" ]) attrs));'
+        # shellcheck disable=SC2016
+        expr+=' in builtins.concatStringsSep "\n" (flatten "" { inherit (d.passthru) versions hashes krispHashes; })'
+
+        local output
+        if ! output=$(nix eval --raw --impure --expr "$expr" 2>&1); then
+          echo "Error: nix eval failed:" >&2
+          echo "$output" >&2
+          exit 1
+        fi
+        while IFS='=' read -r key value; do
+          [[ -n "$key" ]] && STATE["$key"]="$value"
+        done <<< "$output"
+      }
+
+      declare -A STATE
+      echo "Loading current state from discord.nix..."
+      load_current_state
+      echo "State loaded."
+
       get_discord_url() {
         local branch="$1"
         local platform="$2"
@@ -160,81 +404,73 @@ let
         nix hash convert --to sri --hash-algo sha256 "$raw_hash"
       }
 
-      get_nixpkgs_path() {
-        nix eval --impure --raw --expr "(builtins.getFlake (toString ./.)).inputs.nixpkgs.outPath" 2>/dev/null || echo ""
+      # Replace: branch = "old"; -> branch = "new"; (first occurrence only)
+      replace_value() {
+        local key="$1"
+        local old_val="$2"
+        local new_val="$3"
+        sed -i.bak "0,/''${key} = \"''${old_val}\";/s|''${key} = \"''${old_val}\";|''${key} = \"''${new_val}\";|" "$NIX_FILE" && rm -f "$NIX_FILE.bak"
       }
 
-      get_current_version() {
+      update_platform() {
         local branch="$1"
-        local platform="$2"
-        local nixpkgs_path
-        nixpkgs_path=$(get_nixpkgs_path)
-        local nix_expr
-        if [[ -n "$nixpkgs_path" ]]; then
-          nix_expr="let pkgs = import $nixpkgs_path {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.versions.$platform.$branch"
-        else
-          nix_expr="let pkgs = import <nixpkgs> {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.versions.$platform.$branch"
-        fi
-        nix eval --json --impure --expr "$nix_expr" | jq -r .
-      }
+        local platform="$2"     # linux or darwin
+        local nix_system="$3"   # x86_64-linux or x86_64-darwin
+        local new_version="$4"
+        local download_url="$5"
 
-      get_current_hash() {
-        local branch="$1"
-        local platform="$2"
-        local nixpkgs_path
-        nixpkgs_path=$(get_nixpkgs_path)
-        local nix_expr
-        if [[ -n "$nixpkgs_path" ]]; then
-          nix_expr="let pkgs = import $nixpkgs_path {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.hashes.x86_64-$platform.$branch"
-        else
-          nix_expr="let pkgs = import <nixpkgs> {}; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.hashes.x86_64-$platform.$branch"
-        fi
-        nix eval --json --impure --expr "$nix_expr" | jq -r .
-      }
+        local old_version="''${STATE[versions.$platform.$branch]}"
 
-      update_discord_version() {
-        local branch="$1"
-        local platform="$2"
-        local new_version="$3"
-        local old_version
-        old_version=$(get_current_version "$branch" "$platform")
-        if [ "$old_version" = "$new_version" ]; then
-          echo "  $platform version already up to date: $new_version"
+        if [[ "$old_version" = "$new_version" ]]; then
+          echo "  $platform already up to date ($new_version)"
           return 0
         fi
-        sed -i.bak "s|''${branch} = \"''${old_version}\";|''${branch} = \"''${new_version}\";|g" ./pkgs/discord.nix && rm ./pkgs/discord.nix.bak
-      }
 
-      update_discord_hash() {
-        local branch="$1"
-        local platform="$2"
-        local new_hash="$3"
-        local old_hash
-        old_hash=$(get_current_hash "$branch" "$platform")
-        if [ "$old_hash" = "$new_hash" ]; then
-          echo "  x86_64-$platform $branch hash already up to date"
-          return 0
+        echo "  $platform: $old_version -> $new_version"
+
+        # Version changed — now we prefetch
+        local new_hash
+        new_hash=$(prefetch_and_convert_hash "$download_url")
+
+        local old_hash="''${STATE[hashes.$nix_system.$branch]}"
+
+        replace_value "$branch" "$old_version" "$new_version"
+        replace_value "$branch" "$old_hash" "$new_hash"
+
+        # Update krisp hash
+        local cdn_platform
+        if [[ "$platform" = "linux" ]]; then cdn_platform="linux"; else cdn_platform="osx"; fi
+        local krisp_url="https://$branch.dl2.discordapp.net/apps/$cdn_platform/$new_version/modules/discord_krisp-1.zip"
+        if krisp_hash=$(prefetch_and_convert_hash "$krisp_url" 2>/dev/null); then
+          local old_krisp="''${STATE[krispHashes.$nix_system.$branch]}"
+          if [[ "$old_krisp" != "$krisp_hash" ]]; then
+            replace_value "$branch" "$old_krisp" "$krisp_hash"
+          fi
+        else
+          echo "  Could not fetch krisp for $platform/$branch (non-fatal)"
         fi
-        sed -i.bak "s|''${old_hash}|''${new_hash}|g" ./pkgs/discord.nix && rm ./pkgs/discord.nix.bak
       }
 
-      BRANCHES=(stable ptb canary development)
+      # Respect DISCORD_BRANCHES env var if set (CI sets this per matrix job),
+      # otherwise default to all branches.
+      if [[ -n "''${DISCORD_BRANCHES:-}" ]]; then
+        IFS=',' read -ra BRANCHES <<< "$DISCORD_BRANCHES"
+      else
+        BRANCHES=(stable ptb canary development)
+      fi
+
       for BRANCH in "''${BRANCHES[@]}"; do
-        echo "Updating Discord $BRANCH..."
+        echo "Checking Discord $BRANCH..."
 
         linux_url=$(get_discord_url "$BRANCH" "linux" "tar.gz")
         linux_version=$(extract_version_from_url "$linux_url" "linux")
-        linux_sri_hash=$(prefetch_and_convert_hash "$linux_url")
-        update_discord_version "$BRANCH" "linux" "$linux_version"
-        update_discord_hash "$BRANCH" "linux" "$linux_sri_hash"
+        update_platform "$BRANCH" "linux" "x86_64-linux" "$linux_version" "$linux_url"
 
         darwin_url=$(get_discord_url "$BRANCH" "osx" "dmg")
         darwin_version=$(extract_version_from_url "$darwin_url" "osx")
-        darwin_sri_hash=$(prefetch_and_convert_hash "$darwin_url")
-        update_discord_version "$BRANCH" "darwin" "$darwin_version"
-        update_discord_hash "$BRANCH" "darwin" "$darwin_sri_hash"
+        update_platform "$BRANCH" "darwin" "x86_64-darwin" "$darwin_version" "$darwin_url"
 
-        echo "Updated Discord $BRANCH to linux $linux_version, darwin $darwin_version"
+        echo "Done with Discord $BRANCH (linux=$linux_version, darwin=$darwin_version)"
       done
     '';
   };
@@ -242,10 +478,45 @@ in
 basePackage.overrideAttrs (oldAttrs: {
   inherit version src;
   passthru = (oldAttrs.passthru or { }) // {
-    inherit updateScript versions hashes;
+    inherit
+      updateScript
+      versions
+      hashes
+      krispHashes
+      ;
   };
+
+  # Bootstrap tarball support for Discord Development >= 0.0.235 on Linux.
+  # The tarball switched from shipping the full app directly to shipping only a
+  # small `updater_bootstrap` ELF. We copy it as a placeholder so the base
+  # installPhase's chmod+patchelf succeed, then swap it out in postInstall.
+  preInstall =
+    (oldAttrs.preInstall or "")
+    + lib.optionalString (stdenvNoCC.isLinux && branch == "development") ''
+      if [ ! -f ${binaryName} ] && [ -f updater_bootstrap ]; then
+        echo "[nixcord] bootstrap tarball detected; creating placeholder for installPhase"
+        cp updater_bootstrap ${binaryName}
+      fi
+    '';
+
   postInstall =
     (oldAttrs.postInstall or "")
+    # Replace the patchelfd placeholder with the real bootstrap launcher.
+    # wrapProgramShell renames the original to .${binaryName}-wrapped; we
+    # replace that file while leaving the wrapper script intact.
+    + (
+      if stdenvNoCC.isLinux && branch == "development" then
+        ''
+          if [ -f "$out/opt/${binaryName}/updater_bootstrap" ] && \
+             [ -f "$out/opt/${binaryName}/.${binaryName}-wrapped" ]; then
+            echo "[nixcord] installing bootstrap launcher"
+            install -Dm755 ${bootstrapLauncher}/bin/${binaryName} \
+                "$out/opt/${binaryName}/.${binaryName}-wrapped"
+          fi
+        ''
+      else
+        ""
+    )
     + lib.optionalString (withOpenASAR && openasar != null) ''
       cp -f ${openasar} ${resourcesDir}/app.asar
     ''
@@ -261,8 +532,25 @@ basePackage.overrideAttrs (oldAttrs: {
       echo '{"name":"discord","main":"index.js"}' > ${resourcesDir}/app.asar/package.json
       echo 'require("${equicord}/desktop/patcher.js")' > ${resourcesDir}/app.asar/index.js
     '';
+
   postFixup =
     (oldAttrs.postFixup or "")
+    # Deploy the patched Krisp module at launch time via an extra --run hook.
+    + (
+      if withKrisp && deployKrisp != null then
+        if stdenvNoCC.isLinux then
+          ''
+            wrapProgramShell $out/opt/${binaryName}/${binaryName} \
+              --run ${lib.getExe deployKrisp}
+          ''
+        else
+          ''
+            wrapProgram "$out/bin/${binaryName}" \
+              --run ${lib.getExe deployKrisp}
+          ''
+      else
+        ""
+    )
     + lib.optionalString enableAutoscroll (
       if stdenvNoCC.isLinux then
         ''

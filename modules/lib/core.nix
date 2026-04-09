@@ -105,6 +105,7 @@ let
         withEquicord = cfg.discord.equicord.enable;
         withOpenASAR = cfg.discord.openASAR.enable;
         enableAutoscroll = cfg.discord.autoscroll.enable;
+        withKrisp = cfg.discord.krisp.enable;
         branch = cfg.discord.branch;
         vencord = if cfg.discord.vencord.enable then vencord else null;
         equicord = if cfg.discord.equicord.enable then equicord else null;
