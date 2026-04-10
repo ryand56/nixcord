@@ -31,6 +31,9 @@ in
         settingsFiles
         vesktopThemes
         dorionConfigFile
+        legcordSettingsFile
+        legcordVencordWeb
+        legcordEquicordWeb
         quickCssFile
         ;
 
@@ -79,6 +82,9 @@ in
               equibopClientSettingsFile
               equibopStateFile
               dorionConfigFile
+              legcordSettingsFile
+              legcordVencordWeb
+              legcordEquicordWeb
               isQuickCssUsed
               ;
           };
@@ -125,6 +131,7 @@ in
             cfg.finalPackage.equibop
           ])
           (mkIf (cfg.dorion.enable && cfg.dorion.installPackage) [ cfg.finalPackage.dorion ])
+          (mkIf (cfg.legcord.enable && cfg.legcord.installPackage) [ cfg.finalPackage.legcord ])
         ];
       }
       (mkIf cfg.discord.enable {
@@ -143,7 +150,7 @@ in
           supportsDryActivation = false;
         };
       })
-      (mkIf (cfg.discord.enable || cfg.vesktop.enable || cfg.equibop.enable || cfg.dorion.enable) {
+      (mkIf (cfg.discord.enable || cfg.vesktop.enable || cfg.equibop.enable || cfg.dorion.enable || cfg.legcord.enable) {
         system.activationScripts.nixcord-writeFiles = {
           text = writeFilesScript;
           supportsDryActivation = false;

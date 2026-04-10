@@ -8,6 +8,7 @@ in
     ./vesktop.nix
     ./equibop.nix
     ./dorion.nix
+    ./legcord.nix
     ./vencord-config.nix
     ./legacy.nix
     ./extra.nix
@@ -59,6 +60,12 @@ in
         type = types.package;
         readOnly = true;
         description = "The final Dorion package (read-only).";
+      };
+
+      legcord = mkOption {
+        type = types.package;
+        readOnly = true;
+        description = "The final Legcord package (read-only).";
       };
     };
   };

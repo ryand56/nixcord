@@ -2,7 +2,7 @@
 # Returns an attrset of { cfg, mkVencordCfg, mkFinalPackages,
 #   vencordFullConfig, equicordFullConfig, vesktopFullConfig, equibopFullConfig,
 #   vencord, equicord, isQuickCssUsed, mkDorionConfigAttrs, mkConfigDirs,
-#   settingsFiles, vesktopThemes, dorionConfigFile, quickCssFile }.
+#   settingsFiles, vesktopThemes, dorionConfigFile, legcordSettingsFile, quickCssFile }.
 {
   config,
   lib,
@@ -14,6 +14,7 @@ let
 
   inherit (import ./shared.nix { inherit lib; })
     applyPostPatch
+    mkBrowserBuild
     mkIsQuickCssUsed
     mkPluginKit
     mkDorionConfigAttrs
@@ -73,6 +74,47 @@ let
       )
     else
       null;
+
+  legcordVencordWeb =
+    if cfg.legcord.enable && cfg.legcord.vencord.enable then
+      mkBrowserBuild {
+        inherit cfg;
+        pkg = cfg.discord.vencord.package;
+        browserJsPath = "dist/browser.js";
+        browserCssPath = "dist/browser.css";
+      }
+    else
+      null;
+
+  legcordEquicordWeb =
+    if cfg.legcord.enable && cfg.legcord.equicord.enable then
+      mkBrowserBuild {
+        inherit cfg;
+        pkg = cfg.discord.equicord.package;
+        browserJsPath = "dist/browser/browser.js";
+        browserCssPath = "dist/browser/browser.css";
+      }
+    else
+      null;
+
+  # Merge user legcord settings with auto-configured mods and noBundleUpdates.
+  legcordFinalSettings =
+    let
+      bundledMods =
+        lib.optional cfg.legcord.vencord.enable "vencord"
+        ++ lib.optional cfg.legcord.equicord.enable "equicord";
+      autoSettings = lib.optionalAttrs (bundledMods != [ ]) {
+        mods = lib.unique ((cfg.legcord.settings.mods or [ ]) ++ bundledMods);
+        noBundleUpdates = lib.unique ((cfg.legcord.settings.noBundleUpdates or [ ]) ++ bundledMods);
+      };
+    in
+    cfg.legcord.settings // autoSettings // { doneSetup = true; };
+
+  legcordSettingsFile =
+    if cfg.legcord.enable && legcordFinalSettings != { } then
+      pkgs.writeText "nixcord-legcord-config.json" (builtins.toJSON legcordFinalSettings)
+    else
+      null;
 in
 {
   inherit
@@ -91,6 +133,9 @@ in
     settingsFiles
     vesktopThemes
     dorionConfigFile
+    legcordSettingsFile
+    legcordVencordWeb
+    legcordEquicordWeb
     quickCssFile
     ;
 }

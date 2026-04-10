@@ -31,26 +31,37 @@ in
     };
     userPlugins =
       let
-        regex = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
+        githubRegex = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
         coerce =
           value:
           let
-            matches = builtins.match regex value;
-            owner = builtins.elemAt matches 0;
-            repo = builtins.elemAt matches 1;
-            rev = builtins.elemAt matches 2;
+            githubMatches = builtins.match githubRegex value;
           in
-          builtins.fetchGit {
-            url = "https://github.com/${owner}/${repo}";
-            inherit rev;
-          };
+          if githubMatches != null then
+            builtins.fetchGit {
+              url = "https://github.com/${builtins.elemAt githubMatches 0}/${builtins.elemAt githubMatches 1}";
+              rev = builtins.elemAt githubMatches 2;
+            }
+          else if lib.hasPrefix "/" value then
+            /. + value
+          else
+            throw "programs.nixcord.userPlugins: '${value}' is not a valid github: URL (github:owner/repo/commitHash) or absolute local path (must start with /)";
       in
       mkOption {
-        type = types.attrsOf (types.coercedTo (types.strMatching regex) coerce types.path);
-        description = "User plugins to fetch and install. Any required JSON config must be enabled in `extraConfig`.";
+        type = types.attrsOf (types.coercedTo types.str coerce types.path);
+        description = ''
+          User plugins to fetch and install. Any required JSON config must be enabled in `extraConfig`.
+
+          Accepts:
+          - GitHub URLs: `github:owner/repo/commitHash`
+          - Absolute local paths: `/path/to/plugin` (requires `--impure` with flakes)
+          - Nix path literals: `./relative/path` or `/absolute/path`
+          - Packages/derivations
+        '';
         default = { };
         example = {
           someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";
+          localPlugin = "/home/user/projects/myPlugin";
         };
       };
     parseRules = {

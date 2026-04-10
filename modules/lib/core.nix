@@ -138,6 +138,8 @@ let
           null;
 
       dorion = cfg.dorion.package;
+
+      legcord = cfg.legcord.package;
     };
 in
 {

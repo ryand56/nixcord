@@ -39,6 +39,9 @@ in
         settingsFiles
         vesktopThemes
         dorionConfigFile
+        legcordSettingsFile
+        legcordVencordWeb
+        legcordEquicordWeb
         quickCssFile
         ;
 
@@ -87,6 +90,9 @@ in
           equibopClientSettingsFile
           equibopStateFile
           dorionConfigFile
+          legcordSettingsFile
+          legcordVencordWeb
+          legcordEquicordWeb
           isQuickCssUsed
           ;
       };
@@ -117,6 +123,7 @@ in
             cfg.finalPackage.equibop
           ])
           (mkIf (cfg.dorion.enable && cfg.dorion.installPackage) [ cfg.finalPackage.dorion ])
+          (mkIf (cfg.legcord.enable && cfg.legcord.installPackage) [ cfg.finalPackage.legcord ])
         ];
       }
       (mkIf cfg.discord.enable {
@@ -124,7 +131,7 @@ in
           activationScripts.disableDiscordUpdates;
         system.activationScripts.nixcord-fixDiscordModules.text = activationScripts.fixDiscordModules;
       })
-      (mkIf (cfg.discord.enable || cfg.vesktop.enable || cfg.equibop.enable || cfg.dorion.enable) {
+      (mkIf (cfg.discord.enable || cfg.vesktop.enable || cfg.equibop.enable || cfg.dorion.enable || cfg.legcord.enable) {
         system.activationScripts.applications.text = lib.mkAfter (
           let
             mkDir = dir: "${install} -d -o ${lib.escapeShellArg cfg.user} -g staff ${lib.escapeShellArg dir}";
@@ -135,6 +142,7 @@ in
             ${lib.optionalString cfg.vesktop.enable (mkDir cfg.vesktop.configDir)}
             ${lib.optionalString cfg.equibop.enable (mkDir cfg.equibop.configDir)}
             ${lib.optionalString cfg.dorion.enable (mkDir cfg.dorion.configDir)}
+            ${lib.optionalString cfg.legcord.enable (mkDir cfg.legcord.configDir)}
 
             copy_file() {
               sudo --user=${lib.escapeShellArg cfg.user} -- ${install} -D -m "$3" "$1" "$2"

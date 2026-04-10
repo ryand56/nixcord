@@ -15,12 +15,38 @@ let
         + lib.concatLines (
           lib.optional (cfg.userPlugins != { }) "mkdir -p src/userplugins"
           ++ lib.mapAttrsToList (
-            name: path: "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name}"
+            name: path: "cp -r ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name}"
           ) cfg.userPlugins
         );
 
       postInstall = (o.postInstall or "") + ''
         cp package.json "$out"
+      '';
+    });
+
+  # mkBrowserBuild :: { cfg, pkg, browserJsPath, browserCssPath } -> derivation
+  # Builds a Vencord/Equicord browser bundle (for Legcord) from a desktop package,
+  # including user plugins. Overrides the build to run `buildWeb` and extracts
+  # browser.js / browser.css from the build output.
+  mkBrowserBuild =
+    {
+      cfg,
+      pkg,
+      browserJsPath,
+      browserCssPath,
+    }:
+    (applyPostPatch { inherit cfg pkg; }).overrideAttrs (old: {
+      buildPhase = ''
+        runHook preBuild
+        pnpm run buildWeb -- --standalone --disable-updater
+        runHook postBuild
+      '';
+      installPhase = ''
+        runHook preInstall
+        mkdir -p "$out"
+        cp ${browserJsPath} "$out/browser.js"
+        cp ${browserCssPath} "$out/browser.css"
+        runHook postInstall
       '';
     });
 
@@ -158,6 +184,9 @@ let
       equibopClientSettingsFile,
       equibopStateFile,
       dorionConfigFile,
+      legcordSettingsFile,
+      legcordVencordWeb,
+      legcordEquicordWeb,
       isQuickCssUsed,
     }:
     let
@@ -224,8 +253,23 @@ let
       dorionCopies = lib.optionals (cfg.dorion.enable && dorionConfigFile != null) [
         (mkCopy dorionConfigFile "${cfg.dorion.configDir}/config.json")
       ];
+
+      legcordCopies =
+        lib.optionals (cfg.legcord.enable && legcordSettingsFile != null) [
+          (mkCopy legcordSettingsFile "${cfg.legcord.configDir}/storage/settings.json")
+        ]
+        ++ lib.optionals (cfg.legcord.enable && legcordVencordWeb != null) [
+          (mkCopy "${legcordVencordWeb}/browser.js" "${cfg.legcord.configDir}/vencord.js")
+          (mkCopy "${legcordVencordWeb}/browser.css" "${cfg.legcord.configDir}/vencord.css")
+        ]
+        ++ lib.optionals (cfg.legcord.enable && legcordEquicordWeb != null) [
+          (mkCopy "${legcordEquicordWeb}/browser.js" "${cfg.legcord.configDir}/equicord.js")
+          (mkCopy "${legcordEquicordWeb}/browser.css" "${cfg.legcord.configDir}/equicord.css")
+        ];
     in
-    lib.concatStringsSep "\n" (discordCopies ++ vesktopCopies ++ equibopCopies ++ dorionCopies);
+    lib.concatStringsSep "\n" (
+      discordCopies ++ vesktopCopies ++ equibopCopies ++ dorionCopies ++ legcordCopies
+    );
   # toSnakeCase :: string -> string
   # Converts a camelCase string to snake_case.
   toSnakeCase =
@@ -274,13 +318,18 @@ let
       };
       wrongEquicordPlugins = collectEnabledEquicordOnlyPlugins allPlugins;
       wrongVencordPlugins = collectEnabledVencordOnlyPlugins allPlugins;
-      hasVencordClient = cfg.discord.vencord.enable || cfg.vesktop.enable;
-      hasEquicordClient = cfg.discord.equicord.enable || cfg.equibop.enable;
+      hasVencordClient = cfg.discord.vencord.enable || cfg.vesktop.enable || cfg.legcord.vencord.enable;
+      hasEquicordClient =
+        cfg.discord.equicord.enable || cfg.equibop.enable || cfg.legcord.equicord.enable;
     in
     [
       {
         assertion = !(cfg.discord.vencord.enable && cfg.discord.equicord.enable);
         message = "programs.nixcord.discord.vencord.enable and programs.nixcord.discord.equicord.enable cannot both be enabled at the same time. They are mutually exclusive.";
+      }
+      {
+        assertion = !(cfg.legcord.vencord.enable && cfg.legcord.equicord.enable);
+        message = "programs.nixcord.legcord.vencord.enable and programs.nixcord.legcord.equicord.enable cannot both be enabled at the same time. They are mutually exclusive.";
       }
       {
         assertion = !(hasVencordClient && !hasEquicordClient) || wrongEquicordPlugins == [ ];
@@ -379,6 +428,7 @@ let
       vesktop.configDir = lib.mkDefault "${basePath}/vesktop";
       equibop.configDir = lib.mkDefault "${basePath}/equibop";
       dorion.configDir = lib.mkDefault "${basePath}/dorion";
+      legcord.configDir = lib.mkDefault "${basePath}/legcord";
     };
 
   # mkAllFullConfigs :: { cfg, pluginKit } -> { vencord, equicord, vesktop, equibop }
@@ -417,6 +467,7 @@ in
   inherit
     deepMergeAttrsList
     applyPostPatch
+    mkBrowserBuild
     mkIsQuickCssUsed
     mkPluginKit
     mkCopyCommands

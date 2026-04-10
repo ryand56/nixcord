@@ -32,6 +32,9 @@ in
         isQuickCssUsed
         mkDorionConfigAttrs
         mkConfigDirs
+        legcordSettingsFile
+        legcordVencordWeb
+        legcordEquicordWeb
         ;
 
       activationScripts = import ../lib/activation.nix {
@@ -72,6 +75,7 @@ in
             cfg.finalPackage.equibop
           ])
           (mkIf (cfg.dorion.enable && cfg.dorion.installPackage) [ cfg.finalPackage.dorion ])
+          (mkIf (cfg.legcord.enable && cfg.legcord.installPackage) [ cfg.finalPackage.legcord ])
         ];
       }
       (mkIf cfg.discord.enable (mkMerge [
@@ -163,6 +167,23 @@ in
         {
           home.activation.setupDorionVencordSettings = activationScripts.setupDorionVencordSettings;
         }
+      ]))
+      (mkIf cfg.legcord.enable (mkMerge [
+        (mkIf (legcordSettingsFile != null) {
+          # Legcord needs a writable settings.json (it writes modCache, window state, etc.
+          # at runtime), so we copy instead of symlinking via home.file.
+          home.activation.nixcord-legcord-settings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            install -Dm644 ${legcordSettingsFile} "${cfg.legcord.configDir}/storage/settings.json"
+          '';
+        })
+        (mkIf cfg.legcord.vencord.enable {
+          home.file."${cfg.legcord.configDir}/vencord.js".source = "${legcordVencordWeb}/browser.js";
+          home.file."${cfg.legcord.configDir}/vencord.css".source = "${legcordVencordWeb}/browser.css";
+        })
+        (mkIf cfg.legcord.equicord.enable {
+          home.file."${cfg.legcord.configDir}/equicord.js".source = "${legcordEquicordWeb}/browser.js";
+          home.file."${cfg.legcord.configDir}/equicord.css".source = "${legcordEquicordWeb}/browser.css";
+        })
       ]))
     ])
   );
