@@ -14,9 +14,9 @@
   nix-prefetch-github,
 }:
 let
-  stableVersion = "1.14.7";
-  stableHash = "sha256-uLuWTquRwguWYu3eolrHa5rguSI8ydwzHY6CrOcP7qM=";
-  stablePnpmDeps = "sha256-b8Ko87Ddu3jcigbxluhsADJTsGVatiW5snXSXtrYho0=";
+  stableVersion = "1.14.8";
+  stableHash = "sha256-Y2hUJveld1inngHlSYqQF0rf08gz7jzvS5GiV/PLc/w=";
+  stablePnpmDeps = "sha256-GiUV2x8i7ewzn66v5wBUq67oNvrxZzOsh5TuQUtpJNQ=";
 
   unstableVersion = "1.14.7-unstable-2026-04-17";
   unstableRev = "51b4748ba7489201f3efb378b6e6e2734f97e080";
