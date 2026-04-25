@@ -14,9 +14,9 @@
   perl,
 }:
 let
-  version = "v1.14.9.2";
-  hash = "sha256-5wPOxW/yP8+rBVg4M/1a79SQVWEWG621K2beeHb6NO8=";
-  gitHash = "sha256-9noRXse0MMicJNMYo62NMAQlPcv9NxSOuDAXrGQCco0=";
+  version = "v1.14.10.1";
+  hash = "sha256-Sb+hNAwuLsPDQwc+NIj0eAtjkwRZ7t8J/hGu0aQ4SjQ=";
+  gitHash = "sha256-TeFAADtTK8wtMSzX+lDURano24Gzmws2wInVSwj539I=";
   pnpmDepsHashDarwin = "sha256-8za+KfTNZXROt9zasumUppzCo6/bz3Rrp976mAyaBa4=";
   pnpmDepsHashLinux = "sha256-uEQRrFyHPm90S0TH2T6PEffruaG5YGY33MSgcnFma1U=";
   pnpmDepsHash = if stdenvNoCC.isDarwin then pnpmDepsHashDarwin else pnpmDepsHashLinux;
